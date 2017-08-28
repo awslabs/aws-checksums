@@ -15,7 +15,7 @@
 
 #include <aws/checksums/private/aws_cpuid.h>
 
-#if !defined(_M_ARM) && !defined(__arm__) && !defined(__ARM_ARCH_ISA_A64) && !defined(__x86_64__) && !defined(_M_X64) && !defined(_M_IX86)
+#if (!defined(_M_ARM) && !defined(__arm__) && !defined(__ARM_ARCH_ISA_A64) && !defined(__x86_64__) && !defined(_M_X64) && !defined(_M_IX86)) || (defined(__GNUC__) && defined(DEBUG_BUILD))
 
 int aws_checksums_do_cpu_id(int32_t *cpuid) {
     return 0;
