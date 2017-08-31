@@ -107,3 +107,5 @@ install (
          LIBRARY DESTINATION lib
          COMPONENT library     
 )
+install(EXPORT "${PROJECT_NAME}-targets" FILE "${PROJECT_NAME}-targets.cmake" DESTINATION bin)
+export(EXPORT "${PROJECT_NAME}-targets" FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake")
