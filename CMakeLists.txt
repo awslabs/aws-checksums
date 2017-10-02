@@ -102,10 +102,11 @@ add_test(crc32 aws-checksums-tests crc32)
 install (FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
 install (
          TARGETS ${PROJECT_NAME}
-         EXPORT "${PROJECT_NAME}-targets"
+         EXPORT "${PROJECT_NAME}-config"
          ARCHIVE DESTINATION lib
          LIBRARY DESTINATION lib
          COMPONENT library     
 )
-install(EXPORT "${PROJECT_NAME}-targets" FILE "${PROJECT_NAME}-targets.cmake" DESTINATION bin)
-export(EXPORT "${PROJECT_NAME}-targets" FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake")
+
+export(TARGETS ${PROJECT_NAME} FILE "${PROJECT_NAME}-config.cmake")
+install(EXPORT ${PROJECT_NAME}-config DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/cmake/")

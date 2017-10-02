@@ -1131,19 +1131,19 @@ static uint32_t crc_generic_sb1(const uint8_t* input, int length, uint32_t crc, 
 static inline uint32_t crc_generic_align(const uint8_t **input, int *length, uint32_t crc, const uint32_t *table_ptr) {
 
     // Get the 4-byte memory alignment of our input buffer by looking at the least significant 2 bits
-    int input_alignment = (int) *input & 0x3;
+    size_t input_alignment = ((size_t) *input) & 0x3;
 
     // Compute the number of input bytes that precede the first 4-byte aligned block (will be in range 0-3)
-    int leading = (4 - input_alignment) & 0x3;
+    size_t leading = (4 - input_alignment) & 0x3;
 
     // Determine what's left without the leading input bytes (might be negative)
-    int remaining = *length - leading;
+    size_t remaining = *length - leading;
 
     // Process unaligned leading input bytes one at a time
     if (leading && remaining > 0) {
-        crc = crc_generic_sb1(*input, leading, crc, table_ptr);
+        crc = crc_generic_sb1(*input, (uint32_t)leading, crc, table_ptr);
         *input += leading;
-        *length -= leading;
+        *length -= (int)leading;
     }
 
     return crc;
