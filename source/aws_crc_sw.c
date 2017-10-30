@@ -13,6 +13,7 @@
 * permissions and limitations under the License.
 */
 #include <aws/checksums/private/aws_crc_priv.h>
+#include <stddef.h>
 
 // The Ethernet, gzip, et.al CRC32 polynomial (reverse of 0x04C11DB7)
 #define CRC32_POLYNOMIAL 0xEDB88320
