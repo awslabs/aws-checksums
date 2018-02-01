@@ -46,6 +46,14 @@ static int test_known_crc(const char *func_name, crc_func func, const char *data
     result = func(input + (length / 2), length - length / 2, crc1);
     ASSERT_HEX_EQUALS(expected, result, "chaining %s(%s)", func_name, data_name);
 
+    crc1 = 0;
+    for (size_t i = 0; i < length; ++i) {
+        crc1 = func(input + i, 1, crc1);
+    }
+
+    ASSERT_HEX_EQUALS(expected, crc1, "one byte at a time %s(%s)", func_name, data_name);
+
+
     RETURN_SUCCESS("%s() pass", func_name);
 failure: return FAILURE;
 }
