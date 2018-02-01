@@ -1203,6 +1203,10 @@ static uint32_t crc_generic_sb16(const uint8_t* input, int length, uint32_t crc,
     return crc_generic_sb4(&input[length - remaining], remaining, crc, table_ptr);
 }
 
+static uint32_t crc32_no_slice(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return ~crc_generic_sb1(input, length, ~previousCrc32, &crc32_table[0][0]);
+}
+
 /* Computes CRC32 (Ethernet, gzip, et. al.) using slice-by-4. */
 static uint32_t crc32_sb4(const uint8_t* input, int length, uint32_t previousCrc32) {
     uint32_t crc = crc_generic_align(&input, &length, ~previousCrc32, &crc32_table[0][0]);
@@ -1219,6 +1223,10 @@ static uint32_t crc32_sb8(const uint8_t* input, int length, uint32_t previousCrc
 static uint32_t crc32_sb16(const uint8_t* input, int length, uint32_t previousCrc32) {
     uint32_t crc = crc_generic_align(&input, &length, ~previousCrc32, &crc32_table[0][0]);
     return ~crc_generic_sb16(input, length, crc, &crc32_table[0][0]);
+}
+
+static uint32_t crc32c_no_slice(const uint8_t *input, int length, uint32_t previousCrc32c) {
+    return ~crc_generic_sb1(input, length , ~previousCrc32c, &crc32c_table[0][0]);
 }
 
 /* Computes the Castagnoli CRC32c (iSCSI) using slice-by-4. */
@@ -1251,9 +1259,11 @@ uint32_t aws_checksums_crc32_sw(const uint8_t *input, int length, uint32_t previ
         return crc32_sb8(input, length, previousCrc32);
 
     }
-    else {
+    else if (length >= 4){
         return crc32_sb4(input, length, previousCrc32);
     }
+
+    return crc32_no_slice(input, length, previousCrc32);
 }
 
 /**
@@ -1267,8 +1277,10 @@ uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t prev
     else if (length >= 8) {
         return crc32c_sb8(input, length, previousCrc32c);
     }
-    else {
+    else if (length >= 4) {
         return crc32c_sb4(input, length, previousCrc32c);
     }
+
+    return crc32c_no_slice(input, length, previousCrc32c);
 }
 
