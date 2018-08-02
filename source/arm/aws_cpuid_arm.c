@@ -13,7 +13,7 @@
 * permissions and limitations under the License.
 */
 
-//for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+
+/* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
 #if defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64)
 #include <aws/checksums/aws_cpuid.h>
 
