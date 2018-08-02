@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
-project (aws-checksums)
+project (aws-checksums C)
 
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
@@ -92,6 +92,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_executable(aws-checksums-tests ${TESTS})
 target_link_libraries(aws-checksums-tests aws-checksums)
 set_target_properties(aws-checksums-tests PROPERTIES LINKER_LANGUAGE C)
+set_property(TARGET aws-checksums-tests PROPERTY C_STANDARD 99)
+
 
 include(CTest)
 enable_testing()

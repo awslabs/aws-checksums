@@ -18,26 +18,26 @@
 
 #if defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
 
-static int32_t cpuid_output = 0;
-static int cpuid_ran = 0;
+static int32_t s_cpuid_output = 0;
+static int s_cpuid_ran = 0;
 
 int aws_checksums_do_cpu_id(int32_t *cpuid) { 
 
-     if(!cpuid_ran) {
+     if (!s_cpuid_ran) {
 
      asm volatile(
             "XOR    %%rax, %%rax    # zero the eax register\n"
             "INC    %%eax           # eax=1 for processor feature bits\n"
             "CPUID                  #get feature bits\n"
-            : "=c" (cpuid_output)
+            : "=c" (s_cpuid_output)
             : //none
             : "%rax", "%rbx", "%rdx", "cc"  
          );
-         cpuid_ran = 1;
+         s_cpuid_ran = 1;
      }
 
-     *cpuid = cpuid_output;
+     *cpuid = s_cpuid_output;
      return 1;
 }
 
-#endif //defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
+#endif /* defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD)) */

@@ -16,13 +16,12 @@
 #include <aws/checksums/private/aws_cpuid.h>
 #include <aws/checksums/private/aws_crc_priv.h>
 
-//this implementation is only for 64 bit arch and (if on GCC, release mode). If using clang, this will run for both debug and release.
+/*this implementation is only for 64 bit arch and (if on GCC, release mode).
+ * If using clang, this will run for both debug and release.*/
 #if defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
 
-
-
-#define likely(x) __builtin_expect((x),1)
-#define unlikely(x) __builtin_expect((x),0)
+#define LIKELY(x) __builtin_expect((x),1)
+#define UNLIKELY(x) __builtin_expect((x),0)
 
 /*
 * Factored out common inline asm for folding crc0,crc1,crc2 stripes in rcx, r11, r10 using
@@ -58,7 +57,7 @@
 * It MUST be passed a pointer to input data that is exactly 256 bytes in length.
 * Note: this function does NOT invert bits of the input crc or return value.
 */
-static inline uint32_t crc32c_sse42_clmul_256(const uint8_t* input, uint32_t crc) {
+static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t crc) {
     asm volatile(
         "enter_256_%=:"
 
@@ -108,16 +107,16 @@ static inline uint32_t crc32c_sse42_clmul_256(const uint8_t* input, uint32_t crc
         "crc32q   80(%[in]), %%rcx    # crc0 \n"
         "crc32q  168(%[in]), %%r11    # crc2 \n"
 
-        FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) // Magic Constants used to fold crc stripes into ecx
+        FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
 
-                                                 // output registers
-                                                 // [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                                                 /* output registers
+                                                  [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
         : "+c" (crc)
 
-        // input registers
+        /* input registers */
         : [crc]  "c" (crc), [in] "d" (input)
 
-        // additional clobbered registers
+        /* additional clobbered registers */
         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc"
         );
     return crc;
@@ -131,7 +130,7 @@ static inline uint32_t crc32c_sse42_clmul_256(const uint8_t* input, uint32_t crc
 * It MUST be passed a pointer to input data that is exactly 1024 bytes in length.
 * Note: this function does NOT invert bits of the input crc or return value.
 */
-static inline uint32_t crc32c_sse42_clmul_1024(const uint8_t* input, uint32_t crc) {
+static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t crc) {
     asm volatile(
         "enter_1024_%=:"
 
@@ -193,20 +192,20 @@ static inline uint32_t crc32c_sse42_clmul_1024(const uint8_t* input, uint32_t cr
         "crc32q   16(%[in]), %%rcx    # crc0 \n"
         "crc32q  696(%[in]), %%r10    # crc2 \n"
 
-        FOLD_K1K2(1024, $0xe417f38a, $0x8f158014) // Magic Constants used to fold crc stripes into ecx
+        FOLD_K1K2(1024, $0xe417f38a, $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
 
-                                                  // output registers
-                                                  // [crc] is an input and and output so it is marked read/write (i.e. "+c")
-                                                  // we clobber the register for [input] (via add instruction) so we must also
-                                                  // tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber
+                                                     output registers
+                                                     [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                                                     we clobber the register for [input] (via add instruction) so we must also
+                                                     tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber */
         : "+c" (crc), "+d" (input)
 
-        // input registers
-        // the numeric values match the position of the output registers
+        /* input registers */
+        /* the numeric values match the position of the output registers */
         : [crc]  "c" (crc), [in] "d" (input)
 
-        // additional clobbered registers
-        // "cc" is the flags - we add and sub, so the flags are also clobbered
+        /* additional clobbered registers */
+        /* "cc" is the flags - we add and sub, so the flags are also clobbered */
         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc"
         );
     return crc;
@@ -220,7 +219,7 @@ static inline uint32_t crc32c_sse42_clmul_1024(const uint8_t* input, uint32_t cr
 * It MUST be passed a pointer to input data that is exactly 3072 bytes in length.
 * Note: this function does NOT invert bits of the input crc or return value.
 */
-static inline uint32_t crc32c_sse42_clmul_3072(const uint8_t* input, uint32_t crc) {
+static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t crc) {
     asm volatile(
         "enter_3072_%=:"
 
@@ -271,20 +270,20 @@ static inline uint32_t crc32c_sse42_clmul_3072(const uint8_t* input, uint32_t cr
         "sub             $1, %%r8d    # \n"
         "jnz loop_3072_%=             # \n"
 
-        FOLD_K1K2(3072, $0xa51b6135, $0x170076fa) // Magic Constants used to fold crc stripes into ecx
+        FOLD_K1K2(3072, $0xa51b6135, $0x170076fa) /* Magic Constants used to fold crc stripes into ecx
 
-                                                  // output registers
-                                                  // [crc] is an input and and output so it is marked read/write (i.e. "+c")
-                                                  // we clobber the register for [input] (via add instruction) so we must also
-                                                  // tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber
+                                                     output registers
+                                                     [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                                                     we clobber the register for [input] (via add instruction) so we must also
+                                                     tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber*/
         : "+c" (crc), "+d" (input)
 
-        // input registers
-        // the numeric values match the position of the output registers
+        /* input registers
+           the numeric values match the position of the output registers */
         : [crc]  "c" (crc), [in] "d" (input)
 
-        // additional clobbered registers
-        // "cc" is the flags - we add and sub, so the flags are also clobbered
+        /* additional clobbered registers
+          "cc" is the flags - we add and sub, so the flags are also clobbered */
         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc"
         );
 
@@ -302,18 +301,18 @@ static int detected_clmul = 0;
 */
 uint32_t aws_checksums_crc32c_hw(const uint8_t* input, int length, uint32_t previousCrc32) {
 
-    if (unlikely(!detection_performed)) {
+    if  (UNLIKELY(!detection_performed)) {
         detected_clmul = aws_checksums_is_clmul_present();
-        // Simply setting the flag true to skip HW detection next time
-        // Not using memory barriers since the worst that can
-        // happen is a fallback to the non HW accelerated code.
+        /* Simply setting the flag true to skip HW detection next time
+           Not using memory barriers since the worst that can
+           happen is a fallback to the non HW accelerated code. */
         detection_performed = 1;
     }
 
     uint32_t crc = ~previousCrc32;
 
-    // For small input, forget about alignment checks - simply compute the CRC32c one byte at a time
-    if (unlikely(length < 8)) {
+    /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
+    if (UNLIKELY(length < 8)) {
         while (length-- > 0) {
             asm ("loop_small_%=: CRC32B (%[in]), %[crc]" : "+c" (crc) : [crc] "c" (crc), [in] "r" (input));
             input++;
@@ -321,53 +320,53 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t* input, int length, uint32_t prev
         return ~crc;
     }
 
-    // Get the 8-byte memory alignment of our input buffer by looking at the least significant 3 bits
-    int input_alignment = (unsigned long long) input & 0x7;
+    /* Get the 8-byte memory alignment of our input buffer by looking at the least significant 3 bits */
+    int input_alignment = (unsigned long int) input & 0x7;
 
-    // Compute the number of unaligned bytes before the first aligned 8-byte chunk (will be in the range 0-7)
+    /* Compute the number of unaligned bytes before the first aligned 8-byte chunk (will be in the range 0-7) */
     int leading = (8 - input_alignment) & 0x7;
 
-    // reduce the length by the leading unaligned bytes we are about to process
+    /* reduce the length by the leading unaligned bytes we are about to process */
     length -= leading;
 
-    // spin through the leading unaligned input bytes (if any) one-by-one
+    /* spin through the leading unaligned input bytes (if any) one-by-one */
     while (leading-- > 0) {
         asm ("loop_leading_%=: CRC32B (%[in]), %[crc]" : "+c" (crc) : [crc] "c" (crc), [in] "r" (input));
         input++;
     }
 
-    // Using likely to keep this code inlined
-    if (likely(detected_clmul)) {
+    /* Using likely to keep this code inlined */
+    if (LIKELY(detected_clmul)) {
 
-        while (likely(length >= 3072)) {
-            // Compute crc32c on each block, chaining each crc result
-            crc = crc32c_sse42_clmul_3072(input, crc);
+        while (LIKELY(length >= 3072)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_3072(input, crc);
             input += 3072;
             length -= 3072;
         }
-        while (likely(length >= 1024)) {
-            // Compute crc32c on each block, chaining each crc result
-            crc = crc32c_sse42_clmul_1024(input, crc);
+        while (LIKELY(length >= 1024)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_1024(input, crc);
             input += 1024;
             length -= 1024;
         }
-        while (likely(length >= 256)) {
-            // Compute crc32c on each block, chaining each crc result
-            crc = crc32c_sse42_clmul_256(input, crc);
+        while (LIKELY(length >= 256)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_256(input, crc);
             input += 256;
             length -= 256;
         }
     }
 
-    // Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction
-    while (likely(length >= 8)) {
-        // Hardcoding %rcx register (i.e. "+c") to allow use of qword instruction
+    /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
+    while (LIKELY(length >= 8)) {
+        /* Hardcoding %rcx register (i.e. "+c") to allow use of qword instruction */
         asm volatile("loop_8_%=: CRC32Q (%[in]), %%rcx" : "+c" (crc) : [crc] "c" (crc), [in] "r" (input));
         input += 8;
         length -= 8;
     }
 
-    // Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one
+    /* Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one */
     while (length-- > 0) {
         asm volatile("loop_trailing_%=: CRC32B (%[in]), %[crc]" : "+c" (crc) : [crc] "c" (crc), [in] "r" (input));
         input++;
@@ -378,7 +377,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t* input, int length, uint32_t prev
 
 #elif !defined(_MSC_VER)
 
-//don't call this without first checking that it is supported.
+/* don't call this without first checking that it is supported. */
 uint32_t aws_checksums_crc32c_hw(const uint8_t* input, int length, uint32_t previousCrc32) { return 0; }
 
 #endif

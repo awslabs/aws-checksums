@@ -17,20 +17,20 @@
 #include <aws/checksums/aws_crc.h>
 
 // A normalized function signature for all CRC functions.
-static uint32_t(*crc32c_func)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
+static uint32_t(*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previousCrc32) {
     return aws_checksums_crc32_sw(input, length, previousCrc32);
 }
 
 uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previousCrc32) {
-    if (!crc32c_func) {
+    if (!s_crc32c_fn_ptr) {
         if (aws_checksums_is_sse42_present()) {
-            crc32c_func = aws_checksums_crc32c_hw;
+            s_crc32c_fn_ptr = aws_checksums_crc32c_hw;
         }
         else {
-            crc32c_func = aws_checksums_crc32c_sw;
+            s_crc32c_fn_ptr = aws_checksums_crc32c_sw;
         }
     }
-    return crc32c_func(input, length, previousCrc32);
+    return s_crc32c_fn_ptr(input, length, previousCrc32);
 }
