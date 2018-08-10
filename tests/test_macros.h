@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEST_MACROS_H
+#define TEST_MACROS_H
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -90,4 +91,5 @@ static int total_failures;
             FAIL("Expected:%02x got:%02x - " message, expected[i], got[i], ##__VA_ARGS__);                             \
         }                                                                                                              \
     }
+#endif /* TEST_MACROS_H */
 
