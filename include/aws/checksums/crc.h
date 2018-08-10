@@ -1,5 +1,5 @@
-#ifndef AWS_CRC_H_
-#define AWS_CRC_H_
+#ifndef AWS_CHECKSUMS_CRC_H_
+#define AWS_CHECKSUMS_CRC_H_
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -15,7 +15,7 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/aws_checksums_exports.h>
+#include <aws/checksums/exports.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -42,4 +42,5 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c(const uint8_t *input, int length
 }
 #endif
 
-#endif /* AWS_CRC_H_ */
+#endif /* AWS_CHECKSUMS_CRC_H_ */
+

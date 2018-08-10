@@ -13,29 +13,41 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/private/aws_cpuid.h>
-#include <stdint.h>
+#include <aws/checksums/private/cpuid.h>
+#include <intrin.h>
+#include <inttypes.h>
 
-#if defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
+#if defined(_M_X64) || defined(_M_IX86)
 
+static int s_cpuid_check_ran = 0;
 static int32_t s_cpuid_output = 0;
-static int s_cpuid_ran = 0;
+
+int aws_checksums_is_cpuid_supported(void) {
+    return 1;
+}
 
 int aws_checksums_do_cpu_id(int32_t *cpuid) {
 
-    if (!s_cpuid_ran) {
+    if (!s_cpuid_check_ran) {
+        int cpu_info[4] = {-1};
+        __cpuid(cpu_info, 0);
+        unsigned nIds_ = cpu_info[0];
 
-        asm volatile("XOR    %%rax, %%rax    # zero the eax register\n"
-                     "INC    %%eax           # eax=1 for processor feature bits\n"
-                     "CPUID                  #get feature bits\n"
-                     : "=c"(s_cpuid_output)
-                     : // none
-                     : "%rax", "%rbx", "%rdx", "cc");
-        s_cpuid_ran = 1;
+        __cpuid(cpu_info, 0);
+
+        if (nIds_ >= 2) {
+            __cpuid(cpu_info, 1);
+            s_cpuid_output = cpu_info[2];
+        } else {
+            return 0;
+        }
+
+        s_cpuid_check_ran = 1;
     }
 
     *cpuid = s_cpuid_output;
     return 1;
 }
 
-#endif /* defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD)) */
+#endif
+

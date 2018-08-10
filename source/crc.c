@@ -12,11 +12,11 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-#include <aws/checksums/aws_crc.h>
-#include <aws/checksums/private/aws_cpuid.h>
-#include <aws/checksums/private/aws_crc_priv.h>
+#include <aws/checksums/crc.h>
 
-// A normalized function signature for all CRC functions.
+#include <aws/checksums/private/cpuid.h>
+#include <aws/checksums/private/crc_priv.h>
+
 static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previousCrc32) {
@@ -33,3 +33,4 @@ uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previou
     }
     return s_crc32c_fn_ptr(input, length, previousCrc32);
 }
+

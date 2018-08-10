@@ -13,8 +13,8 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/private/aws_cpuid.h>
-#include <aws/checksums/private/aws_crc_priv.h>
+#include <aws/checksums/private/cpuid.h>
+#include <aws/checksums/private/crc_priv.h>
 
 /*this implementation is only for 64 bit arch and (if on GCC, release mode).
  * If using clang, this will run for both debug and release.*/
@@ -386,3 +386,4 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 }
 
 #endif
+

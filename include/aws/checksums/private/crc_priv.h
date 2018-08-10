@@ -1,5 +1,5 @@
-#ifndef AWS_CRC_PRIV_H_
-#define AWS_CRC_PRIV_H_
+#ifndef AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_
+#define AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -17,12 +17,11 @@
 
 #define AWS_CRC32_SIZE_BYTES 4
 
-#include <aws/checksums/aws_checksums_exports.h>
+#include <aws/checksums/exports.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C" { // only need to export C interface if
-             // used by C++ source code
+extern "C" {
 #endif
 
 /* Computes CRC32 (Ethernet, gzip, et. al.) using a (slow) reference implementation. */
@@ -38,4 +37,5 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int leng
 }
 #endif
 
-#endif /* AWS_CRC_PRIV_H_ */
+#endif /* AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_ */
+

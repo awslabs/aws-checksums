@@ -1,5 +1,5 @@
-#ifndef AWS_CPUID_H_
-#define AWS_CPUID_H_
+#ifndef AWS_CHECKSUMS_PRIVATE_CPUID_H_
+#define AWS_CHECKSUMS_PRIVATE_CPUID_H_
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -32,4 +32,5 @@ int aws_checksums_is_sse41_present(void);
 /** Returns non-zero if the CPU supports SSE4.2 instructions (i.e. CRC32). */
 int aws_checksums_is_sse42_present(void);
 
-#endif /* AWS_CPUID_H_ */
+#endif /* AWS_CHECKSUMS_PRIVATE_CPUID_H_ */
+

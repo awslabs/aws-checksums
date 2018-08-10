@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/private/aws_crc_priv.h>
+#include <aws/checksums/private/crc_priv.h>
 #include <intrin.h>
 
 #if defined(_M_X64)
@@ -78,3 +78,4 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
 
     return ~crc;
 }
+

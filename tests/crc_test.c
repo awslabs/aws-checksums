@@ -13,8 +13,8 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/aws_crc.h>
-#include <aws/checksums/private/aws_crc_priv.h>
+#include <aws/checksums/crc.h>
+#include <aws/checksums/private/crc_priv.h>
 #include <test_macros.h>
 
 static const uint8_t DATA_32_ZEROS[32] = {0};

@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-#include <aws/checksums/private/aws_crc_priv.h>
+#include <aws/checksums/private/crc_priv.h>
 #include <stddef.h>
 
 /* The Ethernet, gzip, et.al CRC32 polynomial (reverse of 0x04C11DB7) */
@@ -1291,3 +1291,4 @@ uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t prev
 
     return s_crc32c_no_slice(input, length, previousCrc32c);
 }
+

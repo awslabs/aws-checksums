@@ -13,8 +13,8 @@
  * permissions and limitations under the License.
  */
 #ifdef BUILD_JNI_BINDINGS
-#    include <aws/checksums/aws_crc.h>
-#    include <aws/checksums/aws_crc_jni.h>
+#    include <aws/checksums/crc.h>
+#    include <aws/checksums/crc_jni.h>
 
 jint JNICALL Java_software_amazon_awschecksums_AWSCRC32C_crc32c(
     JNIEnv *env,
@@ -67,3 +67,4 @@ jint JNICALL Java_software_amazon_awschecksums_AWSCRC32_crc32Direct(
 }
 
 #endif
+

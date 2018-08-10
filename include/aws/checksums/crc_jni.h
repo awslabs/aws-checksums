@@ -1,5 +1,5 @@
-#ifndef AWS_CRC_JNI_H
-#define AWS_CRC_JNI_H
+#ifndef AWS_CHECKSUMS_CRC_JNI_H
+#define AWS_CHECKSUMS_CRC_JNI_H
 
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -20,8 +20,7 @@
 #    include <jni.h>
 
 #    ifdef __cplusplus
-extern "C" { // only need to export C interface if
-             // used by C++ source code
+extern "C" {
 #    endif
 JNIEXPORT jint JNICALL
     Java_software_amazon_awschecksums_AWSCRC32C_crc32c(JNIEnv *, jobject, jbyteArray, jint, jint, jint);
@@ -38,4 +37,5 @@ JNIEXPORT jint JNICALL
 #    endif
 
 #endif
-#endif /*AWS_CRC_JNI_H*/
+#endif /*AWS_CHECKSUMS_CRC_JNI_H*/
+

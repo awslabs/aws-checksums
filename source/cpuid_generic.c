@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-#include <aws/checksums/private/aws_cpuid.h>
+#include <aws/checksums/private/cpuid.h>
 
 #if (                                                                                                                  \
     !defined(_M_ARM) && !defined(__arm__) && !defined(__ARM_ARCH_ISA_A64) && !defined(__x86_64__) &&                   \
@@ -51,3 +51,4 @@ int aws_checksums_is_sse42_present(void) {
     do_check();
     return s_cpuid & 0x00100000;
 }
+
