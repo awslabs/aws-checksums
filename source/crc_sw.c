@@ -1,18 +1,18 @@
 /*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
-#include <aws/checksums/private/aws_crc_priv.h>
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+#include <aws/checksums/private/crc_priv.h>
 #include <stddef.h>
 
 /* The Ethernet, gzip, et.al CRC32 polynomial (reverse of 0x04C11DB7) */
@@ -566,8 +566,7 @@ const uint32_t CRC32_TABLE[16][256] = {
         0x16AFFF3C, 0xB8C76EAD, 0x910FDA5F, 0x3F674BCE, 0xC29EB3BB, 0x6CF6222A, 0x453E96D8, 0xEB560749, /* [15][0xf0]*/
         0x839B5EED, 0x2DF3CF7C, 0x043B7B8E, 0xAA53EA1F, 0x57AA126A, 0xF9C283FB, 0xD00A3709, 0x7E62A698, /* [15][0xf8]*/
         0xF088C1A2, 0x5EE05033, 0x7728E4C1, 0xD9407550, 0x24B98D25, 0x8AD11CB4, 0xA319A846, 0x0D7139D7  /* [15][0x100]*/
-    }
-};
+    }};
 
 /** Castagnoli CRC32c (iSCSI) lookup table for slice-by-4/8/16 */
 const uint32_t CRC32C_TABLE[16][256] = {
@@ -1114,12 +1113,11 @@ const uint32_t CRC32C_TABLE[16][256] = {
         0x4C00995D, 0xBE0C94A3, 0xADF4F450, 0x5FF8F9AE, 0x8A0435B6, 0x78083848, 0x6BF058BB, 0x99FC5545, /* [15][0xf0]*/
         0xD3C39EC5, 0x21CF933B, 0x3237F3C8, 0xC03BFE36, 0x15C7322E, 0xE7CB3FD0, 0xF4335F23, 0x063F52DD, /* [15][0xf8]*/
         0x5A26B1E2, 0xA82ABC1C, 0xBBD2DCEF, 0x49DED111, 0x9C221D09, 0x6E2E10F7, 0x7DD67004, 0x8FDA7DFA  /* [15][0x100]*/
-    }
-};
+    }};
 
 /* private (static) function factoring out byte-by-byte CRC computation using just one slice of the lookup table*/
 static uint32_t s_crc_generic_sb1(const uint8_t *input, int length, uint32_t crc, const uint32_t *table_ptr) {
-    uint32_t(*table)[16][256] = (uint32_t(*)[16][256]) table_ptr;
+    uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
     while (length-- > 0) {
         crc = (crc >> 8) ^ (*table)[0][(crc & 0xff) ^ *input++];
     }
@@ -1129,10 +1127,14 @@ static uint32_t s_crc_generic_sb1(const uint8_t *input, int length, uint32_t crc
 /* The inner loops of the CRC functions that process large blocks of data work best when input is aligned*/
 /* This function begins processing input data one byte at a time until the input pointer is 4-byte aligned*/
 /* Advances the input pointer and reduces the length (both passed by reference)*/
-static inline uint32_t s_crc_generic_align(const uint8_t **input, int *length, uint32_t crc, const uint32_t *table_ptr) {
+static inline uint32_t s_crc_generic_align(
+    const uint8_t **input,
+    int *length,
+    uint32_t crc,
+    const uint32_t *table_ptr) {
 
     /* Get the 4-byte memory alignment of our input buffer by looking at the least significant 2 bits*/
-    size_t input_alignment = ((size_t) *input) & 0x3;
+    size_t input_alignment = ((size_t)*input) & 0x3;
 
     /* Compute the number of input bytes that precede the first 4-byte aligned block (will be in range 0-3)*/
     size_t leading = (4 - input_alignment) & 0x3;
@@ -1142,7 +1144,7 @@ static inline uint32_t s_crc_generic_align(const uint8_t **input, int *length, u
 
     /* Process unaligned leading input bytes one at a time*/
     if (leading && remaining > 0) {
-        crc = s_crc_generic_sb1(*input, (uint32_t) leading, crc, table_ptr);
+        crc = s_crc_generic_sb1(*input, (uint32_t)leading, crc, table_ptr);
         *input += leading;
         *length -= (int)leading;
     }
@@ -1152,13 +1154,14 @@ static inline uint32_t s_crc_generic_align(const uint8_t **input, int *length, u
 
 /* private (static) function to compute a generic slice-by-4 CRC using the specified lookup table (4 table slices)*/
 static uint32_t s_crc_generic_sb4(const uint8_t *input, int length, uint32_t crc, const uint32_t *table_ptr) {
-    const uint32_t* current = (const uint32_t*)input;
+    const uint32_t *current = (const uint32_t *)input;
     int remaining = length;
-    uint32_t(*table)[16][256] = (uint32_t(*)[16][256]) table_ptr;
+    uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 4) {
         crc ^= *current++;
-        crc = (*table)[3][crc & 0xff] ^ (*table)[2][(crc >> 8) & 0xff] ^ (*table)[1][(crc >> 16) & 0xff] ^ (*table)[0][crc >> 24];
+        crc = (*table)[3][crc & 0xff] ^ (*table)[2][(crc >> 8) & 0xff] ^ (*table)[1][(crc >> 16) & 0xff] ^
+              (*table)[0][crc >> 24];
         remaining -= 4;
     }
 
@@ -1167,36 +1170,43 @@ static uint32_t s_crc_generic_sb4(const uint8_t *input, int length, uint32_t crc
 
 /* private (static) function to compute a generic slice-by-8 CRC using the specified lookup table (8 table slices)*/
 static uint32_t s_crc_generic_sb8(const uint8_t *input, int length, uint32_t crc, const uint32_t *table_ptr) {
-    const uint32_t* current = (const uint32_t*)input;
+    const uint32_t *current = (const uint32_t *)input;
     int remaining = length;
-    uint32_t(*table)[16][256] = (uint32_t(*)[16][256]) table_ptr;
+    uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 8) {
         uint32_t c1 = *current++ ^ crc;
         uint32_t c2 = *current++;
-        uint32_t t1 = (*table)[7][c1 & 0xff] ^ (*table)[6][(c1 >> 8) & 0xff] ^ (*table)[5][(c1 >> 16) & 0xff] ^ (*table)[4][(c1 >> 24) & 0xff];
-        uint32_t t2 = (*table)[3][c2 & 0xff] ^ (*table)[2][(c2 >> 8) & 0xff] ^ (*table)[1][(c2 >> 16) & 0xff] ^ (*table)[0][(c2 >> 24) & 0xff];
+        uint32_t t1 = (*table)[7][c1 & 0xff] ^ (*table)[6][(c1 >> 8) & 0xff] ^ (*table)[5][(c1 >> 16) & 0xff] ^
+                      (*table)[4][(c1 >> 24) & 0xff];
+        uint32_t t2 = (*table)[3][c2 & 0xff] ^ (*table)[2][(c2 >> 8) & 0xff] ^ (*table)[1][(c2 >> 16) & 0xff] ^
+                      (*table)[0][(c2 >> 24) & 0xff];
         crc = t1 ^ t2;
         remaining -= 8;
     }
     return s_crc_generic_sb4(&input[length - remaining], remaining, crc, table_ptr);
 }
 
-/* private (static) function to compute a generic slice-by-16 CRC using the specified lookup table (all 16 table slices)*/
+/* private (static) function to compute a generic slice-by-16 CRC using the specified lookup table (all 16 table
+ * slices)*/
 static uint32_t s_crc_generic_sb16(const uint8_t *input, int length, uint32_t crc, const uint32_t *table_ptr) {
-    const uint32_t* current = (const uint32_t*)input;
+    const uint32_t *current = (const uint32_t *)input;
     int remaining = length;
-    uint32_t(*table)[16][256] = (uint32_t(*)[16][256]) table_ptr;
+    uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 16) {
         uint32_t c1 = *current++ ^ crc;
         uint32_t c2 = *current++;
         uint32_t c3 = *current++;
         uint32_t c4 = *current++;
-        uint32_t t1 = (*table)[15][c1 & 0xff] ^ (*table)[14][(c1 >> 8) & 0xff] ^ (*table)[13][(c1 >> 16) & 0xff] ^ (*table)[12][(c1 >> 24) & 0xff];
-        uint32_t t2 = (*table)[11][c2 & 0xff] ^ (*table)[10][(c2 >> 8) & 0xff] ^ (*table)[9][(c2 >> 16) & 0xff] ^ (*table)[8][(c2 >> 24) & 0xff];
-        uint32_t t3 = (*table)[7][c3 & 0xff] ^ (*table)[6][(c3 >> 8) & 0xff] ^ (*table)[5][(c3 >> 16) & 0xff] ^ (*table)[4][(c3 >> 24) & 0xff];
-        uint32_t t4 = (*table)[3][c4 & 0xff] ^ (*table)[2][(c4 >> 8) & 0xff] ^ (*table)[1][(c4 >> 16) & 0xff] ^ (*table)[0][(c4 >> 24) & 0xff];
+        uint32_t t1 = (*table)[15][c1 & 0xff] ^ (*table)[14][(c1 >> 8) & 0xff] ^ (*table)[13][(c1 >> 16) & 0xff] ^
+                      (*table)[12][(c1 >> 24) & 0xff];
+        uint32_t t2 = (*table)[11][c2 & 0xff] ^ (*table)[10][(c2 >> 8) & 0xff] ^ (*table)[9][(c2 >> 16) & 0xff] ^
+                      (*table)[8][(c2 >> 24) & 0xff];
+        uint32_t t3 = (*table)[7][c3 & 0xff] ^ (*table)[6][(c3 >> 8) & 0xff] ^ (*table)[5][(c3 >> 16) & 0xff] ^
+                      (*table)[4][(c3 >> 24) & 0xff];
+        uint32_t t4 = (*table)[3][c4 & 0xff] ^ (*table)[2][(c4 >> 8) & 0xff] ^ (*table)[1][(c4 >> 16) & 0xff] ^
+                      (*table)[0][(c4 >> 24) & 0xff];
         crc = t1 ^ t2 ^ t3 ^ t4;
         remaining -= 16;
     }
@@ -1248,18 +1258,20 @@ static uint32_t s_crc32c_sb16(const uint8_t *input, int length, uint32_t previou
 }
 
 /**
-* Computes the Ethernet, gzip CRC32 of the specified data buffer.
-* Pass 0 in the previousCrc32 parameter as an initial value unless continuing to update a running crc in a subsequent call
-*/
+ * Computes the Ethernet, gzip CRC32 of the specified data buffer.
+ * Pass 0 in the previousCrc32 parameter as an initial value unless continuing to update a running crc in a subsequent
+ * call
+ */
 uint32_t aws_checksums_crc32_sw(const uint8_t *input, int length, uint32_t previousCrc32) {
     if (length >= 16) {
         return s_crc32_sb16(input, length, previousCrc32);
     }
-    else if (length >= 8) {
-        return s_crc32_sb8(input, length, previousCrc32);
 
+    if (length >= 8) {
+        return s_crc32_sb8(input, length, previousCrc32);
     }
-    else if (length >= 4){
+
+    if (length >= 4) {
         return s_crc32_sb4(input, length, previousCrc32);
     }
 
@@ -1267,20 +1279,22 @@ uint32_t aws_checksums_crc32_sw(const uint8_t *input, int length, uint32_t previ
 }
 
 /**
-* Computes the Castagnoli iSCSI CRC32c of the specified data buffer.
-* Pass 0 in the previousCrc32c parameter as an initial value unless continuing to update a running crc in a subsequent call
-*/
+ * Computes the Castagnoli iSCSI CRC32c of the specified data buffer.
+ * Pass 0 in the previousCrc32c parameter as an initial value unless continuing to update a running crc in a subsequent
+ * call
+ */
 uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t previousCrc32c) {
     if (length >= 16) {
         return s_crc32c_sb16(input, length, previousCrc32c);
     }
-    else if (length >= 8) {
+
+    if (length >= 8) {
         return s_crc32c_sb8(input, length, previousCrc32c);
     }
-    else if (length >= 4) {
+
+    if (length >= 4) {
         return s_crc32c_sb4(input, length, previousCrc32c);
     }
 
     return s_crc32c_no_slice(input, length, previousCrc32c);
 }
-
