@@ -1,22 +1,22 @@
 /*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 
 #include <aws/checksums/private/aws_crc_priv.h>
 #include <intrin.h>
 
-#if defined (_M_X64)
+#if defined(_M_X64)
 typedef uint64_t *slice_ptr_type;
 typedef uint64_t slice_ptr_int_type;
 #else
@@ -25,11 +25,11 @@ typedef uint32_t slice_ptr_int_type;
 #endif
 
 /**
- * This implements crc32c via the intel sse 4.2 instructions. 
+ * This implements crc32c via the intel sse 4.2 instructions.
  *  This is separate from the straight asm version, because visual c does not allow
- *  inline assembly for x64. 
+ *  inline assembly for x64.
  */
-uint32_t aws_checksums_crc32c_hw(const uint8_t* data, int length, uint32_t previousCrc32) {
+uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
     uint32_t crc = ~previousCrc32;
     int length_to_process = length;
 
@@ -44,8 +44,8 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t* data, int length, uint32_t previ
       (8 - <how far we are past a boundary>) mod 8
       32 bit:
       (4 - <how far we are past a boundary>) mod 4 */
-    uint8_t alignment_offset = (sizeof(slice_ptr_int_type) - ((slice_ptr_int_type)temp % sizeof(slice_ptr_int_type))) 
-                                    % sizeof(slice_ptr_int_type);
+    uint8_t alignment_offset = (sizeof(slice_ptr_int_type) - ((slice_ptr_int_type)temp % sizeof(slice_ptr_int_type))) %
+                               sizeof(slice_ptr_int_type);
 
     /*for every byte we need to burn off, just do them a byte at a time.
       increment the temp pointer by one byte at a time until we get it on an alignment boundary */
@@ -60,11 +60,11 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t* data, int length, uint32_t previ
     /*now whatever is left is properly aligned on a boundary*/
     uint32_t slices = length_to_process / sizeof(temp);
     uint32_t remainder = length_to_process % sizeof(temp);
-   
+
     while (slices--) {
-#if defined (_M_X64)
+#if defined(_M_X64)
         crc = (uint32_t)_mm_crc32_u64(crc, *temp++);
-#else       
+#else
         crc = _mm_crc32_u32(crc, *temp++);
 #endif
     }
