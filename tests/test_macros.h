@@ -1,5 +1,4 @@
-#ifndef TESTS_TEST_MACROS_H
-#define TESTS_TEST_MACROS_H
+#pragma once
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -92,4 +91,3 @@ static int total_failures;
         }                                                                                                              \
     }
 
-#endif /*TESTS_TEST_MACROS_H*/

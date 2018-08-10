@@ -37,5 +37,5 @@ JNIEXPORT jint JNICALL
 #    endif
 
 #endif
-#endif /*AWS_CHECKSUMS_CRC_JNI_H*/
+#endif /* AWS_CHECKSUMS_CRC_JNI_H */
 
