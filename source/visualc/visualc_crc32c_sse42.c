@@ -78,4 +78,3 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
 
     return ~crc;
 }
-

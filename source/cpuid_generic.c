@@ -54,4 +54,3 @@ int aws_checksums_is_sse42_present(void) {
     do_check();
     return s_cpuid & 0x00100000;
 }
-

@@ -30,4 +30,3 @@
 #endif /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
 
 #endif /* AWS_CHECKSUMS_EXPORTS_H */
-

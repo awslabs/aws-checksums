@@ -33,4 +33,3 @@ int aws_checksums_is_sse41_present(void);
 int aws_checksums_is_sse42_present(void);
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CPUID_H */
-

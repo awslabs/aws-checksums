@@ -50,4 +50,3 @@ int aws_checksums_do_cpu_id(int32_t *cpuid) {
 }
 
 #endif
-

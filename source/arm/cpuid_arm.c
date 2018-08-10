@@ -31,4 +31,3 @@ int aws_checksums_is_sse42_present(void) {
     return 0;
 }
 #endif
-

@@ -67,4 +67,3 @@ jint JNICALL Java_software_amazon_awschecksums_AWSCRC32_crc32Direct(
 }
 
 #endif
-

@@ -18,7 +18,7 @@
 int main(int argc, char *argv[]) {
 
     if (argc < 2) {
-    	int retVal = 0;
+        int retVal = 0;
         retVal |= s_test_crc32c();
         retVal |= s_test_crc32();
 
@@ -38,4 +38,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-

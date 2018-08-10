@@ -92,4 +92,3 @@ static int total_failures;
         }                                                                                                              \
     }
 #endif /* TEST_MACROS_H */
-

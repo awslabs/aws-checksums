@@ -386,4 +386,3 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 }
 
 #endif
-

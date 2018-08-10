@@ -38,4 +38,3 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int leng
 #endif
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H */
-

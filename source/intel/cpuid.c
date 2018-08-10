@@ -39,4 +39,3 @@ int aws_checksums_do_cpu_id(int32_t *cpuid) {
 }
 
 #endif /* defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD)) */
-
