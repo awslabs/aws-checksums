@@ -20,6 +20,8 @@
     !defined(_M_X64) && !defined(_M_IX86)) ||                                                                          \
     (defined(__GNUC__) && defined(DEBUG_BUILD))
 
+/* clang-format is being dumb and wrong, this can't be const or the symbols won't match */
+/* NOLINTNEXTLINE(readability-non-const-parameter) */
 int aws_checksums_do_cpu_id(int32_t *cpuid) {
     (void)cpuid;
     return 0;

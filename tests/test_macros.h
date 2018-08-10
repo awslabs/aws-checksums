@@ -1,5 +1,5 @@
-#ifndef TEST_MACROS_H
-#define TEST_MACROS_H
+#ifndef TESTS_TEST_MACROS_H
+#define TESTS_TEST_MACROS_H
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -42,7 +42,7 @@ static void cunitMessage(const char *function, const char *file, int line, const
 static int total_failures;
 
 #define SUCCESS 0
-#define FAILURE -1
+#define FAILURE (-1)
 
 #define RETURN_SUCCESS(format, ...)                                                                                    \
     do {                                                                                                               \
@@ -92,4 +92,4 @@ static int total_failures;
         }                                                                                                              \
     }
 
-#endif /*TEST_MACROS_H*/
+#endif /*TESTS_TEST_MACROS_H*/

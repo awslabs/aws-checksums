@@ -29,5 +29,5 @@
 #    define AWS_CHECKSUMS_API
 #endif /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
 
-#endif /*AWS_CHECKSUMS_EXPORTS_H_*/
+#endif /*AWS_CHECKSUMS_EXPORTS_H*/
 
