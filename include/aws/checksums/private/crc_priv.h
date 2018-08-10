@@ -1,5 +1,5 @@
-#ifndef AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_
-#define AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_
+#ifndef AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H
+#define AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -37,5 +37,5 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int leng
 }
 #endif
 
-#endif /* AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H_ */
+#endif /* AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H */
 

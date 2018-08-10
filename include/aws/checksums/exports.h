@@ -1,5 +1,5 @@
-#ifndef AWS_CHECKSUMS_EXPORTS_H_
-#define AWS_CHECKSUMS_EXPORTS_H_
+#ifndef AWS_CHECKSUMS_EXPORTS_H
+#define AWS_CHECKSUMS_EXPORTS_H
 /*
  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -24,9 +24,10 @@
 #        endif /* AWS_CHECKSUMS_EXPORTS */
 #    else
 #        define AWS_CHECKSUMS_API
-#    endif // USE_IMPORT_EXPORT
-#else      // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32)
+#    endif /* USE_IMPORT_EXPORT */
+#else      /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
 #    define AWS_CHECKSUMS_API
-#endif // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32)
+#endif /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
 
 #endif /*AWS_CHECKSUMS_EXPORTS_H_*/
+

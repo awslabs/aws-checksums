@@ -1265,10 +1265,14 @@ static uint32_t s_crc32c_sb16(const uint8_t *input, int length, uint32_t previou
 uint32_t aws_checksums_crc32_sw(const uint8_t *input, int length, uint32_t previousCrc32) {
     if (length >= 16) {
         return s_crc32_sb16(input, length, previousCrc32);
-    } else if (length >= 8) {
+    }
+    
+    if (length >= 8) {
         return s_crc32_sb8(input, length, previousCrc32);
 
-    } else if (length >= 4) {
+    }
+
+    if (length >= 4) {
         return s_crc32_sb4(input, length, previousCrc32);
     }
 
@@ -1283,9 +1287,13 @@ uint32_t aws_checksums_crc32_sw(const uint8_t *input, int length, uint32_t previ
 uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t previousCrc32c) {
     if (length >= 16) {
         return s_crc32c_sb16(input, length, previousCrc32c);
-    } else if (length >= 8) {
+    } 
+ 
+    if (length >= 8) {
         return s_crc32c_sb8(input, length, previousCrc32c);
-    } else if (length >= 4) {
+    }
+
+    if (length >= 4) {
         return s_crc32c_sb4(input, length, previousCrc32c);
     }
 

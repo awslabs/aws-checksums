@@ -21,6 +21,7 @@
     (defined(__GNUC__) && defined(DEBUG_BUILD))
 
 int aws_checksums_do_cpu_id(int32_t *cpuid) {
+    (void)cpuid;
     return 0;
 }
 
