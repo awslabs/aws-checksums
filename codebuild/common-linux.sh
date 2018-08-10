@@ -11,5 +11,4 @@ make install
 LSAN_OPTIONS=verbosity=1:log_threads=1 ctest --output-on-failure
 
 cd ..
-
 ./cppcheck.sh ../install/include
