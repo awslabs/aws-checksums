@@ -41,7 +41,7 @@ static int s_test_known_crc(
     crc_fn *func,
     const char *data_name,
     const uint8_t *input,
-    int length,
+    size_t length,
     uint32_t expected) {
 
     uint32_t result = func(input, length, 0);
