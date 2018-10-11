@@ -67,21 +67,20 @@ if(BUILD_SHARED_LIBS AND WIN32)
 endif()
 
 if(BUILD_JNI_BINDINGS)
-find_package(JNI)
+    find_package(JNI)
     include_directories(${JNI_INCLUDE_DIRS})
-	set(PLATFORM_LIBS ${PLATFORM_LIBS} ${JNI_LIBRARIES})
-	target_compile_definitions(aws-checksums PRIVATE "-DBUILD_JNI_BINDINGS")    
-
+    set(PLATFORM_LIBS ${PLATFORM_LIBS} ${JNI_LIBRARIES})
+    target_compile_definitions(aws-checksums PRIVATE "-DBUILD_JNI_BINDINGS")    
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE MATCHES DEBUG)
     target_compile_definitions(aws-checksums PRIVATE "-DDEBUG_BUILD")
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-  
+
 target_link_libraries(aws-checksums ${PLATFORM_LIBS})
 
 file(GLOB TEST_SRC "tests/*.c")
@@ -100,15 +99,23 @@ enable_testing()
 add_test(crc32c aws-checksums-tests crc32c)
 add_test(crc32 aws-checksums-tests crc32)
 
+# installation & packaging
+set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib)
 
-install (FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
-install (
-         TARGETS ${PROJECT_NAME}
-         EXPORT "${PROJECT_NAME}-config"
-         ARCHIVE DESTINATION lib
-         LIBRARY DESTINATION lib
-         COMPONENT library     
-)
+install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
+install(TARGETS ${CMAKE_PROJECT_NAME}
+    EXPORT ${CMAKE_PROJECT_NAME}-targets
+    ARCHIVE DESTINATION ${LIBRARY_DIRECTORY}
+    LIBRARY DESTINATION ${LIBRARY_DIRECTORY})
 
-export(TARGETS ${PROJECT_NAME} FILE "${PROJECT_NAME}-config.cmake")
-install(EXPORT ${PROJECT_NAME}-config DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/cmake/")
+install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
+    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
+    NAMESPACE AWS::)
+
+configure_file("cmake/${CMAKE_PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
+    @ONLY)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
+    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/")
+
