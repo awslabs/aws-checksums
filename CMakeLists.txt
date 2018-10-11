@@ -102,25 +102,19 @@ add_test(crc32 aws-checksums-tests crc32)
 # installation & packaging
 set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib)
 
-install (FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
-install (TARGETS ${CMAKE_PROJECT_NAME}
+install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
+install(TARGETS ${CMAKE_PROJECT_NAME}
     EXPORT ${CMAKE_PROJECT_NAME}-targets
     ARCHIVE DESTINATION ${LIBRARY_DIRECTORY}
     LIBRARY DESTINATION ${LIBRARY_DIRECTORY})
 
-
-export(EXPORT ${CMAKE_PROJECT_NAME}-targets
-    FILE "${CMAKE_PROJECT_NAME}-targets.cmake"
+install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
+    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
     NAMESPACE AWS::)
 
 configure_file("cmake/${CMAKE_PROJECT_NAME}-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
     @ONLY)
-
-install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
-    FILE "${CMAKE_PROJECT_NAME}-targets.cmake"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
-    NAMESPACE AWS::)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
     DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/")
