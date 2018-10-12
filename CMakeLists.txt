@@ -73,7 +73,7 @@ if(BUILD_JNI_BINDINGS)
     target_compile_definitions(aws-checksums PRIVATE "-DBUILD_JNI_BINDINGS")    
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE MATCHES DEBUG)
+if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(aws-checksums PRIVATE "-DDEBUG_BUILD")
 endif()
 
