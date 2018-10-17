@@ -44,12 +44,12 @@ static int s_test_known_crc(
     size_t length,
     uint32_t expected) {
 
-    uint32_t result = func(input, length, 0);
+    uint32_t result = func(input, (int)length, 0);
     ASSERT_HEX_EQUALS(expected, result, "%s(%s)", func_name, data_name);
 
     /* chain the crc computation so 2 calls each operate on about 1/2 of the buffer*/
-    uint32_t crc1 = func(input, length / 2, 0);
-    result = func(input + (length / 2), length - length / 2, crc1);
+    uint32_t crc1 = func(input, (int)(length / 2), 0);
+    result = func(input + (length / 2), (int)(length - length / 2), crc1);
     ASSERT_HEX_EQUALS(expected, result, "chaining %s(%s)", func_name, data_name);
 
     crc1 = 0;
