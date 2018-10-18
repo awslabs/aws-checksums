@@ -15,7 +15,7 @@
 
 /* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
 #if defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64)
-#    include <aws/checksums/cpuid.h>
+#    include <aws/checksums/private/cpuid.h>
 
 int aws_checksums_is_cpuid_supported(void) {
     return 0;
