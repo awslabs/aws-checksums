@@ -109,7 +109,7 @@ static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t c
                  FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
 
                  /* output registers
-                  [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
+                  [crc] is an input and and output so it is marked read/write (i.e. "+g")*/
                  : "+g"(crc)
 
                  /* input registers */
@@ -196,9 +196,9 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
             $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
-                            [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                            [crc] is an input and and output so it is marked read/write (i.e. "+g")
                             we clobber the register for [input] (via add instruction) so we must also
-                            tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber */
+                            tag it read/write (i.e. "+g") in the list of outputs to tell gcc about the clobber */
         : "+g"(crc), "+g"(input)
 
         /* input registers */
@@ -276,9 +276,9 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
             $0x170076fa) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
-                            [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                            [crc] is an input and and output so it is marked read/write (i.e. "+g")
                             we clobber the register for [input] (via add instruction) so we must also
-                            tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber*/
+                            tag it read/write (i.e. "+g") in the list of outputs to tell gcc about the clobber*/
         : "+g"(crc), "+g"(input)
 
         /* input registers
@@ -363,7 +363,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
     while (LIKELY(length >= 8)) {
-        /* Hardcoding %rcx register (i.e. "+c") to allow use of qword instruction */
+        /* Hardcoding %rcx register (i.e. "+g") to allow use of qword instruction */
         asm volatile("loop_8_%=: CRC32Q (%[in]), %%rcx" : "+g"(crc) : [crc] "c"(crc), [in] "r"(input));
         input += 8;
         length -= 8;
