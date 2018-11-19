@@ -16,7 +16,7 @@
 /* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
 #if (defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64)) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
 
-#include <aws/checksums/private/cpuid.h>
+#    include <aws/checksums/private/cpuid.h>
 
 int aws_checksums_do_cpu_id(int32_t *cpuid) {
     (void)cpuid;
