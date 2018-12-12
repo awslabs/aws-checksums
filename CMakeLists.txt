@@ -66,6 +66,10 @@ if(BUILD_SHARED_LIBS AND WIN32)
     target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
 endif()
 
+if(NOT MSVC)
+    target_compile_options(aws-checksums PRIVATE -fPIC)
+endif()
+
 if(BUILD_JNI_BINDINGS)
     find_package(JNI)
     include_directories(${JNI_INCLUDE_DIRS})
