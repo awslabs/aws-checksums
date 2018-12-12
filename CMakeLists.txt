@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.1)
 project (aws-checksums C)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/lib/cmake")
+include(AwsCFlags)
+
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
 )
@@ -58,9 +61,8 @@ else()
 endif()
 
 add_library(aws-checksums ${LIBTYPE} ${CHECKSUMS_HEADERS} ${CHECKSUMS_SRC})
-set_target_properties(aws-checksums PROPERTIES LINKER_LANGUAGE C)
+aws_set_common_properties(aws-checksums NO_PEDANTIC NO_WEXTRA)
 set(CMAKE_C_FLAGS_DEBUGOPT "")
-set_property(TARGET aws-checksums PROPERTY C_STANDARD 99)
 
 if(BUILD_SHARED_LIBS AND WIN32)
     target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
