@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
-project (aws-checksums C)
+project (aws-checksums LANGUAGES C VERSION 1.0.0)
 
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
@@ -62,8 +62,15 @@ set_target_properties(aws-checksums PROPERTIES LINKER_LANGUAGE C)
 set(CMAKE_C_FLAGS_DEBUGOPT "")
 set_property(TARGET aws-checksums PROPERTY C_STANDARD 99)
 
-if(BUILD_SHARED_LIBS AND WIN32)
-    target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
+if(BUILD_SHARED_LIBS)
+    if (WIN32)
+        target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
+    endif()
+    set_target_properties(aws-checksums
+        PROPERTIES
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    )
 endif()
 
 if(NOT MSVC)
@@ -104,23 +111,43 @@ add_test(crc32c aws-checksums-tests crc32c)
 add_test(crc32 aws-checksums-tests crc32)
 
 # installation & packaging
-set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib)
+set(LIBRARY_DIRECTORY lib)
+if (UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_LIBDIR})
+endif()
 
-install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
+install(FILES ${AWS_CHECKSUMS_HEADERS}
+        DESTINATION "include/aws/checksums"
+        COMPONENT Development)
+
+if (BUILD_SHARED_LIBS)
+  install(TARGETS ${CMAKE_PROJECT_NAME}
+      EXPORT ${CMAKE_PROJECT_NAME}-targets
+      LIBRARY
+        DESTINATION ${LIBRARY_DIRECTORY}
+        NAMELINK_SKIP
+      RUNTIME DESTINATION ${LIBRARY_DIRECTORY})
+endif()
 install(TARGETS ${CMAKE_PROJECT_NAME}
     EXPORT ${CMAKE_PROJECT_NAME}-targets
     ARCHIVE DESTINATION ${LIBRARY_DIRECTORY}
-    LIBRARY DESTINATION ${LIBRARY_DIRECTORY}
-    RUNTIME DESTINATION ${LIBRARY_DIRECTORY})
+    LIBRARY
+      DESTINATION ${LIBRARY_DIRECTORY}
+      NAMELINK_ONLY
+    COMPONENT Development)
 
 install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
     DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
-    NAMESPACE AWS::)
+    NAMESPACE AWS::
+    COMPONENT Development)
 
 configure_file("cmake/${CMAKE_PROJECT_NAME}-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
     @ONLY)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/")
+    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
+    COMPONENT Development)
 
+include(cmake/CPackConfig.cmake)
