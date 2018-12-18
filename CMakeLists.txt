@@ -69,8 +69,7 @@ if(BUILD_SHARED_LIBS)
     set_target_properties(aws-checksums
         PROPERTIES
             VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    )
+            SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
 endif()
 
 if(NOT MSVC)
@@ -127,7 +126,10 @@ if (BUILD_SHARED_LIBS)
       LIBRARY
         DESTINATION ${LIBRARY_DIRECTORY}
         NAMELINK_SKIP
-      RUNTIME DESTINATION ${LIBRARY_DIRECTORY})
+        COMPONENT Runtime
+      RUNTIME
+        DESTINATION ${LIBRARY_DIRECTORY}
+        COMPONENT Runtime)
 endif()
 install(TARGETS ${CMAKE_PROJECT_NAME}
     EXPORT ${CMAKE_PROJECT_NAME}-targets
@@ -138,7 +140,7 @@ install(TARGETS ${CMAKE_PROJECT_NAME}
     COMPONENT Development)
 
 install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
+    DESTINATION "${LIBRARY_DIRECTORY}/cmake/${CMAKE_PROJECT_NAME}"
     NAMESPACE AWS::
     COMPONENT Development)
 
@@ -147,7 +149,7 @@ configure_file("cmake/${CMAKE_PROJECT_NAME}-config.cmake"
     @ONLY)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
+    DESTINATION "${LIBRARY_DIRECTORY}/cmake/${CMAKE_PROJECT_NAME}"
     COMPONENT Development)
 
 include(cmake/CPackConfig.cmake)
