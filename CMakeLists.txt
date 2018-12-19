@@ -62,14 +62,8 @@ set_target_properties(aws-checksums PROPERTIES LINKER_LANGUAGE C)
 set(CMAKE_C_FLAGS_DEBUGOPT "")
 set_property(TARGET aws-checksums PROPERTY C_STANDARD 99)
 
-if(BUILD_SHARED_LIBS)
-    if (WIN32)
-        target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
-    endif()
-    set_target_properties(aws-checksums
-        PROPERTIES
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
+if(BUILD_SHARED_LIBS AND WIN32)
+    target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
 endif()
 
 if(NOT MSVC)
@@ -125,17 +119,10 @@ if (BUILD_SHARED_LIBS)
       EXPORT ${CMAKE_PROJECT_NAME}-targets
       LIBRARY
         DESTINATION ${LIBRARY_DIRECTORY}
-        NAMELINK_SKIP
         COMPONENT Runtime
       RUNTIME
         DESTINATION ${LIBRARY_DIRECTORY}
         COMPONENT Runtime)
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-      EXPORT ${CMAKE_PROJECT_NAME}-targets
-      LIBRARY
-        DESTINATION ${LIBRARY_DIRECTORY}
-        NAMELINK_ONLY
-      COMPONENT Development)
 else()
   install(TARGETS ${CMAKE_PROJECT_NAME}
       EXPORT ${CMAKE_PROJECT_NAME}-targets
