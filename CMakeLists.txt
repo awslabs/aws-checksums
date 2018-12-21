@@ -103,8 +103,12 @@ enable_testing()
 add_test(crc32c aws-checksums-tests crc32c)
 add_test(crc32 aws-checksums-tests crc32)
 
-# installation & packaging
-set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib)
+set(LIBRARY_DIRECTORY lib)
+# Set the default lib installation path on GNU systems with GNUInstallDirs
+if (UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_LIBDIR})
+endif()
 
 install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
 install(TARGETS ${CMAKE_PROJECT_NAME}
