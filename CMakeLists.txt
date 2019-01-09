@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.1)
 project (aws-checksums C)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(AwsSharedLibSetup)
+
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
 )
@@ -111,11 +114,7 @@ if (UNIX AND NOT APPLE)
 endif()
 
 install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
-install(TARGETS ${CMAKE_PROJECT_NAME}
-    EXPORT ${CMAKE_PROJECT_NAME}-targets
-    ARCHIVE DESTINATION ${LIBRARY_DIRECTORY}
-    LIBRARY DESTINATION ${LIBRARY_DIRECTORY}
-    RUNTIME DESTINATION ${LIBRARY_DIRECTORY})
+aws_prepare_shared_lib_exports(${CMAKE_PROJECT_NAME})
 
 install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
     DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/"
