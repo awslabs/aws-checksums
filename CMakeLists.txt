@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.1)
 project (aws-checksums LANGUAGES C VERSION 1.0.0)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(AwsSharedLibSetup)
+
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
 )
@@ -103,8 +106,8 @@ enable_testing()
 add_test(crc32c aws-checksums-tests crc32c)
 add_test(crc32 aws-checksums-tests crc32)
 
-# installation & packaging
 set(LIBRARY_DIRECTORY lib)
+# Set the default lib installation path on GNU systems with GNUInstallDirs
 if (UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     set(LIBRARY_DIRECTORY ${CMAKE_INSTALL_LIBDIR})
@@ -113,22 +116,7 @@ endif()
 install(FILES ${AWS_CHECKSUMS_HEADERS}
         DESTINATION "include/aws/checksums"
         COMPONENT Development)
-
-if (BUILD_SHARED_LIBS)
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-      EXPORT ${CMAKE_PROJECT_NAME}-targets
-      LIBRARY
-        DESTINATION ${LIBRARY_DIRECTORY}
-        COMPONENT Runtime
-      RUNTIME
-        DESTINATION ${LIBRARY_DIRECTORY}
-        COMPONENT Runtime)
-else()
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-      EXPORT ${CMAKE_PROJECT_NAME}-targets
-      ARCHIVE DESTINATION ${LIBRARY_DIRECTORY}
-      COMPONENT Development)
-endif()
+aws_prepare_shared_lib_exports(${CMAKE_PROJECT_NAME})
 
 install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
     DESTINATION "${LIBRARY_DIRECTORY}/cmake/${CMAKE_PROJECT_NAME}"
