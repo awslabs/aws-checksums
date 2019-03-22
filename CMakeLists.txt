@@ -1,4 +1,7 @@
 cmake_minimum_required (VERSION 3.1)
+
+option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
+
 project (aws-checksums C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -62,10 +65,10 @@ endif()
 
 if (MSVC)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" _CMAKE_BUILD_TYPE)
-    if(BUILD_SHARED_LIBS)
-        string(REPLACE "/MT" "/MD" _FLAGS "${CMAKE_C_FLAGS_${_CMAKE_BUILD_TYPE}}")
-    else()
+    if(STATIC_CRT)
         string(REPLACE "/MD" "/MT" _FLAGS "${CMAKE_C_FLAGS_${_CMAKE_BUILD_TYPE}}")
+    else()
+        string(REPLACE "/MT" "/MD" _FLAGS "${CMAKE_C_FLAGS_${_CMAKE_BUILD_TYPE}}")
     endif()
     string(REPLACE " " ";" _FLAGS "${_FLAGS}")
 endif()
