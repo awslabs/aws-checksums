@@ -1,4 +1,7 @@
 cmake_minimum_required (VERSION 3.1)
+
+option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
+
 project (aws-checksums C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -60,7 +63,18 @@ else()
     set(LIBTYPE STATIC)
 endif()
 
+if (MSVC)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _CMAKE_BUILD_TYPE)
+    if(STATIC_CRT)
+        string(REPLACE "/MD" "/MT" _FLAGS "${CMAKE_C_FLAGS_${_CMAKE_BUILD_TYPE}}")
+    else()
+        string(REPLACE "/MT" "/MD" _FLAGS "${CMAKE_C_FLAGS_${_CMAKE_BUILD_TYPE}}")
+    endif()
+    string(REPLACE " " ";" _FLAGS "${_FLAGS}")
+endif()
+
 add_library(aws-checksums ${LIBTYPE} ${CHECKSUMS_HEADERS} ${CHECKSUMS_SRC})
+target_compile_options(aws-checksums PRIVATE ${_FLAGS})
 set_target_properties(aws-checksums PROPERTIES LINKER_LANGUAGE C)
 set(CMAKE_C_FLAGS_DEBUGOPT "")
 set_property(TARGET aws-checksums PROPERTY C_STANDARD 99)
@@ -96,6 +110,7 @@ file(GLOB TESTS ${TEST_HDRS} ${TEST_SRC})
   
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_executable(aws-checksums-tests ${TESTS})
+target_compile_options(aws-checksums-tests PRIVATE ${_FLAGS})
 target_link_libraries(aws-checksums-tests aws-checksums)
 set_target_properties(aws-checksums-tests PROPERTIES LINKER_LANGUAGE C)
 set_property(TARGET aws-checksums-tests PROPERTY C_STANDARD 99)
