@@ -16,6 +16,8 @@
 #include <aws/checksums/private/crc_priv.h>
 #include <intrin.h>
 
+#if defined(_M_X64) || defined(_M_IX86)
+
 #if defined(_M_X64)
 typedef uint64_t *slice_ptr_type;
 typedef uint64_t slice_ptr_int_type;
@@ -78,3 +80,5 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
 
     return ~crc;
 }
+
+#endif /* x64 || x86 */
