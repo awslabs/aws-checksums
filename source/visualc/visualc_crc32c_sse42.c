@@ -18,13 +18,13 @@
 
 #if defined(_M_X64) || defined(_M_IX86)
 
-#if defined(_M_X64)
+#    if defined(_M_X64)
 typedef uint64_t *slice_ptr_type;
 typedef uint64_t slice_ptr_int_type;
-#else
+#    else
 typedef uint32_t *slice_ptr_type;
 typedef uint32_t slice_ptr_int_type;
-#endif
+#    endif
 
 /**
  * This implements crc32c via the intel sse 4.2 instructions.
@@ -64,11 +64,11 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
     uint32_t remainder = length_to_process % sizeof(temp);
 
     while (slices--) {
-#if defined(_M_X64)
+#    if defined(_M_X64)
         crc = (uint32_t)_mm_crc32_u64(crc, *temp++);
-#else
+#    else
         crc = _mm_crc32_u32(crc, *temp++);
-#endif
+#    endif
     }
 
     /* process the remaining parts that can't be done on the slice size. */
