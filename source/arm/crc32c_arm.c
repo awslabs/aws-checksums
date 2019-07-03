@@ -14,7 +14,7 @@
  */
 
 /* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
-#if (defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64)) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
+#if (defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64))
 
 #    include <aws/checksums/private/crc_priv.h>
 
