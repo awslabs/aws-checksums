@@ -16,11 +16,10 @@
 /* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
 #if (defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64))
 
-#    include <aws/checksums/private/cpuid.h>
+#    include <aws/checksums/private/crc_priv.h>
 
-int aws_checksums_do_cpu_id(int32_t *cpuid) {
-    (void)cpuid;
-    return 0;
+uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
+    aws_checksums_crc32c_sw(data, length, previousCrc32);
 }
 
 #endif
