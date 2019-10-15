@@ -19,7 +19,7 @@
 #    include <aws/checksums/private/crc_priv.h>
 
 uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    aws_checksums_crc32c_sw(data, length, previousCrc32);
+    return aws_checksums_crc32c_sw(data, length, previousCrc32);
 }
 
 #endif
