@@ -378,7 +378,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     return ~crc;
 }
 
-#elif !defined(_MSC_VER)
+#elif !defined(_MSC_VER) && !defined(__arm__) && !defined(__aarch64__)
 
 /* don't call this without first checking that it is supported. */
 uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {

@@ -15,10 +15,8 @@
 
 #include <aws/checksums/private/cpuid.h>
 
-#if (                                                                                                                  \
-    !defined(_M_ARM) && !defined(__arm__) && !defined(__ARM_ARCH_ISA_A64) && !defined(__x86_64__) &&                   \
-    !defined(_M_X64) && !defined(_M_IX86)) ||                                                                          \
-    (defined(__GNUC__) && defined(DEBUG_BUILD))
+#if (!defined(_M_ARM) && !defined(__arm__) && !defined(__ARM_ARCH_ISA_A64)) &&                                         \
+    ((!defined(__x86_64__) && !defined(_M_X64) && !defined(_M_IX86)) || (defined(__GNUC__) && defined(DEBUG_BUILD)))
 
 /* clang-format is being dumb and wrong, this can't be const or the symbols won't match */
 /* NOLINTNEXTLINE(readability-non-const-parameter) */
