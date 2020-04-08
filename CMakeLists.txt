@@ -28,14 +28,14 @@ if(WIN32)
      if(MSVC)
          file(GLOB AWS_CHECKSUMS_VISUALC_SOURCE
              "source/visualc/*.c"
-         )        
+         )
 
          source_group("Header Files\\aws\\checksums" FILES ${AWS_CHECKSUMS_HEADERS})
 
          source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
          source_group("Source Files\\visualc" FILES ${AWS_CHECKSUMS_VISUALC_SOURCE})
          source_group("Source Files\\arch" FILES ${AWS_ARCH_SRC})
-          
+
          file(GLOB AWS_CHECKSUMS_PLATFORM_SOURCE
              ${AWS_CHECKSUMS_VISUALC_SOURCE}
          )
@@ -79,7 +79,7 @@ set(CMAKE_C_FLAGS_DEBUGOPT "")
 set_property(TARGET aws-checksums PROPERTY C_STANDARD 99)
 
 if(BUILD_SHARED_LIBS AND WIN32)
-    target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")    
+    target_compile_definitions(aws-checksums PRIVATE "-DAWS_CHECKSUMS_EXPORTS")
 endif()
 
 if(NOT MSVC)
@@ -90,14 +90,14 @@ if(BUILD_JNI_BINDINGS)
     find_package(JNI)
     include_directories(${JNI_INCLUDE_DIRS})
     set(PLATFORM_LIBS ${PLATFORM_LIBS} ${JNI_LIBRARIES})
-    target_compile_definitions(aws-checksums PRIVATE "-DBUILD_JNI_BINDINGS")    
+    target_compile_definitions(aws-checksums PRIVATE "-DBUILD_JNI_BINDINGS")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(aws-checksums PRIVATE "-DDEBUG_BUILD")
 endif()
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
@@ -106,7 +106,7 @@ target_link_libraries(aws-checksums ${PLATFORM_LIBS})
 file(GLOB TEST_SRC "tests/*.c")
 file(GLOB TEST_HDRS "tests/*.h")
 file(GLOB TESTS ${TEST_HDRS} ${TEST_SRC})
-  
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_executable(aws-checksums-tests ${TESTS})
 target_compile_options(aws-checksums-tests PRIVATE ${_FLAGS})
@@ -128,7 +128,7 @@ if (UNIX AND NOT APPLE)
 endif()
 
 install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums")
-aws_prepare_shared_lib_exports(${CMAKE_PROJECT_NAME})
+aws_prepare_shared_lib_exports(${PROJECT_NAME})
 
 if (BUILD_SHARED_LIBS)
    set (TARGET_DIR "shared")
@@ -136,14 +136,14 @@ else()
    set (TARGET_DIR "static")
 endif()
 
-install(EXPORT "${CMAKE_PROJECT_NAME}-targets"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/${TARGET_DIR}/"
+install(EXPORT "${PROJECT_NAME}-targets"
+    DESTINATION "${LIBRARY_DIRECTORY}/${PROJECT_NAME}/cmake/${TARGET_DIR}/"
     NAMESPACE AWS::)
 
-configure_file("cmake/${CMAKE_PROJECT_NAME}-config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
+configure_file("cmake/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
     @ONLY)
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-config.cmake"
-    DESTINATION "${LIBRARY_DIRECTORY}/${CMAKE_PROJECT_NAME}/cmake/")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    DESTINATION "${LIBRARY_DIRECTORY}/${PROJECT_NAME}/cmake/")
 
