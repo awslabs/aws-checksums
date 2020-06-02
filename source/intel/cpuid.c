@@ -16,7 +16,7 @@
 #include <aws/checksums/private/cpuid.h>
 #include <stdint.h>
 
-#if defined(__x86_64__) && !(defined(__GNUC__) && defined(DEBUG_BUILD))
+#if defined(__x86_64__) && (defined(__clang__) || !(defined(__GNUC__) && defined(DEBUG_BUILD)))
 
 static int32_t s_cpuid_output = 0;
 static int s_cpuid_ran = 0;
