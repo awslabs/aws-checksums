@@ -25,7 +25,6 @@ file(GLOB AWS_ARCH_SRC
 )
 
 if(WIN32)
-
      if(MSVC)
          file(GLOB AWS_CHECKSUMS_VISUALC_SOURCE
              "source/visualc/*.c"
