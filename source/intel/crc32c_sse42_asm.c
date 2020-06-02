@@ -19,7 +19,7 @@
 /*this implementation is only for 64 bit arch and (if on GCC, release mode).
  * If using clang, this will run for both debug and release.*/
 #if defined(__x86_64__) &&                                                                                             \
-    (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ <= 4) || defined(DEBUG_BUILD))))
+    (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD))))
 #    define LIKELY(x) __builtin_expect((x), 1)
 #    define UNLIKELY(x) __builtin_expect((x), 0)
 
