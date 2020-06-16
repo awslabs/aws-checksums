@@ -82,6 +82,33 @@ elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
         )
 endif()
 
+if (MSVC AND AWS_ARCH_ARM64)
+    file(GLOB AWS_ARCH_SRC
+        "source/arm/*.c"
+        )
+elseif (AWS_ARCH_ARM64)
+    file(GLOB AWS_ARCH_SRC
+        "source/arm/*.c"
+        )
+     SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
+    set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc")
+        check_c_source_compiles("
+#include <arm_acle.h>
+int main() {
+    int crc = __crc32d(0, 1);
+    return 0;
+    }" AWS_ARM32_CRC)
+    unset(CMAKE_REQUIRED_FLAGS)
+    if (AWS_ARM32_CRC)
+        file(GLOB AWS_ARCH_SRC
+            "source/arm/*.c"
+            "source/arm/asm/*.c"
+            )
+         SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+    endif()
+endif()
+
 file(GLOB CHECKSUMS_COMBINED_HEADERS
     ${AWS_CHECKSUMS_HEADERS}
     ${AWS_CHECKSUMS_PRIV_HEADERS}
