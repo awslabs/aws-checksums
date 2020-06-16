@@ -378,11 +378,19 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     return ~crc;
 }
 
+uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return aws_checksums_crc32_sw(input, length, previousCrc32);
+}
+
 #elif !defined(_MSC_VER) && !defined(__arm__) && !defined(__aarch64__)
 
 /* don't call this without first checking that it is supported. */
 uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
     return 0;
+}
+
+uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return aws_checksums_crc32_sw(input, length, previousCrc32);
 }
 
 #endif

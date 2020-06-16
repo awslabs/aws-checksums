@@ -18,8 +18,86 @@
 
 #    include <aws/checksums/private/crc_priv.h>
 
+static inline uint32_t crc32cb(uint32_t crc, uint8_t data) {
+    asm(".arch_extension crc\n"
+        "crc32cb %w0, %w0, %w1"
+        : "+r"(crc)
+        : "r"(data));
+    return crc;
+}
+
+static inline uint32_t crc32cd(uint32_t crc, uint64_t data) {
+    asm(".arch_extension crc\n"
+        "crc32cx %w0, %w0, %x1"
+        : "+r"(crc)
+        : "r"(data));
+    return crc;
+}
+
+static inline uint32_t crc32b(uint32_t crc, uint8_t data) {
+    asm(".arch_extension crc\n"
+        "crc32b %w0, %w0, %w1"
+        : "+r"(crc)
+        : "r"(data));
+    return crc;
+}
+
+static inline uint32_t crc32d(uint32_t crc, uint64_t data) {
+    asm(".arch_extension crc\n"
+        "crc32x %w0, %w0, %x1"
+        : "+r"(crc)
+        : "r"(data));
+    return crc;
+}
+
 uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32c_sw(data, length, previousCrc32);
+    uint32_t crc = ~previousCrc32;
+
+    // Align data if it's not aligned
+    while (((uintptr_t)data & 7) && length > 0) {
+        crc = crc32cb(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    while (length >= 8) {
+        crc = crc32cd(crc, *(uint64_t *)data);
+        data += 8;
+        length -= 8;
+    }
+
+    while (length > 0) {
+        crc = crc32cb(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    return ~crc;
+}
+
+uint32_t aws_checksums_crc32_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
+    uint32_t crc = ~previousCrc32;
+
+    // Align data if it's not aligned
+    while (((uintptr_t)data & 7) && length > 0) {
+        crc = crc32b(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    while (length >= 8) {
+        crc = crc32d(crc, *(uint64_t *)data);
+        data += 8;
+        length -= 8;
+    }
+
+    while (length > 0) {
+        crc = crc32b(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    return ~crc;
 }
 
 #endif

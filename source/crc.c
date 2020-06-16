@@ -18,14 +18,22 @@
 #include <aws/checksums/private/crc_priv.h>
 
 static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
+static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
+    if (!s_crc32_fn_ptr) {
+        if (aws_checksums_is_arm_crc_present()) {
+            s_crc32_fn_ptr = aws_checksums_crc32_hw;
+        } else {
+            s_crc32_fn_ptr = aws_checksums_crc32_sw;
+        }
+    }
+    return s_crc32_fn_ptr(input, length, previousCrc32);
 }
 
 uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previousCrc32) {
     if (!s_crc32c_fn_ptr) {
-        if (aws_checksums_is_sse42_present()) {
+        if (aws_checksums_is_sse42_present() || aws_checksums_is_arm_crc_present()) {
             s_crc32c_fn_ptr = aws_checksums_crc32c_hw;
         } else {
             s_crc32c_fn_ptr = aws_checksums_crc32c_sw;

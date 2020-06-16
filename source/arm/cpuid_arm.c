@@ -17,7 +17,7 @@
 #if (defined(_M_ARM) || defined(__arm__) || defined(__ARM_ARCH_ISA_A64))
 
 #    include <aws/checksums/private/cpuid.h>
-#    if (defined(__linux__) || (defined(__FreeBSD__) && __has_include(<sys/auxv.h>))
+#    if (defined(__linux__) || (defined(__FreeBSD__) && __has_include(<sys/auxv.h>)))
 #        include <sys/auxv.h>
 #    endif
 
