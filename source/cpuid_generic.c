@@ -26,30 +26,23 @@ int aws_checksums_do_cpu_id(int32_t *cpuid) {
     return 0;
 }
 
-#endif
-
-static int32_t s_cpuid = 0;
-
-static void do_check(void) {
-    if (!s_cpuid) {
-        aws_checksums_do_cpu_id(&s_cpuid);
-    }
-}
-
 /** Returns non-zero if the CPU supports the PCLMULQDQ instruction. */
 int aws_checksums_is_clmul_present(void) {
-    do_check();
-    return s_cpuid & 0x00000002;
+    return 0;
 }
 
 /** Returns non-zero if the CPU supports SSE4.1 instructions. */
 int aws_checksums_is_sse41_present(void) {
-    do_check();
-    return s_cpuid & 0x00080000;
+    return 0;
 }
 
 /** Returns non-zero if the CPU supports SSE4.2 instructions (i.e. CRC32). */
 int aws_checksums_is_sse42_present(void) {
-    do_check();
-    return s_cpuid & 0x00100000;
+    return 0;
 }
+
+/** Returns non-zero if the CPU support Arm CRC32/CRC32C instructions */
+int aws_checksums_is_arm_crc_present(void) {
+    return 0;
+}
+#endif

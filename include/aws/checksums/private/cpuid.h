@@ -32,4 +32,7 @@ int aws_checksums_is_sse41_present(void);
 /** Returns non-zero if the CPU supports SSE4.2 instructions (i.e. CRC32). */
 int aws_checksums_is_sse42_present(void);
 
+/** Returns non-zero if the CPU support Arm CRC32/CRC32C instructions */
+int aws_checksums_is_arm_crc_present(void);
+
 #endif /* AWS_CHECKSUMS_PRIVATE_CPUID_H */
