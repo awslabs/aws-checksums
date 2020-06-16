@@ -16,10 +16,58 @@
 /* for the moment, fallback to SW on ARM until MSFT adds intrensics for ARM v8.1+ */
 #if (defined(_M_ARM) || defined(__arm__) || defined(__aarch64__) || defined(__ARM_ARCH_ISA_A64))
 
+#    include "arm_acle.h"
 #    include <aws/checksums/private/crc_priv.h>
+#    define USE_CRC __attribute__((target("+crc")))
 
-uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32c_sw(data, length, previousCrc32);
+USE_CRC uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
+    uint32_t crc = ~previousCrc32;
+
+    // Align data if it's not aligned
+    while (((uintptr_t)data & 7) && length > 0) {
+        crc = __crc32cb(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    while (length >= 8) {
+        crc = __crc32cd(crc, *(uint64_t *)data);
+        data += 8;
+        length -= 8;
+    }
+
+    while (length > 0) {
+        crc = __crc32cb(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    return ~crc;
+}
+
+USE_CRC uint32_t aws_checksums_crc32_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
+    uint32_t crc = ~previousCrc32;
+
+    // Align data if it's not aligned
+    while (((uintptr_t)data & 7) && length > 0) {
+        crc = __crc32b(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    while (length >= 8) {
+        crc = __crc32d(crc, *(uint64_t *)data);
+        data += 8;
+        length -= 8;
+    }
+
+    while (length > 0) {
+        crc = __crc32b(crc, *(uint8_t *)data);
+        data++;
+        length--;
+    }
+
+    return ~crc;
 }
 
 #endif
