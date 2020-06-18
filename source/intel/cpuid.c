@@ -16,8 +16,9 @@
 #include <aws/checksums/private/cpuid.h>
 #include <stdint.h>
 
-#if defined(__x86_64__) &&                                                                                             \
-    (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD))))
+#if defined(__x86_64__) \
+  && (( defined(__clang__) && !defined(_M_X64) && !defined(_M_IX86) ) \
+    || !( defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD)) ))
 
 static int32_t s_cpuid_output = 0;
 static int s_cpuid_ran = 0;
@@ -39,5 +40,6 @@ int aws_checksums_do_cpu_id(int32_t *cpuid) {
     return 1;
 }
 
-#endif /* defined(__x86_64__) && (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ <   \
-          4) || defined(DEBUG_BUILD)))) */
+#endif /* defined(__x86_64__) \
+  && (( defined(__clang__) && !defined(_M_X64) && !defined(_M_IX86) ) \
+    || !( defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD)) )) */
