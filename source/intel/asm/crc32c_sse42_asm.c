@@ -12,6 +12,14 @@
 #if defined(__x86_64__) &&                                                                                             \
     (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD))))
 
+#    if defined(__GNUC__)
+#        pragma GCC diagnostic push
+#        pragma GCC diagnostic ignored "-Wdollar-in-identifier-extension"
+#    elif defined(__clang__)
+#        pragma clang diagnostic push
+#        pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+#    endif
+
 /*
  * Factored out common inline asm for folding crc0,crc1,crc2 stripes in rcx, r11, r10 using
  * the specified Magic Constants K1 and K2.
@@ -47,65 +55,66 @@
  * or return value.
  */
 static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t crc) {
-    __asm__ __volatile__("enter_256_%=:"
+    __asm__ __volatile__(
+        "enter_256_%=:"
 
-                         "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
-                         "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
+        "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
+        "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-                         "crc32q    0(%[in]), %%rcx    # crc0 \n"
-                         "crc32q   88(%[in]), %%r11    # crc1 \n"
-                         "crc32q  176(%[in]), %%r10    # crc2 \n"
+        "crc32q    0(%[in]), %%rcx    # crc0 \n"
+        "crc32q   88(%[in]), %%r11    # crc1 \n"
+        "crc32q  176(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q    8(%[in]), %%rcx    # crc0 \n"
-                         "crc32q   96(%[in]), %%r11    # crc1 \n"
-                         "crc32q  184(%[in]), %%r10    # crc2 \n"
+        "crc32q    8(%[in]), %%rcx    # crc0 \n"
+        "crc32q   96(%[in]), %%r11    # crc1 \n"
+        "crc32q  184(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   16(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  104(%[in]), %%r11    # crc1 \n"
-                         "crc32q  192(%[in]), %%r10    # crc2 \n"
+        "crc32q   16(%[in]), %%rcx    # crc0 \n"
+        "crc32q  104(%[in]), %%r11    # crc1 \n"
+        "crc32q  192(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   24(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  112(%[in]), %%r11    # crc1 \n"
-                         "crc32q  200(%[in]), %%r10    # crc2 \n"
+        "crc32q   24(%[in]), %%rcx    # crc0 \n"
+        "crc32q  112(%[in]), %%r11    # crc1 \n"
+        "crc32q  200(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   32(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  120(%[in]), %%r11    # crc1 \n"
-                         "crc32q  208(%[in]), %%r10    # crc2 \n"
+        "crc32q   32(%[in]), %%rcx    # crc0 \n"
+        "crc32q  120(%[in]), %%r11    # crc1 \n"
+        "crc32q  208(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   40(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  128(%[in]), %%r11    # crc1 \n"
-                         "crc32q  216(%[in]), %%r10    # crc2 \n"
+        "crc32q   40(%[in]), %%rcx    # crc0 \n"
+        "crc32q  128(%[in]), %%r11    # crc1 \n"
+        "crc32q  216(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   48(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  136(%[in]), %%r11    # crc1 \n"
-                         "crc32q  224(%[in]), %%r10    # crc2 \n"
+        "crc32q   48(%[in]), %%rcx    # crc0 \n"
+        "crc32q  136(%[in]), %%r11    # crc1 \n"
+        "crc32q  224(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   56(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  144(%[in]), %%r11    # crc1 \n"
-                         "crc32q  232(%[in]), %%r10    # crc2 \n"
+        "crc32q   56(%[in]), %%rcx    # crc0 \n"
+        "crc32q  144(%[in]), %%r11    # crc1 \n"
+        "crc32q  232(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   64(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  152(%[in]), %%r11    # crc1 \n"
-                         "crc32q  240(%[in]), %%r10    # crc2 \n"
+        "crc32q   64(%[in]), %%rcx    # crc0 \n"
+        "crc32q  152(%[in]), %%r11    # crc1 \n"
+        "crc32q  240(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   72(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  160(%[in]), %%r11    # crc1 \n"
-                         "crc32q  248(%[in]), %%r10    # crc2 \n"
+        "crc32q   72(%[in]), %%rcx    # crc0 \n"
+        "crc32q  160(%[in]), %%r11    # crc1 \n"
+        "crc32q  248(%[in]), %%r10    # crc2 \n"
 
-                         "crc32q   80(%[in]), %%rcx    # crc0 \n"
-                         "crc32q  168(%[in]), %%r11    # crc2 \n"
+        "crc32q   80(%[in]), %%rcx    # crc0 \n"
+        "crc32q  168(%[in]), %%r11    # crc2 \n"
 
-                         FOLD_K1K2(256, 0x1b3d8f29, 0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
+        FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
 
-                         /* output registers
-                          [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
-                         : "+c"(crc)
+        /* output registers
+         [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
+        : "+c"(crc)
 
-                         /* input registers */
-                         : [ crc ] "c"(crc), [ in ] "d"(input)
+        /* input registers */
+        : [ crc ] "c"(crc), [ in ] "d"(input)
 
-                         /* additional clobbered registers */
-                         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
+        /* additional clobbered registers */
+        : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
     return crc;
 }
 
@@ -179,7 +188,7 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
         "crc32q   16(%[in]), %%rcx    # crc0 \n"
         "crc32q  696(%[in]), %%r10    # crc2 \n"
 
-        FOLD_K1K2(1024, 0xe417f38a, 0x8f158014) /* Magic Constants used to fold crc stripes into ecx
+        FOLD_K1K2(1024, $0xe417f38a, $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
                             [crc] is an input and and output so it is marked read/write (i.e. "+c")
@@ -258,8 +267,8 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
 
         FOLD_K1K2(
             3072,
-            0xa51b6135,
-            0x170076fa) /* Magic Constants used to fold crc stripes into ecx
+            $0xa51b6135,
+            $0x170076fa) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
                             [crc] is an input and and output so it is marked read/write (i.e. "+c")
@@ -368,6 +377,12 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
     return aws_checksums_crc32_sw(input, length, previousCrc32);
 }
+
+#    if defined(__GNUC__)
+#        pragma GCC diagnostic pop
+#    elif defined(__clang__)
+#        pragma clang diagnostic pop
+#    endif
 
 #else
 uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
