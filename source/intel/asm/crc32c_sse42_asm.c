@@ -12,10 +12,7 @@
 #if defined(__x86_64__) &&                                                                                             \
     (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD))))
 
-#    if defined(__GNUC__)
-#        pragma GCC diagnostic push
-#        pragma GCC diagnostic ignored "-Wdollar-in-identifier-extension"
-#    elif defined(__clang__)
+#    if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
 #    endif
@@ -378,9 +375,7 @@ uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previ
     return aws_checksums_crc32_sw(input, length, previousCrc32);
 }
 
-#    if defined(__GNUC__)
-#        pragma GCC diagnostic pop
-#    elif defined(__clang__)
+#    if defined(__clang__)
 #        pragma clang diagnostic pop
 #    endif
 
