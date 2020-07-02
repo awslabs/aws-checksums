@@ -11,7 +11,7 @@ static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t pr
 static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previousCrc32) = 0;
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previousCrc32) {
-    if (!s_crc32_fn_ptr) {
+    if (AWS_UNLIKELY(!s_crc32_fn_ptr)) {
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC)) {
             s_crc32_fn_ptr = aws_checksums_crc32_hw;
         } else {
@@ -22,7 +22,7 @@ uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous
 }
 
 uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previousCrc32) {
-    if (!s_crc32c_fn_ptr) {
+    if (AWS_UNLIKELY(!s_crc32c_fn_ptr)) {
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2) || aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC)) {
             s_crc32c_fn_ptr = aws_checksums_crc32c_hw;
         } else {
