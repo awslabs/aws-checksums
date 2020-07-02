@@ -48,21 +48,9 @@ file(GLOB AWS_CHECKSUMS_SRC
     "source/*.c"
 )
 
-if(WIN32)
-     if(MSVC)
-         file(GLOB AWS_CHECKSUMS_VISUALC_SOURCE
-             "source/intel/visualc/*.c"
-         )        
-
-         source_group("Header Files\\aws\\checksums" FILES ${AWS_CHECKSUMS_HEADERS})
-
-         source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
-         source_group("Source Files\\visualc" FILES ${AWS_CHECKSUMS_VISUALC_SOURCE})
-
-         file(GLOB AWS_CHECKSUMS_PLATFORM_SOURCE
-             ${AWS_CHECKSUMS_VISUALC_SOURCE}
-         )
-     endif()
+if(MSVC)
+     source_group("Header Files\\aws\\checksums" FILES ${AWS_CHECKSUMS_HEADERS})
+     source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
 endif()
 
 file(GLOB AWS_ARCH_SRC
@@ -86,6 +74,8 @@ if (MSVC AND AWS_ARCH_ARM64)
     file(GLOB AWS_ARCH_SRC
         "source/arm/*.c"
         )
+    source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
+
 elseif (AWS_ARCH_ARM64)
     file(GLOB AWS_ARCH_SRC
         "source/arm/*.c"
