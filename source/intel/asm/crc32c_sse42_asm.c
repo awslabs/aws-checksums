@@ -124,7 +124,7 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
         "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
         "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-        "mov             $5, %%r8d    # Loop 5 times through 64 byte chunks in 3 parallel stripes \n"
+        "movl            $5, %%r8d    # Loop 5 times through 64 byte chunks in 3 parallel stripes \n"
 
         "loop_1024_%=:"
 
@@ -212,7 +212,7 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
         "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
         "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-        "mov            $16, %%r8d    # Loop 16 times through 64 byte chunks in 3 parallel stripes \n"
+        "movl           $16, %%r8d    # Loop 16 times through 64 byte chunks in 3 parallel stripes \n"
 
         "loop_3072_%=:"
 
