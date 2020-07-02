@@ -3,15 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/cpuid.h>
 #include <aws/checksums/private/crc_priv.h>
+
+#include <aws/common/cpuid.h>
 
 /*this implementation is only for 64 bit arch and (if on GCC, release mode).
  * If using clang, this will run for both debug and release.*/
 #if defined(__x86_64__) &&                                                                                             \
     (defined(__clang__) || !((defined(__GNUC__)) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 4) || defined(DEBUG_BUILD))))
-#    define LIKELY(x) __builtin_expect((x), 1)
-#    define UNLIKELY(x) __builtin_expect((x), 0)
+
+#    if defined(__clang__)
+#        pragma clang diagnostic push
+#        pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
+#    endif
 
 /*
  * Factored out common inline asm for folding crc0,crc1,crc2 stripes in rcx, r11, r10 using
@@ -22,8 +26,8 @@
  */
 #    define FOLD_K1K2(NAME, K1, K2)                                                                                    \
         "fold_k1k2_" #NAME "_%=: \n"                                                                                   \
-        "mov             " #K1 ", %%r8d    # Magic K1 constant \n"                                                     \
-        "mov             " #K2 ", %%r9d    # Magic K2 constant \n"                                                     \
+        "movl             " #K1 ", %%r8d    # Magic K1 constant \n"                                                    \
+        "movl             " #K2 ", %%r9d    # Magic K2 constant \n"                                                    \
         "movq              %%rcx, %%xmm1   # crc0 into lower dword of xmm1 \n"                                         \
         "movq               %%r8, %%xmm3   # K1 into lower dword of xmm3 \n"                                           \
         "movq              %%r11, %%xmm2   # crc1 into lower dword of xmm2 \n"                                         \
@@ -48,65 +52,66 @@
  * or return value.
  */
 static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t crc) {
-    asm volatile("enter_256_%=:"
+    __asm__ __volatile__(
+        "enter_256_%=:"
 
-                 "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
-                 "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
+        "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
+        "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-                 "crc32q    0(%[in]), %%rcx    # crc0 \n"
-                 "crc32q   88(%[in]), %%r11    # crc1 \n"
-                 "crc32q  176(%[in]), %%r10    # crc2 \n"
+        "crc32q    0(%[in]), %%rcx    # crc0 \n"
+        "crc32q   88(%[in]), %%r11    # crc1 \n"
+        "crc32q  176(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q    8(%[in]), %%rcx    # crc0 \n"
-                 "crc32q   96(%[in]), %%r11    # crc1 \n"
-                 "crc32q  184(%[in]), %%r10    # crc2 \n"
+        "crc32q    8(%[in]), %%rcx    # crc0 \n"
+        "crc32q   96(%[in]), %%r11    # crc1 \n"
+        "crc32q  184(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   16(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  104(%[in]), %%r11    # crc1 \n"
-                 "crc32q  192(%[in]), %%r10    # crc2 \n"
+        "crc32q   16(%[in]), %%rcx    # crc0 \n"
+        "crc32q  104(%[in]), %%r11    # crc1 \n"
+        "crc32q  192(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   24(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  112(%[in]), %%r11    # crc1 \n"
-                 "crc32q  200(%[in]), %%r10    # crc2 \n"
+        "crc32q   24(%[in]), %%rcx    # crc0 \n"
+        "crc32q  112(%[in]), %%r11    # crc1 \n"
+        "crc32q  200(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   32(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  120(%[in]), %%r11    # crc1 \n"
-                 "crc32q  208(%[in]), %%r10    # crc2 \n"
+        "crc32q   32(%[in]), %%rcx    # crc0 \n"
+        "crc32q  120(%[in]), %%r11    # crc1 \n"
+        "crc32q  208(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   40(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  128(%[in]), %%r11    # crc1 \n"
-                 "crc32q  216(%[in]), %%r10    # crc2 \n"
+        "crc32q   40(%[in]), %%rcx    # crc0 \n"
+        "crc32q  128(%[in]), %%r11    # crc1 \n"
+        "crc32q  216(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   48(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  136(%[in]), %%r11    # crc1 \n"
-                 "crc32q  224(%[in]), %%r10    # crc2 \n"
+        "crc32q   48(%[in]), %%rcx    # crc0 \n"
+        "crc32q  136(%[in]), %%r11    # crc1 \n"
+        "crc32q  224(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   56(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  144(%[in]), %%r11    # crc1 \n"
-                 "crc32q  232(%[in]), %%r10    # crc2 \n"
+        "crc32q   56(%[in]), %%rcx    # crc0 \n"
+        "crc32q  144(%[in]), %%r11    # crc1 \n"
+        "crc32q  232(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   64(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  152(%[in]), %%r11    # crc1 \n"
-                 "crc32q  240(%[in]), %%r10    # crc2 \n"
+        "crc32q   64(%[in]), %%rcx    # crc0 \n"
+        "crc32q  152(%[in]), %%r11    # crc1 \n"
+        "crc32q  240(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   72(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  160(%[in]), %%r11    # crc1 \n"
-                 "crc32q  248(%[in]), %%r10    # crc2 \n"
+        "crc32q   72(%[in]), %%rcx    # crc0 \n"
+        "crc32q  160(%[in]), %%r11    # crc1 \n"
+        "crc32q  248(%[in]), %%r10    # crc2 \n"
 
-                 "crc32q   80(%[in]), %%rcx    # crc0 \n"
-                 "crc32q  168(%[in]), %%r11    # crc2 \n"
+        "crc32q   80(%[in]), %%rcx    # crc0 \n"
+        "crc32q  168(%[in]), %%r11    # crc2 \n"
 
-                 FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
+        FOLD_K1K2(256, $0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
 
-                 /* output registers
-                  [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
-                 : "+c"(crc)
+        /* output registers
+         [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
+        : "+c"(crc)
 
-                 /* input registers */
-                 : [ crc ] "c"(crc), [ in ] "d"(input)
+        /* input registers */
+        : [ crc ] "c"(crc), [ in ] "d"(input)
 
-                 /* additional clobbered registers */
-                 : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
+        /* additional clobbered registers */
+        : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
     return crc;
 }
 
@@ -119,13 +124,13 @@ static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t c
  * or return value.
  */
 static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t crc) {
-    asm volatile(
+    __asm__ __volatile__(
         "enter_1024_%=:"
 
         "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
         "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-        "mov             $5, %%r8d    # Loop 5 times through 64 byte chunks in 3 parallel stripes \n"
+        "movl            $5, %%r8d    # Loop 5 times through 64 byte chunks in 3 parallel stripes \n"
 
         "loop_1024_%=:"
 
@@ -180,10 +185,7 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
         "crc32q   16(%[in]), %%rcx    # crc0 \n"
         "crc32q  696(%[in]), %%r10    # crc2 \n"
 
-        FOLD_K1K2(
-            1024,
-            $0xe417f38a,
-            $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
+        FOLD_K1K2(1024, $0xe417f38a, $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
                             [crc] is an input and and output so it is marked read/write (i.e. "+c")
@@ -210,13 +212,13 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
  * or return value.
  */
 static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t crc) {
-    asm volatile(
+    __asm__ __volatile__(
         "enter_3072_%=:"
 
         "xor          %%r11, %%r11    # zero all 64 bits in r11, will track crc1 \n"
         "xor          %%r10, %%r10    # zero all 64 bits in r10, will track crc2 \n"
 
-        "mov            $16, %%r8d    # Loop 16 times through 64 byte chunks in 3 parallel stripes \n"
+        "movl           $16, %%r8d    # Loop 16 times through 64 byte chunks in 3 parallel stripes \n"
 
         "loop_3072_%=:"
 
@@ -282,8 +284,8 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
     return crc;
 }
 
-static int detection_performed = 0;
-static int detected_clmul = 0;
+static bool detection_performed = false;
+static bool detected_clmul = false;
 
 /*
  * Computes the Castagnoli CRC32c (iSCSI) of the specified data buffer using the Intel CRC32Q (64-bit quad word) and
@@ -294,20 +296,20 @@ static int detected_clmul = 0;
  */
 uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
 
-    if (UNLIKELY(!detection_performed)) {
-        detected_clmul = aws_checksums_is_clmul_present();
+    if (AWS_UNLIKELY(!detection_performed)) {
+        detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
         /* Simply setting the flag true to skip HW detection next time
            Not using memory barriers since the worst that can
            happen is a fallback to the non HW accelerated code. */
-        detection_performed = 1;
+        detection_performed = true;
     }
 
     uint32_t crc = ~previousCrc32;
 
     /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
-    if (UNLIKELY(length < 8)) {
+    if (AWS_UNLIKELY(length < 8)) {
         while (length-- > 0) {
-            asm("loop_small_%=: CRC32B (%[in]), %[crc]" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
+            __asm__("loop_small_%=: CRC32B (%[in]), %[crc]" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
             input++;
         }
         return ~crc;
@@ -324,26 +326,26 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     /* spin through the leading unaligned input bytes (if any) one-by-one */
     while (leading-- > 0) {
-        asm("loop_leading_%=: CRC32B (%[in]), %[crc]" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
+        __asm__("loop_leading_%=: CRC32B (%[in]), %[crc]" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
         input++;
     }
 
     /* Using likely to keep this code inlined */
-    if (LIKELY(detected_clmul)) {
+    if (AWS_LIKELY(detected_clmul)) {
 
-        while (LIKELY(length >= 3072)) {
+        while (AWS_LIKELY(length >= 3072)) {
             /* Compute crc32c on each block, chaining each crc result */
             crc = s_crc32c_sse42_clmul_3072(input, crc);
             input += 3072;
             length -= 3072;
         }
-        while (LIKELY(length >= 1024)) {
+        while (AWS_LIKELY(length >= 1024)) {
             /* Compute crc32c on each block, chaining each crc result */
             crc = s_crc32c_sse42_clmul_1024(input, crc);
             input += 1024;
             length -= 1024;
         }
-        while (LIKELY(length >= 256)) {
+        while (AWS_LIKELY(length >= 256)) {
             /* Compute crc32c on each block, chaining each crc result */
             crc = s_crc32c_sse42_clmul_256(input, crc);
             input += 256;
@@ -352,27 +354,38 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     }
 
     /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
-    while (LIKELY(length >= 8)) {
+    while (AWS_LIKELY(length >= 8)) {
         /* Hardcoding %rcx register (i.e. "+c") to allow use of qword instruction */
-        asm volatile("loop_8_%=: CRC32Q (%[in]), %%rcx" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
+        __asm__ __volatile__("loop_8_%=: CRC32Q (%[in]), %%rcx" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
         input += 8;
         length -= 8;
     }
 
     /* Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one */
     while (length-- > 0) {
-        asm volatile("loop_trailing_%=: CRC32B (%[in]), %[crc]" : "+c"(crc) : [ crc ] "c"(crc), [ in ] "r"(input));
+        __asm__ __volatile__("loop_trailing_%=: CRC32B (%[in]), %[crc]"
+                             : "+c"(crc)
+                             : [ crc ] "c"(crc), [ in ] "r"(input));
         input++;
     }
 
     return ~crc;
 }
+uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return aws_checksums_crc32_sw(input, length, previousCrc32);
+}
 
-#elif !defined(_MSC_VER) && !defined(__arm__) && !defined(__aarch64__)
+#    if defined(__clang__)
+#        pragma clang diagnostic pop
+#    endif
 
-/* don't call this without first checking that it is supported. */
+#else
+uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return aws_checksums_crc32_sw(input, length, previousCrc32);
+}
+
 uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return 0;
+    return aws_checksums_crc32c_sw(input, length, previousCrc32);
 }
 
 #endif

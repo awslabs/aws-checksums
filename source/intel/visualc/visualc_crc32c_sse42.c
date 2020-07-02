@@ -71,4 +71,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
     return ~crc;
 }
 
+uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+    return aws_checksums_crc32_sw(input, length, previousCrc32);
+}
 #endif /* x64 || x86 */
