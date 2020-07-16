@@ -15,8 +15,7 @@
 #        define AWS_CHECKSUMS_API
 #    endif /* USE_IMPORT_EXPORT */
 #else      /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32) */
-#    if ((__GNUC__ >= 4) || defined(__clang__)) && defined(USE_IMPORT_EXPORT) &&                            \
-        defined(AWS_CHECKSUMS_EXPORTS)
+#    if ((__GNUC__ >= 4) || defined(__clang__))
 #        define AWS_CHECKSUMS_API __attribute__((visibility("default")))
 #    else
 #        define AWS_CHECKSUMS_API
