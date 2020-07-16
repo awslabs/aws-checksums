@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 #if defined(AWS_C_RT_USE_WINDOWS_DLL_SEMANTICS) || defined(_WIN32)
-#    ifdef USE_IMPORT_EXPORT
+#    ifdef AWS_CHECKSUMS_USE_IMPORT_EXPORT
 #        ifdef AWS_CHECKSUMS_EXPORTS
 #            define AWS_CHECKSUMS_API __declspec(dllexport)
 #        else
@@ -13,7 +13,7 @@
 #        endif /* AWS_CHECKSUMS_EXPORTS */
 #    else
 #        define AWS_CHECKSUMS_API
-#    endif /* USE_IMPORT_EXPORT */
+#    endif /* AWS_CHECKSUMS_USE_IMPORT_EXPORT */
 #else      /* defined (AWS_C_RT_USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32) */
 #    if ((__GNUC__ >= 4) || defined(__clang__)) && defined(AWS_CHECKSUMS_USE_IMPORT_EXPORT) &&                         \
         defined(AWS_CHECKSUMS_EXPORTS)
