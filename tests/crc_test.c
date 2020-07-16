@@ -70,7 +70,7 @@ static int s_test_known_crc32c(const char *func_name, crc_fn *func) {
 
     /*this tests three things, first it tests the case where we aren't 8-byte aligned*/
     /*seconde, it tests that reads aren't performed before start of buffer*/
-    /*third, it tests that wwrites aren't performed after the end of the buffer.*/
+    /*third, it tests that writes aren't performed after the end of the buffer.*/
     /*if any of those things happen, then the checksum will be wrong and the assertion will fail */
     s_non_mem_aligned_vector = malloc(sizeof(DATA_32_VALUES) + 6);
     memset(s_non_mem_aligned_vector, 1, sizeof(DATA_32_VALUES) + 6);
