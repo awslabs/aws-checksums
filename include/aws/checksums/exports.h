@@ -4,9 +4,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-#if defined(USE_WINDOWS_DLL_SEMANTICS) || defined(WIN32)
-
-#    ifdef USE_IMPORT_EXPORT
+#if defined(AWS_C_RT_USE_WINDOWS_DLL_SEMANTICS) || defined(_WIN32)
+#    ifdef AWS_COMMON_USE_IMPORT_EXPORT
 #        ifdef AWS_CHECKSUMS_EXPORTS
 #            define AWS_CHECKSUMS_API __declspec(dllexport)
 #        else
@@ -14,9 +13,25 @@
 #        endif /* AWS_CHECKSUMS_EXPORTS */
 #    else
 #        define AWS_CHECKSUMS_API
-#    endif /* USE_IMPORT_EXPORT */
-#else      /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
-#    define AWS_CHECKSUMS_API
-#endif /* defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32) */
+#    endif /* AWS_COMMON_USE_IMPORT_EXPORT */
+#else      /* defined (AWS_C_RT_USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32) */
+#    if ((__GNUC__ >= 4) || defined(__clang__)) && defined(AWS_COMMON_USE_IMPORT_EXPORT) && defined(AWS_CHECKSUMS_EXPORTS)
+#        define AWS_CHECKSUMS_API __attribute__((visibility("default")))
+#    else
+#        define AWS_CHECKSUMS_API
+#    endif /* __GNUC__ >= 4 || defined(__clang__) */
+#endif /* defined (AWS_C_RT_USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32) */
+
+#ifdef AWS_NO_STATIC_IMPL
+#    define AWS_STATIC_IMPL AWS_CHECKSUMS_API
+#endif
+
+#ifndef AWS_STATIC_IMPL
+/*
+ * In order to allow us to export our inlinable methods in a DLL/.so, we have a designated .c
+ * file where this AWS_STATIC_IMPL macro will be redefined to be non-static.
+ */
+#define AWS_STATIC_IMPL static inline
+#endif
 
 #endif /* AWS_CHECKSUMS_EXPORTS_H */
