@@ -82,7 +82,7 @@ elseif (AWS_ARCH_ARM64)
         )
      SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
 elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
-    set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc")
+    set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc -Werror")
         check_c_source_compiles("
 #include <arm_acle.h>
 int main() {
