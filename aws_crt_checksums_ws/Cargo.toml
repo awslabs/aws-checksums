@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "aws-crt-checksums",
+    "aws-crt-checksums-sys",
+]
+

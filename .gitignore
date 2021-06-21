@@ -1,2 +1,10 @@
 build
 tags
+
+# Rust and Cargo
+Cargo.lock
+target/
+
+#IDE
+.idea
+
