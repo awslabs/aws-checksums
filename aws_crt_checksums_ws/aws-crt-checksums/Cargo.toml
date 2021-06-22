@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 aws-crt-checksums-sys = { path = "../aws-crt-checksums-sys" }
-
+aws-crt-common = { git = "https://github.com/awslabs/aws-c-common", branch="move_to_rust_phase1" }

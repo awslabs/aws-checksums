@@ -8,3 +8,5 @@ target/
 #IDE
 .idea
 
+# CMake
+cmake-build-debug

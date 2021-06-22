@@ -1,8 +1,12 @@
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 use aws_crt_c_flags::{CRTModuleBuildInfo, HeaderType};
 use std::path::Path;
 
 fn main() {
-    let mut build_info = CRTModuleBuildInfo::new("aws-crt-checksums-sys");
+    let mut build_info = CRTModuleBuildInfo::new("aws-checksums");
     build_info.module_links_dependency("aws-c-common");
 
     let include_path = Path::new("../../include/aws");
@@ -12,6 +16,9 @@ fn main() {
         .file(Path::new("../../source/crc.c"))
         .file(Path::new("../../source/crc_sw.c"));
 
+    // rustc seems to be wrong on this one.
+    #[allow(unused_mut)]
+    #[allow(unused_assignments)]
     let mut impl_found = false;
 
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
