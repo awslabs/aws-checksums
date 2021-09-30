@@ -57,45 +57,47 @@ file(GLOB AWS_ARCH_SRC
         "source/generic/*.c"
         )
 
-if (MSVC AND AWS_ARCH_INTEL)
-    file(GLOB AWS_ARCH_SRC
-            "source/intel/visualc/*.c"
-    )
-
-    source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
-
-elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
-    file(GLOB AWS_ARCH_SRC
-            "source/intel/asm/*.c"
+if (USE_CPU_EXTENSIONS)
+    if (MSVC AND AWS_ARCH_INTEL)
+        file(GLOB AWS_ARCH_SRC
+                "source/intel/visualc/*.c"
         )
-endif()
 
-if (MSVC AND AWS_ARCH_ARM64)
-    file(GLOB AWS_ARCH_SRC
-        "source/arm/*.c"
-        )
-    source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
+        source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
 
-elseif (AWS_ARCH_ARM64)
-    file(GLOB AWS_ARCH_SRC
-        "source/arm/*.c"
-        )
-     SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
-elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
-    set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc -Werror")
-        check_c_source_compiles("
-#include <arm_acle.h>
-int main() {
-    int crc = __crc32d(0, 1);
-    return 0;
-    }" AWS_ARM32_CRC)
-    unset(CMAKE_REQUIRED_FLAGS)
-    if (AWS_ARM32_CRC)
+    elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
+        file(GLOB AWS_ARCH_SRC
+                "source/intel/asm/*.c"
+            )
+    endif()
+
+    if (MSVC AND AWS_ARCH_ARM64)
         file(GLOB AWS_ARCH_SRC
             "source/arm/*.c"
-            "source/arm/asm/*.c"
             )
-         SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+        source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
+
+    elseif (AWS_ARCH_ARM64)
+        file(GLOB AWS_ARCH_SRC
+            "source/arm/*.c"
+            )
+        SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+    elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
+        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc -Werror")
+        check_c_source_compiles("
+            #include <arm_acle.h>
+            int main() {
+                int crc = __crc32d(0, 1);
+                return 0;
+            }" AWS_ARM32_CRC)
+        unset(CMAKE_REQUIRED_FLAGS)
+        if (AWS_ARM32_CRC)
+            file(GLOB AWS_ARCH_SRC
+                "source/arm/*.c"
+                "source/arm/asm/*.c"
+                )
+            SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+        endif()
     endif()
 endif()
 
