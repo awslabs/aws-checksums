@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches:
-      - '*'
-      - '!master'
+    branches-ignore:
+      - 'main'
 
 env:
   BUILDER_VERSION: v0.9.15
