@@ -7,8 +7,7 @@
 
 #include <aws/common/cpuid.h>
 
-/*this implementation is only for 64 bit arch and (if on GCC, release mode).
- * If using clang, this will run for both debug and release.*/
+/*this implementation is only for 64-bit intel architecture */
 #if defined(__x86_64__)
 #    if defined(__clang__)
 #        pragma clang diagnostic push
