@@ -352,9 +352,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     /* Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one */
     while (length-- > 0) {
-        __asm__ __volatile__("loop_trailing_%=: CRC32B (%[in]), %[crc]"
-                             : "+c"(crc)
-                             : [ crc ] "c"(crc), [ in ] "r"(input));
+        __asm__ __volatile__("loop_trailing_%=: CRC32B (%[in]), %[crc]" : [ crc ] "+c"(crc) : [ in ] "r"(input));
         input++;
     }
 
