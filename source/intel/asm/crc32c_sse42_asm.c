@@ -7,7 +7,7 @@
 
 #include <aws/common/cpuid.h>
 
-/*this implementation is only for 64-bit intel architecture */
+/* this implementation is only for the x86_64 intel architecture */
 #if defined(__x86_64__)
 #    if defined(__clang__)
 #        pragma clang diagnostic push
