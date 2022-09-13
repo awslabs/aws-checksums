@@ -188,10 +188,8 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
                             [crc] is an input and and output so it is marked read/write (i.e. "+c")
                             we clobber the register for [input] (via add instruction) so we must also
                             tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber */
-        : [ crc ] "+c"(crc), [ input ] "+d"(input)
-
-        : [ in ] "d"(input)
-
+        : [ crc ] "+c"(crc), [ in ] "+d"(input)
+        :
         /* additional clobbered registers */
         /* "cc" is the flags - we add and sub, so the flags are also clobbered */
         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
@@ -266,12 +264,8 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
                             [crc] is an input and and output so it is marked read/write (i.e. "+c")
                             we clobber the register for [input] (via add instruction) so we must also
                             tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber*/
-        : [ crc ] "+c"(crc), "+d"(input)
-
-        /* input registers
-           the numeric values match the position of the output registers */
-        : [ in ] "d"(input)
-
+        : [ crc ] "+c"(crc), [ in ] "+d"(input)
+        :
         /* additional clobbered registers
           "cc" is the flags - we add and sub, so the flags are also clobbered */
         : "%r8", "%r9", "%r11", "%r10", "%xmm1", "%xmm2", "%xmm3", "%xmm4", "cc");
