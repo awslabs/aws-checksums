@@ -1,0 +1,11 @@
+[package]
+name = "aws-crt-checksums"
+version = "0.1.0"
+authors = ["AWS Common Runtime Team (aws-sdk-common-runtime-team@amazon.com)"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aws-crt-checksums-sys = { path = "../aws-crt-checksums-sys" }
+aws-crt-common = { git = "https://github.com/awslabs/aws-c-common", branch="move_to_rust_phase1" }
