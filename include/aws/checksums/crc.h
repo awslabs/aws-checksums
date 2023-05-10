@@ -8,6 +8,8 @@
 #include <aws/checksums/exports.h>
 #include <stdint.h>
 
+AWS_PUSH_SANE_WARNING_LEVEL
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,5 +33,6 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c(const uint8_t *input, int length
 #ifdef __cplusplus
 }
 #endif
+AWS_POP_SANE_WARNING_LEVEL
 
 #endif /* AWS_CHECKSUMS_CRC_H */
