@@ -7,6 +7,8 @@
 
 #include <aws/common/cpuid.h>
 
+/* clang-format off */
+
 /* this implementation is only for the x86_64 intel architecture */
 #if defined(__x86_64__)
 #    if defined(__clang__)
@@ -14,11 +16,12 @@
 #        pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
 #    endif
 
-#ifdef __APPLE__
-#define LABEL(label) "L_" #label "_%="
-#else
-#define LABEL(label) ".L_" #label "_%="
-#endif
+/* use local labels, so that linker doesn't think these are functions it can deadstrip */
+#    ifdef __APPLE__
+#        define LABEL(label) "L_" #label "_%="
+#    else
+#        define LABEL(label) ".L_" #label "_%="
+#    endif
 
 /*
  * Factored out common inline asm for folding crc0,crc1,crc2 stripes in rcx, r11, r10 using
@@ -373,3 +376,4 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 }
 
 #endif
+/* clang-format on */
