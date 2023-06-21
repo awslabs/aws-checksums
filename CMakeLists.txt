@@ -62,7 +62,8 @@ if (USE_CPU_EXTENSIONS)
         file(GLOB AWS_ARCH_SRC
                 "source/intel/visualc/*.c"
         )
-
+        # visualc_crc32_sse42.c uses SSE4.2 instructions. The /arch:AVX flag implicitly enables support for SSE4.2:
+        set_source_files_properties(${AWS_ARCH_SRC} PROPERTIES COMPILE_FLAGS "/arch:AVX")
         source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
 
     elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
