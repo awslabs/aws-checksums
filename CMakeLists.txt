@@ -66,9 +66,11 @@ if (USE_CPU_EXTENSIONS)
         source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
 
     elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
+        set(AWS_CMAKE_REQUIRED_FLAGS "-mavx512f -msse4.2 -mvpclmulqdq -mpclmul")
         file(GLOB AWS_ARCH_SRC
                 "source/intel/asm/*.c"
             )
+        SET_SOURCE_FILES_PROPERTIES(source/intel/asm/crc32c_sse42_asm.c COMPILE_FLAGS ${AWS_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if (MSVC AND AWS_ARCH_ARM64)
