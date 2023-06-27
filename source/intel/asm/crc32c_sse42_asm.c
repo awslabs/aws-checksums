@@ -280,13 +280,13 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
 }
 
 /*
- * crc32_avx512(): compute the crc32 of the buffer, where the buffer
+ * crc32c_avx512(): compute the crc32c of the buffer, where the buffer
  * length must be at least 256, and a multiple of 64. Based on:
  *
  * "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction"
  *  V. Gopal, E. Ozturk, et al., 2009, http://intel.ly/2ySEwL0
  */
-static uint32_t crc32_avx512_simd(const uint8_t *input, int length, uint32_t crc)
+static uint32_t crc32c_avx512(const uint8_t *input, int length, uint32_t crc)
 {
     /*
      * Definitions of the bit-reflected domain constants k1,k2,k3,k4,k5,k6
@@ -519,7 +519,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
         if (AWS_LIKELY(detected_avx512)) {
             if (AWS_LIKELY(length >= 256)) {
                 ssize_t chunk_size = length & ~63;
-                crc = ~crc32_avx512_simd(input, length, crc);
+                crc = ~crc32c_avx512(input, length, crc);
                 /* check remaining data */
                 length -= chunk_size;
                 if (!length)
