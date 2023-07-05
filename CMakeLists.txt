@@ -58,16 +58,18 @@ file(GLOB AWS_ARCH_SRC
         )
 
 if (USE_CPU_EXTENSIONS)
-    # First, check if inline assembly is available. Inline assembly can also be supported by MSVC if the compiler in use is Clang.
-    if(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
-        file(GLOB AWS_ARCH_SRC
-                "source/intel/asm/*.c"
+    if(AWS_ARCH_INTEL)
+        # First, check if inline assembly is available. Inline assembly can also be supported by MSVC if the compiler in use is Clang.
+        if(AWS_HAVE_GCC_INLINE_ASM)
+            file(GLOB AWS_ARCH_SRC
+                    "source/intel/asm/*.c"
+                )
+        elseif (MSVC)
+            file(GLOB AWS_ARCH_SRC
+                    "source/intel/visualc/*.c"
             )
-    elseif (MSVC AND AWS_ARCH_INTEL)
-        file(GLOB AWS_ARCH_SRC
-                "source/intel/visualc/*.c"
-        )
-        source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
+            source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
+        endif()
     endif()
 
     if (MSVC AND AWS_ARCH_ARM64)
