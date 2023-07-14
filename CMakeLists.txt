@@ -28,6 +28,7 @@ string(REPLACE ";" "${AWS_MODULE_DIR};" AWS_MODULE_PATH "${CMAKE_PREFIX_PATH}${A
 # Append that generated list to the module search path
 list(APPEND CMAKE_MODULE_PATH ${AWS_MODULE_PATH})
 
+include(AwsSIMD)
 include(AwsCFlags)
 include(AwsCheckHeaders)
 include(AwsSharedLibSetup)
@@ -60,17 +61,26 @@ file(GLOB AWS_ARCH_SRC
 if (USE_CPU_EXTENSIONS)
     if (MSVC AND AWS_ARCH_INTEL)
         file(GLOB AWS_ARCH_SRC
-                "source/intel/visualc/*.c"
+                "source/intel/intrin/*.c"
         )
 
-        source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
+        source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_SRC})
 
     elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
-        set(AWS_CMAKE_REQUIRED_FLAGS "-mavx512f -msse4.2 -mvpclmulqdq -mpclmul")
+        if (HAVE_SSE42_INTRINSICS)
+            set(SSE42_CFLAGS "-msse4.2")
+        endif()
+
+        if (HAVE_AVX512_INTRINSICS)
+            set(AVX512_CFLAGS "-mavx512f")
+        endif()
+
+        set(AWS_CMAKE_REQUIRED_FLAGS "${SSE42_CFLAGS} ${AVX512_CFLAGS} -mvpclmulqdq -mpclmul")
         file(GLOB AWS_ARCH_SRC
-                "source/intel/asm/*.c"
+                "source/intel/intrin/*.c"
             )
-        SET_SOURCE_FILES_PROPERTIES(source/intel/asm/crc32c_sse42_asm.c COMPILE_FLAGS ${AWS_CMAKE_REQUIRED_FLAGS})
+        message(STATUS "CFLAGS: ${AWS_CMAKE_REQUIRED_FLAGS}")
+        SET_SOURCE_FILES_PROPERTIES(source/intel/intrin/crc32c_sse42_asm.c COMPILE_FLAGS ${AWS_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if (MSVC AND AWS_ARCH_ARM64)
