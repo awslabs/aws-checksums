@@ -23,6 +23,8 @@ AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
  *  V. Gopal, E. Ozturk, et al., 2009, http://intel.ly/2ySEwL0
  */
 uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t crc) {
+    AWS_ASSERT(
+        length >= 256 && "invariant violated. length must be greater than 256 bytes to use avx512 to compute crc.");
     /*
      * Definitions of the bit-reflected domain constants k1,k2,k3,k4,k5,k6
      * are similar to those given at the end of the paper
