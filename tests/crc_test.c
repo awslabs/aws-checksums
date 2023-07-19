@@ -110,6 +110,8 @@ static int s_test_crc32c(struct aws_allocator *allocator, void *ctx) {
 
     uint32_t crc = aws_checksums_crc32c_sw(avx_buf.buffer, (int)avx_buf.len, 0);
     uint32_t hw_crc = aws_checksums_crc32c_hw(avx_buf.buffer, (int)avx_buf.len, 0);
+
+    aws_byte_buf_clean_up(&avx_buf);
     ASSERT_UINT_EQUALS(hw_crc, crc);
 
     return res;
