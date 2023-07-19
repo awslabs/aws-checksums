@@ -358,9 +358,6 @@ uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t p
 
     return ~crc;
 }
-uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
-}
 
 #    if defined(__clang__)
 #        pragma clang diagnostic pop
@@ -368,7 +365,7 @@ uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previ
 
 #else
 uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
+    return aws_checksums_crc32c_sw(input, length, previousCrc32);
 }
 #endif
 /* clang-format on */
