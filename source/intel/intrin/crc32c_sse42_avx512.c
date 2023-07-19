@@ -8,9 +8,9 @@
 #include <aws/common/macros.h>
 
 #include <emmintrin.h>
+#include <immintrin.h>
 #include <smmintrin.h>
 #include <wmmintrin.h>
-#include <immintrin.h>
 
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8[8], 64);
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2[2], 16);
@@ -64,13 +64,11 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     /*
      * Parallel fold blocks of 256, if any.
      */
-    while (length >= 256)
-    {
+    while (length >= 256) {
         x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
         x6 = _mm512_clmulepi64_epi128(x2, x0, 0x00);
         x7 = _mm512_clmulepi64_epi128(x3, x0, 0x00);
         x8 = _mm512_clmulepi64_epi128(x4, x0, 0x00);
-
 
         x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
         x2 = _mm512_clmulepi64_epi128(x2, x0, 0x11);
@@ -119,8 +117,7 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     /*
      * Single fold blocks of 64, if any.
      */
-    while (length >= 64)
-    {
+    while (length >= 64) {
         x2 = _mm512_loadu_si512((__m512i *)input);
 
         x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
@@ -172,7 +169,7 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     a1 = _mm_srli_si128(a1, 8);
     a1 = _mm_xor_si128(a1, a2);
 
-    a0 = _mm_loadl_epi64((__m128i*)k7k8);
+    a0 = _mm_loadl_epi64((__m128i *)k7k8);
     a2 = _mm_srli_si128(a1, 4);
     a1 = _mm_and_si128(a1, a3);
     a1 = _mm_clmulepi64_si128(a1, a0, 0x00);
@@ -181,14 +178,13 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     /*
      * Barret reduce to 32-bits.
      */
-    a0 = _mm_load_si128((__m128i*)poly);
+    a0 = _mm_load_si128((__m128i *)poly);
 
     a2 = _mm_and_si128(a1, a3);
     a2 = _mm_clmulepi64_si128(a2, a0, 0x10);
     a2 = _mm_and_si128(a2, a3);
     a2 = _mm_clmulepi64_si128(a2, a0, 0x00);
     a1 = _mm_xor_si128(a1, a2);
-
 
     /*
      * Return the crc32.

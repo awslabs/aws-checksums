@@ -64,15 +64,22 @@ if (USE_CPU_EXTENSIONS)
             "source/intel/*.c"
         )
 
-        if (MSVC)
-            file(GLOB AWS_ARCH_INTRIN_SRC
-                "source/intel/intrin/*.c"
-                "source/intel/visualc/*.c"
-            )
+        if (AWS_HAVE_AVX2_INTRINSICS)
+            if (MSVC)
+                file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/intrin/*.c"
+                    "source/intel/visualc/*.c"
+                )
+            else()
+                file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/intrin/*.c"
+                )
+            endif()
         else()
-            file(GLOB AWS_ARCH_INTRIN_SRC
-                "source/intel/intrin/*.c"
-            )
+            if (MSVC)
+               file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/visualc/*.c")
+            endif()
         endif()
         
         source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})

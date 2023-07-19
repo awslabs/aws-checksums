@@ -21,7 +21,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     if (AWS_UNLIKELY(!detection_performed)) {
         detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
-        detected_avx512 = true; //aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
+        detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
         detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
         /* Simply setting the flag true to skip HW detection next time
            Not using memory barriers since the worst that can
@@ -40,7 +40,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     }
 
     /* Get the 8-byte memory alignment of our input buffer by looking at the least significant 3 bits */
-    int input_alignment = (uintptr_t)(input) & 0x7;
+    int input_alignment = (uintptr_t)(input)&0x7;
 
     /* Compute the number of unaligned bytes before the first aligned 8-byte chunk (will be in the range 0-7) */
     int leading = (8 - input_alignment) & 0x7;
@@ -68,11 +68,11 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
             /* Fall into the default crc32 for the remaining data. */
             input += chunk_size;
         }
-    } 
+    }
 #endif
 
     if (detected_sse42 && detected_clmul) {
-            return aws_checksums_crc32c_sse42(input, length, crc);
+        return aws_checksums_crc32c_sse42(input, length, crc);
     }
 
     /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
