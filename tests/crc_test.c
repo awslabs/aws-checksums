@@ -5,6 +5,9 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc_priv.h>
+
+#include <aws/common/device_random.h>
+
 #include <aws/testing/aws_test_harness.h>
 
 static const uint8_t DATA_32_ZEROS[32] = {0};
@@ -98,6 +101,17 @@ static int s_test_crc32c(struct aws_allocator *allocator, void *ctx) {
 
     res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c));
     res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c_sw));
+
+
+    struct aws_byte_buf avx_buf;
+    /* enough for two avx512 runs */
+    aws_byte_buf_init(&avx_buf, allocator, 512);
+    aws_device_random_buffer(&avx_buf);
+
+    uint32_t crc = aws_checksums_crc32c_sw(avx_buf.buffer, avx_buf.len, 0);
+
+    uint32_t hw_crc = aws_checksums_crc32c_hw(avx_buf.buffer, avx_buf.len, 0);
+    ASSERT_UINT_EQUALS(hw_crc, crc);
 
     return res;
 }

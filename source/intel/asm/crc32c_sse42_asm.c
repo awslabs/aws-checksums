@@ -6,12 +6,6 @@
 #include <aws/checksums/private/crc_priv.h>
 
 #include <aws/common/cpuid.h>
-#include <emmintrin.h>
-#include <smmintrin.h>
-#include <wmmintrin.h>
-#include <immintrin.h>
-
-#define zalign(x) __attribute__((aligned((x))))
 
 /* clang-format off */
 
@@ -279,195 +273,8 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
     return crc;
 }
 
-/*
- * crc32c_avx512(): compute the crc32c of the buffer, where the buffer
- * length must be at least 256, and a multiple of 64. Based on:
- *
- * "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction"
- *  V. Gopal, E. Ozturk, et al., 2009, http://intel.ly/2ySEwL0
- */
-static uint32_t crc32c_avx512(const uint8_t *input, int length, uint32_t crc)
-{
-    /*
-     * Definitions of the bit-reflected domain constants k1,k2,k3,k4,k5,k6
-     * are similar to those given at the end of the paper
-     *
-     * k1 = ( x ^ ( 512 * 4 + 32 ) mod P(x) << 32 )' << 1
-     * k2 = ( x ^ ( 512 * 4 - 32 ) mod P(x) << 32 )' << 1
-     * k3 = ( x ^ ( 512 + 32 ) mod P(x) << 32 )' << 1
-     * k4 = ( x ^ ( 512 - 32 ) mod P(x) << 32 )' << 1
-     * k5 = ( x ^ ( 128 + 32 ) mod P(x) << 32 )' << 1
-     * k6 = ( x ^ ( 128 - 32 ) mod P(x) << 32 )' << 1
-     */
-
-    static const uint64_t zalign(64) k1k2[] = { 0xdcb17aa4, 0xb9e02b86,
-                                                0xdcb17aa4, 0xb9e02b86,
-                                                0xdcb17aa4, 0xb9e02b86,
-                                                0xdcb17aa4, 0xb9e02b86 };
-    static const uint64_t zalign(64) k3k4[] = { 0x740eef02, 0x9e4addf8,
-                                                0x740eef02, 0x9e4addf8,
-                                                0x740eef02, 0x9e4addf8,
-                                                0x740eef02, 0x9e4addf8 };
-    static const uint64_t zalign(16) k5k6[] = { 0xf20c0dfe, 0x14cd00bd6 };
-    static const uint64_t zalign(16) k7k8[] = { 0xdd45aab8, 0x000000000 };
-    static const uint64_t zalign(16) poly[] = { 0x105ec76f1, 0xdea713f1 };
-
-    __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
-    __m128i a0, a1, a2, a3;
-
-    /*
-     * There's at least one block of 256.
-     */
-    x1 = _mm512_loadu_si512((__m512i *)(input + 0x00));
-    x2 = _mm512_loadu_si512((__m512i *)(input + 0x40));
-    x3 = _mm512_loadu_si512((__m512i *)(input + 0x80));
-    x4 = _mm512_loadu_si512((__m512i *)(input + 0xC0));
-
-    x1 = _mm512_xor_si512(x1, _mm512_castsi128_si512(_mm_cvtsi32_si128(crc)));
-
-    x0 = _mm512_load_si512((__m512i *)k1k2);
-
-    input += 256;
-    length -= 256;
-
-    /*
-     * Parallel fold blocks of 256, if any.
-     */
-    while (length >= 256)
-    {
-        x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-        x6 = _mm512_clmulepi64_epi128(x2, x0, 0x00);
-        x7 = _mm512_clmulepi64_epi128(x3, x0, 0x00);
-        x8 = _mm512_clmulepi64_epi128(x4, x0, 0x00);
-
-
-        x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-        x2 = _mm512_clmulepi64_epi128(x2, x0, 0x11);
-        x3 = _mm512_clmulepi64_epi128(x3, x0, 0x11);
-        x4 = _mm512_clmulepi64_epi128(x4, x0, 0x11);
-
-        y5 = _mm512_loadu_si512((__m512i *)(input + 0x00));
-        y6 = _mm512_loadu_si512((__m512i *)(input + 0x40));
-        y7 = _mm512_loadu_si512((__m512i *)(input + 0x80));
-        y8 = _mm512_loadu_si512((__m512i *)(input + 0xC0));
-
-        x1 = _mm512_xor_si512(x1, x5);
-        x2 = _mm512_xor_si512(x2, x6);
-        x3 = _mm512_xor_si512(x3, x7);
-        x4 = _mm512_xor_si512(x4, x8);
-
-        x1 = _mm512_xor_si512(x1, y5);
-        x2 = _mm512_xor_si512(x2, y6);
-        x3 = _mm512_xor_si512(x3, y7);
-        x4 = _mm512_xor_si512(x4, y8);
-
-        input += 256;
-        length -= 256;
-    }
-
-    /*
-     * Fold into 512-bits.
-     */
-    x0 = _mm512_load_si512((__m512i *)k3k4);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x2);
-    x1 = _mm512_xor_si512(x1, x5);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x3);
-    x1 = _mm512_xor_si512(x1, x5);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x4);
-    x1 = _mm512_xor_si512(x1, x5);
-
-    /*
-     * Single fold blocks of 64, if any.
-     */
-    while (length >= 64)
-    {
-        x2 = _mm512_loadu_si512((__m512i *)input);
-
-        x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-        x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-        x1 = _mm512_xor_si512(x1, x2);
-        x1 = _mm512_xor_si512(x1, x5);
-
-        input += 64;
-        length -= 64;
-    }
-
-    /*
-     * Fold 512-bits to 384-bits.
-     */
-    a0 = _mm_load_si128((__m128i *)k5k6);
-
-    a1 = _mm512_extracti32x4_epi32(x1, 0);
-    a2 = _mm512_extracti32x4_epi32(x1, 1);
-
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Fold 384-bits to 256-bits.
-     */
-    a2 = _mm512_extracti32x4_epi32(x1, 2);
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Fold 256-bits to 128-bits.
-     */
-    a2 = _mm512_extracti32x4_epi32(x1, 3);
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Fold 128-bits to 64-bits.
-     */
-    a2 = _mm_clmulepi64_si128(a1, a0, 0x10);
-    a3 = _mm_setr_epi32(~0, 0, ~0, 0);
-    a1 = _mm_srli_si128(a1, 8);
-    a1 = _mm_xor_si128(a1, a2);
-
-    a0 = _mm_loadl_epi64((__m128i*)k7k8);
-    a2 = _mm_srli_si128(a1, 4);
-    a1 = _mm_and_si128(a1, a3);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Barret reduce to 32-bits.
-     */
-    a0 = _mm_load_si128((__m128i*)poly);
-
-    a2 = _mm_and_si128(a1, a3);
-    a2 = _mm_clmulepi64_si128(a2, a0, 0x10);
-    a2 = _mm_and_si128(a2, a3);
-    a2 = _mm_clmulepi64_si128(a2, a0, 0x00);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Return the crc32.
-     */
-    return _mm_extract_epi32(a1, 1);
-}
-
 static bool detection_performed = false;
 static bool detected_clmul = false;
-static bool detected_sse42 = false;
-static bool detected_avx512 = false;
 
 /*
  * Computes the Castagnoli CRC32c (iSCSI) of the specified data buffer using the Intel CRC32Q (64-bit quad word) and
@@ -476,12 +283,10 @@ static bool detected_avx512 = false;
  * Pass 0 in the previousCrc32 parameter as an initial value unless continuing to update a running CRC in a subsequent
  * call.
  */
-uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
 
     if (AWS_UNLIKELY(!detection_performed)) {
         detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
-        detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
-        detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
         /* Simply setting the flag true to skip HW detection next time
            Not using memory barriers since the worst that can
            happen is a fallback to the non HW accelerated code. */
@@ -516,37 +321,24 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     /* Using likely to keep this code inlined */
     if (AWS_LIKELY(detected_clmul)) {
-        if (AWS_LIKELY(detected_avx512)) {
-            if (AWS_LIKELY(length >= 256)) {
-                ssize_t chunk_size = length & ~63;
-                crc = ~crc32c_avx512(input, length, crc);
-                /* check remaining data */
-                length -= chunk_size;
-                if (!length)
-                    return crc;
-                /* Fall into the default crc32 for the remaining data. */
-                input += chunk_size;
-            }
+
+        while (AWS_LIKELY(length >= 3072)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_3072(input, crc);
+            input += 3072;
+            length -= 3072;
         }
-        else if (AWS_LIKELY(detected_sse42)) {
-            while (AWS_LIKELY(length >= 3072)) {
-                /* Compute crc32c on each block, chaining each crc result */
-                crc = s_crc32c_sse42_clmul_3072(input, crc);
-                input += 3072;
-                length -= 3072;
-            }
-            while (AWS_LIKELY(length >= 1024)) {
-                /* Compute crc32c on each block, chaining each crc result */
-                crc = s_crc32c_sse42_clmul_1024(input, crc);
-                input += 1024;
-                length -= 1024;
-            }
-            while (AWS_LIKELY(length >= 256)) {
-                /* Compute crc32c on each block, chaining each crc result */
-                crc = s_crc32c_sse42_clmul_256(input, crc);
-                input += 256;
-                length -= 256;
-            }
+        while (AWS_LIKELY(length >= 1024)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_1024(input, crc);
+            input += 1024;
+            length -= 1024;
+        }
+        while (AWS_LIKELY(length >= 256)) {
+            /* Compute crc32c on each block, chaining each crc result */
+            crc = s_crc32c_sse42_clmul_256(input, crc);
+            input += 256;
+            length -= 256;
         }
     }
 
@@ -575,13 +367,8 @@ uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previ
 #    endif
 
 #else
-uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
     return aws_checksums_crc32_sw(input, length, previousCrc32);
 }
-
-uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32c_sw(input, length, previousCrc32);
-}
-
 #endif
 /* clang-format on */

@@ -59,28 +59,37 @@ file(GLOB AWS_ARCH_SRC
         )
 
 if (USE_CPU_EXTENSIONS)
-    if (MSVC AND AWS_ARCH_INTEL)
-        file(GLOB AWS_ARCH_SRC
-                "source/intel/intrin/*.c"
+    if (AWS_ARCH_INTEL)
+        file (GLOB AWS_ARCH_INTEL_SRC
+            "source/intel/*.c"
         )
 
-        source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_SRC})
-
-    elseif(AWS_ARCH_INTEL AND AWS_HAVE_GCC_INLINE_ASM)
-        if (HAVE_SSE42_INTRINSICS)
-            set(SSE42_CFLAGS "-msse4.2")
-        endif()
-
-        if (HAVE_AVX512_INTRINSICS)
-            set(AVX512_CFLAGS "-mavx512f")
-        endif()
-
-        set(AWS_CMAKE_REQUIRED_FLAGS "${SSE42_CFLAGS} ${AVX512_CFLAGS} -mvpclmulqdq -mpclmul")
-        file(GLOB AWS_ARCH_SRC
+        if (MSVC)
+            file(GLOB AWS_ARCH_INTRIN_SRC
+                "source/intel/intrin/*.c"
+                "source/intel/visualc/*.c"
+            )
+        else()
+            file(GLOB AWS_ARCH_INTRIN_SRC
                 "source/intel/intrin/*.c"
             )
-        message(STATUS "CFLAGS: ${AWS_CMAKE_REQUIRED_FLAGS}")
-        SET_SOURCE_FILES_PROPERTIES(source/intel/intrin/crc32c_sse42_asm.c COMPILE_FLAGS ${AWS_CMAKE_REQUIRED_FLAGS})
+        endif()
+        
+        source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
+        source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
+
+        if (AWS_HAVE_GCC_INLINE_ASM)
+            file(GLOB AWS_ARCH_SRC
+                    ${AWS_ARCH_INTEL_SRC}
+                    ${AWS_ARCH_INTRIN_SRC}
+                    ${AWS_ARCH_ASM_SRC}
+            )            
+        else()
+            file(GLOB AWS_ARCH_SRC
+                    ${AWS_ARCH_INTEL_SRC}
+                    ${AWS_ARCH_INTRIN_SRC}
+            )
+        endif()
     endif()
 
     if (MSVC AND AWS_ARCH_ARM64)
@@ -126,6 +135,7 @@ file(GLOB CHECKSUMS_COMBINED_SRC
 
 
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
+
 aws_set_common_properties(${PROJECT_NAME})
 aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_CHECKSUMS")
 aws_check_headers(${PROJECT_NAME} ${AWS_CHECKSUMS_HEADERS})
@@ -134,6 +144,10 @@ aws_add_sanitizers(${PROJECT_NAME})
 
 # We are not ABI stable yet
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0)
+
+if (USE_CPU_EXTENSIONS AND AWS_ARCH_INTEL)
+   simd_add_source_avx(${PROJECT_NAME} ${AWS_ARCH_SRC})
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
