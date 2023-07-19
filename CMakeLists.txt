@@ -78,7 +78,8 @@ if (USE_CPU_EXTENSIONS)
         else()
             if (MSVC)
                file(GLOB AWS_ARCH_INTRIN_SRC
-                    "source/intel/visualc/*.c")
+                    "source/intel/visualc/*.c"
+               )
             endif()
         endif()
         
@@ -86,6 +87,10 @@ if (USE_CPU_EXTENSIONS)
         source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
 
         if (AWS_HAVE_GCC_INLINE_ASM)
+            file(GLOB AWS_ARCH_ASM_SRC
+                "source/intel/asm/*.c"
+            )
+
             file(GLOB AWS_ARCH_SRC
                     ${AWS_ARCH_INTEL_SRC}
                     ${AWS_ARCH_INTRIN_SRC}
