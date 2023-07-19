@@ -53,9 +53,9 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
         crc = (uint32_t)_mm_crc32_u8(crc, *input++);
     }
 
+#ifdef AWS_HAVE_AVX512_INTRINSICS
     int chunk_size = length & ~63;
 
-#ifdef AWS_HAVE_AVX512_INTRINSICS
     if (detected_avx512 && detected_clmul) {
         if (length >= 256) {
             crc = aws_checksums_crc32c_avx512(input, length, crc);
