@@ -64,7 +64,7 @@ if (USE_CPU_EXTENSIONS)
             "source/intel/*.c"
         )
 
-        if (AWS_HAVE_AVX2_INTRINSICS AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+        if (AWS_HAVE_AVX512_INTRINSICS AND CMAKE_SIZEOF_VOID_P EQUAL 8)
             if (MSVC)
                 file(GLOB AWS_ARCH_INTRIN_SRC
                     "source/intel/intrin/*.c"
