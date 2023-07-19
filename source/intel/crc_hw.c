@@ -32,7 +32,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     uint32_t crc = ~previousCrc32;
 
     /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
-    if (length < sizeof(slice_ptr_int_type)) {
+    if (length < (int)sizeof(slice_ptr_int_type)) {
         while (length-- > 0) {
             crc = (uint32_t)_mm_crc32_u8(crc, *input++);
         }
@@ -76,10 +76,10 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
     }
 
     /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
-    while (length >= sizeof(slice_ptr_int_type)) {
+    while (length >= (int)sizeof(slice_ptr_int_type)) {
         crc = (uint32_t)crc_intrin_fn(crc, *input);
         input += sizeof(slice_ptr_int_type);
-        length -= sizeof(slice_ptr_int_type);
+        length -= (int)sizeof(slice_ptr_int_type);
     }
 
     /* Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one */
