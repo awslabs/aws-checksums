@@ -293,7 +293,8 @@ uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t p
         detection_performed = true;
     }
 
-    uint32_t crc = ~previousCrc32;
+    /* this is called by a higher-level shim and previousCRC32 is already ~ */
+    uint32_t crc = previousCrc32;
 
     /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
     if (AWS_UNLIKELY(length < 8)) {
