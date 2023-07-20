@@ -366,7 +366,10 @@ uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t p
 
 #else
 uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32c_sw(input, length, previousCrc32);
+    /* these are nested in a larger computation. As a result the crc doesn't need to be bit flipped.
+       However, the sw function is also used as a standalone implementation that does need to do the 
+       bit flip. So go ahead and flip it here, so the sw implementation flips it back. */
+    return aws_checksums_crc32c_sw(input, length, ~previousCrc32);
 }
 #endif
 /* clang-format on */
