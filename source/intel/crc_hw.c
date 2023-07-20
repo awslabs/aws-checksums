@@ -9,6 +9,7 @@ static bool detection_performed = false;
 static bool detected_sse42 = false;
 static bool detected_avx512 = false;
 static bool detected_clmul = false;
+static bool detected_vpclmulqdq = false;
 
 /*
  * Computes the Castagnoli CRC32c (iSCSI) of the specified data buffer using the Intel CRC32Q (64-bit quad word) and
@@ -23,12 +24,16 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
         detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
         detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
         detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+        detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
+
         /* Simply setting the flag true to skip HW detection next time
            Not using memory barriers since the worst that can
            happen is a fallback to the non HW accelerated code. */
         detection_performed = true;
     }
 
+    /* this is the entry point. We should only do the bit flip once. It should not be done for the subfunctions and
+     * branches.*/
     uint32_t crc = ~previousCrc32;
 
     /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
@@ -56,7 +61,7 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX)
     int chunk_size = length & ~63;
 
-    if (detected_avx512 && detected_clmul) {
+    if (detected_avx512 && detected_vpclmulqdq && detected_clmul) {
         if (length >= 256) {
             crc = aws_checksums_crc32c_avx512(input, length, crc);
             /* check remaining data */

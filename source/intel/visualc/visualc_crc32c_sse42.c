@@ -43,11 +43,11 @@ uint32_t aws_checksums_crc32c_sse42(const uint8_t *data, int length, uint32_t pr
     uint32_t remainder = length_to_process % sizeof(temp);
 
     while (slices--) {
-#    if defined(_M_X64)
+#if defined(_M_X64)
         crc = (uint32_t)_mm_crc32_u64(crc, *temp++);
-#    else
+#else
         crc = _mm_crc32_u32(crc, *temp++);
-#    endif
+#endif
     }
 
     /* process the remaining parts that can't be done on the slice size. */

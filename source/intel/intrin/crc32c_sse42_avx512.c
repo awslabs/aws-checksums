@@ -27,7 +27,6 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     AWS_ASSERT(
         length >= 256 && "invariant violated. length must be greater than 256 bytes to use avx512 to compute crc.");
 
-    fprintf(stderr, "Entered AVX512 branch.");
     uint32_t crc = ~previous_crc;
     /*
      * Definitions of the bit-reflected domain constants k1,k2,k3,k4,k5,k6
@@ -41,11 +40,11 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
      * k6 = ( x ^ ( 128 - 32 ) mod P(x) << 32 )' << 1
      */
 
-    static zalign_8 k1k2[8] = 
-        {0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86};
+    static zalign_8 k1k2[8] = {
+        0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86};
 
-    static zalign_8 k3k4[8] =
-        {0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
+    static zalign_8 k3k4[8] = {
+        0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
     static zalign_2 k5k6[2] = {0xf20c0dfe, 0x14cd00bd6};
     static zalign_2 k7k8[2] = {0xdd45aab8, 0x000000000};
     static zalign_2 poly[2] = {0x105ec76f1, 0xdea713f1};
