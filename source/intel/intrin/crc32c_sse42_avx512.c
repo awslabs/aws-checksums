@@ -5,6 +5,7 @@
 
 #include <aws/checksums/private/intel/crc32c_compiler_shims.h>
 
+#include <aws/common/assert.h>
 #include <aws/common/macros.h>
 
 #include <emmintrin.h>
