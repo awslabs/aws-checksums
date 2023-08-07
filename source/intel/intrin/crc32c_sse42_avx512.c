@@ -21,11 +21,11 @@ AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
  * length must be at least 256, and a multiple of 64. Based on:
  *
  * "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction"
- *  V. Gopal, E. Ozturk, et al., 2009, http://intel.ly/2ySEwL0
+ *  V. Gopal, E. Ozturk, et al., 2009, http://download.intel.com/design/intarch/papers/323102.pdf
  */
 uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t previous_crc) {
     AWS_ASSERT(
-        length >= 256 && "invariant violated. length must be greater than 256 bytes to use avx512 to compute crc.");
+        length >= 256 && "invariant violated. length must be greater than 255 bytes to use avx512 to compute crc.");
 
     uint32_t crc = ~previous_crc;
     /*
@@ -48,6 +48,11 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     static zalign_2 k5k6[2] = {0xf20c0dfe, 0x14cd00bd6};
     static zalign_2 k7k8[2] = {0xdd45aab8, 0x000000000};
     static zalign_2 poly[2] = {0x105ec76f1, 0xdea713f1};
+    static zalign_8 k9k10[8] = {
+	0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
+    static zalign_8 k1k4[8] =  {
+	0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000};
+
 
     __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
     __m128i a0, a1, a2, a3;
@@ -86,39 +91,31 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
         y7 = _mm512_loadu_si512((__m512i *)(input + 0x80));
         y8 = _mm512_loadu_si512((__m512i *)(input + 0xC0));
 
-        x1 = _mm512_xor_si512(x1, x5);
-        x2 = _mm512_xor_si512(x2, x6);
-        x3 = _mm512_xor_si512(x3, x7);
-        x4 = _mm512_xor_si512(x4, x8);
-
-        x1 = _mm512_xor_si512(x1, y5);
-        x2 = _mm512_xor_si512(x2, y6);
-        x3 = _mm512_xor_si512(x3, y7);
-        x4 = _mm512_xor_si512(x4, y8);
+	x1 = _mm512_ternarylogic_epi64(x1, x5, y5, 0x96);
+	x2 = _mm512_ternarylogic_epi64(x2, x6, y6, 0x96);
+	x3 = _mm512_ternarylogic_epi64(x3, x7, y7, 0x96);
+	x4 = _mm512_ternarylogic_epi64(x4, x8, y8, 0x96);
 
         input += 256;
         length -= 256;
     }
 
     /*
-     * Fold into 512-bits.
+     * Fold 256 bytes into 64 bytes.
      */
+    x0 = _mm512_load_si512((__m512i *)k9k10);
+    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
+    x6 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
+    x3 = _mm512_ternarylogic_epi64(x3, x5, x6, 0x96);
+
+    x7 = _mm512_clmulepi64_epi128(x2, x0, 0x00);
+    x8 = _mm512_clmulepi64_epi128(x2, x0, 0x11);
+    x4 = _mm512_ternarylogic_epi64(x4, x7, x8, 0x96);
+
     x0 = _mm512_load_si512((__m512i *)k3k4);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x2);
-    x1 = _mm512_xor_si512(x1, x5);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x3);
-    x1 = _mm512_xor_si512(x1, x5);
-
-    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
-    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-    x1 = _mm512_xor_si512(x1, x4);
-    x1 = _mm512_xor_si512(x1, x5);
+    y5 = _mm512_clmulepi64_epi128(x3, x0, 0x00);
+    y6 = _mm512_clmulepi64_epi128(x3, x0, 0x11);
+    x1 = _mm512_ternarylogic_epi64(x4, y5, y6, 0x96);
 
     /*
      * Single fold blocks of 64, if any.
@@ -128,54 +125,37 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
 
         x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
         x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
-        x1 = _mm512_xor_si512(x1, x2);
-        x1 = _mm512_xor_si512(x1, x5);
+        x1 = _mm512_ternarylogic_epi64(x1, x2, x5, 0x96);
 
         input += 64;
         length -= 64;
     }
 
     /*
-     * Fold 512-bits to 384-bits.
+     * Fold 512-bits to 128-bits.
      */
-    a0 = _mm_load_si128((__m128i *)k5k6);
+    x0 = _mm512_loadu_si512((__m512i *)k1k4);
 
-    a1 = _mm512_extracti32x4_epi32(x1, 0);
-    a2 = _mm512_extracti32x4_epi32(x1, 1);
-
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Fold 384-bits to 256-bits.
-     */
-    a2 = _mm512_extracti32x4_epi32(x1, 2);
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Fold 256-bits to 128-bits.
-     */
     a2 = _mm512_extracti32x4_epi32(x1, 3);
-    a3 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x11);
-    a1 = _mm_xor_si128(a1, a3);
-    a1 = _mm_xor_si128(a1, a2);
+    x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
+    x1 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
+    x1 = _mm512_ternarylogic_epi64(x1, x5, _mm512_castsi128_si512(a2), 0x96);
+
+    x0 = _mm512_shuffle_i64x2(x1, x1, 0x4E);
+    x0 = _mm512_xor_epi64(x1, x0);
+    a1 = _mm512_extracti32x4_epi32(x0, 1);
+    a1 = _mm_xor_epi64(a1, _mm512_castsi512_si128(x0));
 
     /*
      * Fold 128-bits to 64-bits.
      */
+    a0 = _mm_load_si128((__m128i *)k5k6);
     a2 = _mm_clmulepi64_si128(a1, a0, 0x10);
     a3 = _mm_setr_epi32(~0, 0, ~0, 0);
     a1 = _mm_srli_si128(a1, 8);
     a1 = _mm_xor_si128(a1, a2);
 
-    a0 = _mm_loadl_epi64((__m128i *)k7k8);
+    a0 = _mm_loadl_epi64((__m128i*)k7k8);
     a2 = _mm_srli_si128(a1, 4);
     a1 = _mm_and_si128(a1, a3);
     a1 = _mm_clmulepi64_si128(a1, a0, 0x00);
