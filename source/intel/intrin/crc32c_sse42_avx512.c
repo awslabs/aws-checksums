@@ -45,9 +45,6 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
 
     static zalign_8 k3k4[8] = {
         0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
-    static zalign_2 k5k6[2] = {0xf20c0dfe, 0x14cd00bd6};
-    static zalign_2 k7k8[2] = {0xdd45aab8, 0x000000000};
-    static zalign_2 poly[2] = {0x105ec76f1, 0xdea713f1};
     static zalign_8 k9k10[8] = {
 	0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
     static zalign_8 k1k4[8] =  {
@@ -55,7 +52,7 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
 
 
     __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
-    __m128i a0, a1, a2, a3;
+    __m128i a1, a2;
 
     /*
      * There's at least one block of 256.
@@ -147,33 +144,9 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     a1 = _mm_xor_epi64(a1, _mm512_castsi512_si128(x0));
 
     /*
-     * Fold 128-bits to 64-bits.
+     * Fold 128-bits to 32-bits.
      */
-    a0 = _mm_load_si128((__m128i *)k5k6);
-    a2 = _mm_clmulepi64_si128(a1, a0, 0x10);
-    a3 = _mm_setr_epi32(~0, 0, ~0, 0);
-    a1 = _mm_srli_si128(a1, 8);
-    a1 = _mm_xor_si128(a1, a2);
-
-    a0 = _mm_loadl_epi64((__m128i*)k7k8);
-    a2 = _mm_srli_si128(a1, 4);
-    a1 = _mm_and_si128(a1, a3);
-    a1 = _mm_clmulepi64_si128(a1, a0, 0x00);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Barret reduce to 32-bits.
-     */
-    a0 = _mm_load_si128((__m128i *)poly);
-
-    a2 = _mm_and_si128(a1, a3);
-    a2 = _mm_clmulepi64_si128(a2, a0, 0x10);
-    a2 = _mm_and_si128(a2, a3);
-    a2 = _mm_clmulepi64_si128(a2, a0, 0x00);
-    a1 = _mm_xor_si128(a1, a2);
-
-    /*
-     * Return the crc32.
-     */
-    return ~_mm_extract_epi32(a1, 1);
+    uint64_t val;
+    val = _mm_crc32_u64(0, _mm_extract_epi64(a1, 0));
+    return (uint32_t) _mm_crc32_u64(val, _mm_extract_epi64(a1, 1));
 }
