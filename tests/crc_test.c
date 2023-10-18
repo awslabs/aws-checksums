@@ -13,6 +13,7 @@ static const uint32_t KNOWN_CRC32C_32_ZEROES = 0x8A9136AA;
 
 static const uint8_t DATA_32_VALUES[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
                                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+static const uint32_t KNOWN_CRC32_32_VALUES = 0x91267E8A;
 static const uint32_t KNOWN_CRC32C_32_VALUES = 0x46DD794E;
 
 static const uint8_t TEST_VECTOR[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -56,6 +57,7 @@ static int s_test_known_crc(
 static int s_test_known_crc32(const char *func_name, crc_fn *func) {
     int res = 0;
     res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32_32_ZEROES);
+    res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32_32_VALUES);
     res |= s_test_known_crc(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32_TEST_VECTOR);
     return res;
 }
