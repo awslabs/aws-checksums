@@ -115,8 +115,9 @@ if (USE_CPU_EXTENSIONS)
             "source/arm/*.c"
             )
         SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+        SET_SOURCE_FILES_PROPERTIES(source/arm/crc64_arm.c PROPERTIES COMPILE_FLAGS "-march=armv8.1-a+crypto -mtune=neoverse-v1")
     elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
-        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc -Werror")
+        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc+crypto -Werror")
         check_c_source_compiles("
             #include <arm_acle.h>
             int main() {
@@ -130,6 +131,7 @@ if (USE_CPU_EXTENSIONS)
                 "source/arm/asm/*.c"
                 )
             SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
+            SET_SOURCE_FILES_PROPERTIES(source/arm/crc64_arm.c PROPERTIES COMPILE_FLAGS "-march=armv8.1-a+crypto -mtune=neoverse-v1")
         endif()
     endif()
 endif()
