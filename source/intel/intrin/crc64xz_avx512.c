@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include "aws/checksums/private/crc64_priv.h"
+#include <aws/checksums/private/crc64_priv.h>
 
 #if defined(__x86_64__)
 
@@ -28,7 +28,7 @@
 uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previousCrc64) {
 
     if (length < 512) {
-        return aws_checksums_crc64xz_clmul(input, length, previousCrc64);
+        return aws_checksums_crc64xz_intel_clmul(input, length, previousCrc64);
     }
 
     // The following code assumes a minimum of 256 bytes of input
