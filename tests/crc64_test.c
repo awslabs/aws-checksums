@@ -18,10 +18,10 @@ static const uint64_t KNOWN_CRC64XZ_32_ZEROES = 0xC95AF8617CD5330C;
 
 static const uint8_t DATA_32_VALUES[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
                                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-static const uint64_t KNOWN_CRC64XZ_32_VALUES =   0x7FE571A587084D10;
+static const uint64_t KNOWN_CRC64XZ_32_VALUES = 0x7FE571A587084D10;
 
 static const uint8_t TEST_VECTOR[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-static const uint64_t KNOWN_CRC64XZ_TEST_VECTOR = 0x995DC9BBDF1939FA ;
+static const uint64_t KNOWN_CRC64XZ_TEST_VECTOR = 0x995DC9BBDF1939FA;
 
 static uint8_t *s_non_mem_aligned_vector;
 
@@ -93,13 +93,7 @@ static int s_test_known_crc64xz(const char *func_name, crc_fn *func) {
     res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC64XZ_32_ZEROES);
     res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC64XZ_32_VALUES);
     res |= s_test_known_crc(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC64XZ_TEST_VECTOR);
-    res |= s_test_crc_residue(
-        func_name,
-        func,
-        "32_values",
-        DATA_32_VALUES,
-        sizeof(DATA_32_VALUES),
-        RESIDUE_CRC64XZ);
+    res |= s_test_crc_residue(func_name, func, "32_values", DATA_32_VALUES, sizeof(DATA_32_VALUES), RESIDUE_CRC64XZ);
 
     /* this tests three things, first it tests the case where we aren't 8-byte aligned */
     /* second, it tests that reads aren't performed before start of buffer */

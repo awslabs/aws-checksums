@@ -1,22 +1,25 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include "aws/checksums/private/crc64_priv.h"
 
 #if defined(__x86_64__)
 
-#include <x86intrin.h>
+#    include <x86intrin.h>
 
-#define load_xmm(ptr)                 _mm_loadu_si128((const __m128i *) (const void *) (ptr))
-#define left_shift_bytes(xmm, count)  _mm_shuffle_epi8((xmm), load_xmm(aws_checksums_masks_shifts[1] - (intptr_t) (count)))
-#define right_shift_bytes(xmm, count) _mm_shuffle_epi8((xmm), load_xmm(aws_checksums_masks_shifts[1] + (intptr_t) (count)))
-#define mask_high_bytes(xmm, count)   _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t) (count)))
-#define mask_low_bytes(xmm, count)    _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[5] - (intptr_t) (count)))
-#define cmull_xmm_hi(xmm1, xmm2)      _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
-#define cmull_xmm_lo(xmm1, xmm2)      _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
-#define cmull_xmm_pair(xmm1, xmm2)    _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
+#    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
+#    define left_shift_bytes(xmm, count)                                                                               \
+        _mm_shuffle_epi8((xmm), load_xmm(aws_checksums_masks_shifts[1] - (intptr_t)(count)))
+#    define right_shift_bytes(xmm, count)                                                                              \
+        _mm_shuffle_epi8((xmm), load_xmm(aws_checksums_masks_shifts[1] + (intptr_t)(count)))
+#    define mask_high_bytes(xmm, count)                                                                                \
+        _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
+#    define mask_low_bytes(xmm, count) _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[5] - (intptr_t)(count)))
+#    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
+#    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
+#    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
 
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, const uint64_t previousCrc64) {
     if (!input || length <= 0) {
@@ -24,17 +27,18 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, con
     }
 
     // Invert the previous crc bits and load into the lower half of an xmm register
-    __m128i a1 = _mm_cvtsi64_si128((int64_t) (~previousCrc64));
+    __m128i a1 = _mm_cvtsi64_si128((int64_t)(~previousCrc64));
 
-    // For lengths less than 16 we need to carefully load from memory to prevent reading beyond the end of the input buffer
+    // For lengths less than 16 we need to carefully load from memory to prevent reading beyond the end of the input
+    // buffer
     if (length < 16) {
-        int alignment = (intptr_t) input & 15;
+        int alignment = (intptr_t)input & 15;
         if (alignment + length <= 16) {
             // The input falls in a single 16 byte segment so we load from a 16 byte aligned address
             // The input data will be loaded "into the middle" of the xmm register
-            // Right shift the input data register to eliminate any leading bytes and move the data to the least significant bytes
-            // Mask out the most significant bytes that may contain garbage
-            // XOR the masked input data with the previous crc
+            // Right shift the input data register to eliminate any leading bytes and move the data to the least
+            // significant bytes Mask out the most significant bytes that may contain garbage XOR the masked input data
+            // with the previous crc
             a1 = _mm_xor_si128(a1, mask_low_bytes(right_shift_bytes(load_xmm(input - alignment), alignment), length));
         } else {
             // The input spans two 16 byte segments so it's safe to load the input from its actual starting address
@@ -166,7 +170,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, con
     // Left shift mul_by_mu to get the low half into the upper half and XOR all the upper halves
     __m128i reduced = _mm_xor_si128(_mm_xor_si128(a1, _mm_bslli_si128(mul_by_mu, 8)), mul_by_poly);
     // After the XORs, the CRC falls in the upper half of the register - invert the bits before returning the crc
-    return ~(uint64_t) _mm_extract_epi64(reduced, 1);
+    return ~(uint64_t)_mm_extract_epi64(reduced, 1);
 }
 
 #endif /* defined(__x86_64__) */

@@ -1,26 +1,29 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include "aws/checksums/private/crc64_priv.h"
 
 #if defined(__x86_64__)
 
-#include <x86intrin.h>
+#    include <x86intrin.h>
 
-#define load_xmm(ptr)                 _mm_loadu_si128((const __m128i *) (const void *) (ptr))
-#define mask_high_bytes(xmm, count)   _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t) (count)))
-#define cmull_xmm_hi(xmm1, xmm2)      _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
-#define cmull_xmm_lo(xmm1, xmm2)      _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
-#define cmull_xmm_pair(xmm1, xmm2)    _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
-#define xor_xmm(xmm1, xmm2, xmm3)     _mm_ternarylogic_epi64((xmm1), (xmm2), (xmm3), 0x96) // The constant 0x96 produces a 3-way XOR
+#    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
+#    define mask_high_bytes(xmm, count)                                                                                \
+        _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
+#    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
+#    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
+#    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
+#    define xor_xmm(xmm1, xmm2, xmm3)                                                                                  \
+        _mm_ternarylogic_epi64((xmm1), (xmm2), (xmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
-#define load_zmm(ptr)                 _mm512_loadu_epi64((const __m512i *) (const void *) (ptr))
-#define cmull_zmm_hi(zmm1, zmm2)      _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x11)
-#define cmull_zmm_lo(zmm1, zmm2)      _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x00)
-#define cmull_zmm_pair(zmm1, zmm2)    _mm512_xor_si512(cmull_zmm_hi((zmm1), (zmm2)), cmull_zmm_lo((zmm1), (zmm2)))
-#define xor_zmm(zmm1, zmm2, zmm3)     _mm512_ternarylogic_epi64((zmm1), (zmm2), (zmm3), 0x96) // The constant 0x96 produces a 3-way XOR
+#    define load_zmm(ptr) _mm512_loadu_epi64((const __m512i *)(const void *)(ptr))
+#    define cmull_zmm_hi(zmm1, zmm2) _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x11)
+#    define cmull_zmm_lo(zmm1, zmm2) _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x00)
+#    define cmull_zmm_pair(zmm1, zmm2) _mm512_xor_si512(cmull_zmm_hi((zmm1), (zmm2)), cmull_zmm_lo((zmm1), (zmm2)))
+#    define xor_zmm(zmm1, zmm2, zmm3)                                                                                  \
+        _mm512_ternarylogic_epi64((zmm1), (zmm2), (zmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
 uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previousCrc64) {
 
@@ -31,7 +34,7 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     // The following code assumes a minimum of 256 bytes of input
 
     // Load the first 64 bytes into a zmm register and XOR with the (inverted) crc
-    __m512i x1 = _mm512_xor_si512(_mm512_zextsi128_si512(_mm_cvtsi64_si128((int64_t) ~previousCrc64)), load_zmm(input));
+    __m512i x1 = _mm512_xor_si512(_mm512_zextsi128_si512(_mm_cvtsi64_si128((int64_t)~previousCrc64)), load_zmm(input));
     // Load 192 more bytes of input
     __m512i x2 = load_zmm(input + 0x40);
     __m512i x3 = load_zmm(input + 0x80);
@@ -116,7 +119,7 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     // Left shift mul_by_mu to get the low half into the upper half and XOR all the upper halves
     __m128i reduced = xor_xmm(a1, _mm_bslli_si128(mul_by_mu, 8), mul_by_poly);
     // After the XORs, the CRC falls in the upper half of the register - invert the bits before returning the crc
-    return ~(uint64_t) _mm_extract_epi64(reduced, 1);
+    return ~(uint64_t)_mm_extract_epi64(reduced, 1);
 }
 
 #endif /* defined(__x86_64__) */

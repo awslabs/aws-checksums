@@ -1,14 +1,16 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
 
 // CRC64XZ slice-by-8 lookup table (bit-reflected poly 0xc96c5795d7870f42)
-static uint64_t crc64xz_table[8][256] = { //
-    { //
+static uint64_t crc64xz_table[8][256] = {
+    //
+    {
+        //
         0x0000000000000000, 0xb32e4cbe03a75f6f, 0xf4843657a840a05b, 0x47aa7ae9abe7ff34, // [0][0x00]
         0x7bd0c384ff8f5e33, 0xc8fe8f3afc28015c, 0x8f54f5d357cffe68, 0x3c7ab96d5468a107, // [0][0x04]
         0xf7a18709ff1ebc66, 0x448fcbb7fcb9e309, 0x0325b15e575e1c3d, 0xb00bfde054f94352, // [0][0x08]
@@ -535,7 +537,7 @@ static uint64_t crc64xz_table[8][256] = { //
         0x344277a6c9509635, 0xeefce2090ed7c975, 0x13e7f3d2e9503630, 0xc959667d2ed76970, // [7][0xf4]
         0xe59f6e9e0953562b, 0x3f21fb31ced4096b, 0xc23aeaea2953f62e, 0x18847f45eed4a96e, // [7][0xf8]
         0xaad4667649521621, 0x706af3d98ed54961, 0x8d71e2026952b624, 0x57cf77adaed5e964  // [7][0xfc]
-    } //
+    }                                                                                   //
 };
 
 /** Slow slice-by-8 lookup table based fallback function to compute CRC64XZ. */
@@ -547,7 +549,7 @@ uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, const int length, const 
 
     uint64_t crc = ~previousCrc64;
     int remaining = length;
-    const uint64_t *current = (const uint64_t *) (const void *) input;
+    const uint64_t *current = (const uint64_t *)(const void *)input;
     while (remaining >= 8) {
         uint64_t c1 = *current++ ^ crc;
         crc = crc64xz_table[7][c1 & 0xff];

@@ -1,47 +1,51 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/checksums/private/crc64_priv.h>
 
 #if defined(__aarch64__)
 
-#include <arm_neon.h>
+#    include <arm_neon.h>
 
 // Load a uint8x16_t neon register from uint8_t pointer
-#define load_u8(uint8_t_ptr) vld1q_u8((uint8_t_ptr))
+#    define load_u8(uint8_t_ptr) vld1q_u8((uint8_t_ptr))
 // Load a poly64x2_t neon register from a uint8_t pointer
-#define load_p64_u8(uint8_t_ptr) vreinterpretq_p64_u8(load_u8(uint8_t_ptr))
+#    define load_p64_u8(uint8_t_ptr) vreinterpretq_p64_u8(load_u8(uint8_t_ptr))
 // Load a poly64x2_t neon register from a uint64_t pointer
-#define load_p64(uint64_t_ptr) vreinterpretq_p64_u64(vld1q_u64((uint64_t_ptr)))
+#    define load_p64(uint64_t_ptr) vreinterpretq_p64_u64(vld1q_u64((uint64_t_ptr)))
 // Mask the bytes in a neon uint8x16_t register and preserve 0 to 15 least significant bytes.
-#define mask_low_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[5] - (intptr_t) (count)))
+#    define mask_low_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[5] - (intptr_t)(count)))
 // Mask the bytes in a neon uint8x16_t register and preserve 0 to 15 most significant bytes.
-#define mask_high_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[3] + (intptr_t) (count)))
+#    define mask_high_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
 // Mask the bytes in a neon poly64x2_t register and preserve 0 to 15 most significant bytes.
-#define mask_high_p64(poly, count) vreinterpretq_p64_u8(mask_high_u8(vreinterpretq_u8_p64(poly), count))
+#    define mask_high_p64(poly, count) vreinterpretq_p64_u8(mask_high_u8(vreinterpretq_u8_p64(poly), count))
 // Left shift bytes in a neon uint8x16_t register - shift count from 0 to 15.
-#define left_shift_u8(u8, count)  vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] - (intptr_t) (count)))
+#    define left_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] - (intptr_t)(count)))
 // Right shift bytes in a neon uint8x16_t register - shift count from 0 to 15.
-#define right_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] + (intptr_t) (count)))
+#    define right_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] + (intptr_t)(count)))
 // Left shift bytes in a neon poly64x2_t register - shift count from 0 to 15.
-#define left_shift_p64(poly, count) vreinterpretq_p64_u8(left_shift_u8(vreinterpretq_u8_p64(poly), count))
+#    define left_shift_p64(poly, count) vreinterpretq_p64_u8(left_shift_u8(vreinterpretq_u8_p64(poly), count))
 // Right shift a neon poly64x2_t register 0 to 15 bytes - imm must be an immediate constant
-#define right_shift_imm_p64(poly, imm)  vreinterpretq_p64_u8(vextq_u8(vreinterpretq_u8_p64(poly), vdupq_n_u8(0), imm))
+#    define right_shift_imm_p64(poly, imm)                                                                             \
+        vreinterpretq_p64_u8(vextq_u8(vreinterpretq_u8_p64(poly), vdupq_n_u8(0), imm))
 // Carryless multiply the lower 64-bit halves of two poly64x2_t neon registers
-#define pmull_lo(a, b) (vreinterpretq_p64_p128(vmull_p64((poly64_t) vreinterpretq_p128_p64(a), (poly64_t) vreinterpretq_p128_p64(b))))
+#    define pmull_lo(a, b)                                                                                             \
+        (vreinterpretq_p64_p128(vmull_p64((poly64_t)vreinterpretq_p128_p64(a), (poly64_t)vreinterpretq_p128_p64(b))))
 // Carryless multiply the upper 64-bit halves of two poly64x2_t neon registers
-#define pmull_hi(a, b) (vreinterpretq_p64_p128(vmull_high_p64((a), (b))))
+#    define pmull_hi(a, b) (vreinterpretq_p64_p128(vmull_high_p64((a), (b))))
 // XOR two neon poly64x2_t registers
-#define xor_p64(a, b) vreinterpretq_p64_u8(veorq_u8(vreinterpretq_u8_p64(a), vreinterpretq_u8_p64(b)))
-#if defined(__ARM_FEATURE_SHA3)
+#    define xor_p64(a, b) vreinterpretq_p64_u8(veorq_u8(vreinterpretq_u8_p64(a), vreinterpretq_u8_p64(b)))
+#    if defined(__ARM_FEATURE_SHA3)
 // The presence of the ARM SHA3 feature also implies the three-way xor instruction
-#define xor3_p64(a, b, c) vreinterpretq_p64_u64(veor3q_u64(vreinterpretq_u64_p64(a), vreinterpretq_u64_p64(b), vreinterpretq_u64_p64(c)))
-#else
+#        define xor3_p64(a, b, c)                                                                                      \
+            vreinterpretq_p64_u64(                                                                                     \
+                veor3q_u64(vreinterpretq_u64_p64(a), vreinterpretq_u64_p64(b), vreinterpretq_u64_p64(c)))
+#    else
 // Without SHA3, implement three-way xor with two normal xors
-#define xor3_p64(a, b, c) xor_p64(xor_p64(a, b), c)
-#endif // defined(__ARM_FEATURE_SHA3)
+#        define xor3_p64(a, b, c) xor_p64(xor_p64(a, b), c)
+#    endif // defined(__ARM_FEATURE_SHA3)
 
 /** Compute CRC64XZ using ARMv8 NEON +crypto/pmull64 instructions. */
 uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const uint64_t previousCrc64) {
@@ -58,7 +62,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
     if (length < 16) {
         // Neon register loads are 16 bytes at once, so for lengths less than 16 we need to
         // carefully load from memory to prevent reading beyond the end of the input buffer
-        int alignment = (intptr_t) input & 15;
+        int alignment = (intptr_t)input & 15;
         if (alignment + length <= 16) {
             // The input falls in a single 16 byte segment so we load from a 16 byte aligned address
             // The input data will be loaded "into the middle" of the neon register
@@ -102,7 +106,8 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
             const poly64x2_t x256 = load_p64(aws_checksums_crc64xz_constants.x256);
 
             if (length & 64) {
-                // Fold the current crc register with 64 bytes of input by multiplying 64-bit chunks by x^576 through x^128
+                // Fold the current crc register with 64 bytes of input by multiplying 64-bit chunks by x^576 through
+                // x^128
                 const poly64x2_t x512 = load_p64(aws_checksums_crc64xz_constants.x512);
                 const poly64x2_t x384 = load_p64(aws_checksums_crc64xz_constants.x384);
                 poly64x2_t b1 = load_p64_u8(input + 0);
@@ -117,7 +122,8 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
             }
 
             if (length & 32) {
-                // Fold the current running value with 32 bytes of input by multiplying 64-bit chunks by x^320 through x^128
+                // Fold the current running value with 32 bytes of input by multiplying 64-bit chunks by x^320 through
+                // x^128
                 poly64x2_t b1 = load_p64_u8(input + 0);
                 poly64x2_t c1 = load_p64_u8(input + 16);
                 a1 = xor3_p64(c1, pmull_lo(x256, a1), pmull_hi(x256, a1));
