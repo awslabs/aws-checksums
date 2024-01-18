@@ -161,6 +161,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0)
 
 if (USE_CPU_EXTENSIONS AND AWS_ARCH_INTEL)
    simd_add_source_avx(${PROJECT_NAME} ${AWS_ARCH_SRC})
+
+    if (NOT MSVC AND AWS_HAVE_AVX512_INTRINSICS)
+        SET_SOURCE_FILES_PROPERTIES(${AWS_ARCH_SRC} PROPERTIES COMPILE_FLAGS "-mavx512v1")
+    endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
