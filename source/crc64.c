@@ -27,29 +27,29 @@ cheksums_constants aws_checksums_crc64xz_constants = {
     //
 
     .x2048 = {0x8260adf2381ad81c,
-             0xf31fd9271e228b79, // x^2112 mod P(x) / x^2048 mod P(x)
-             0x8260adf2381ad81c,
-             0xf31fd9271e228b79, // duplicated 3 times to support 64 byte avx512 loads
-             0x8260adf2381ad81c,
-             0xf31fd9271e228b79, //
-             0x8260adf2381ad81c,
-             0xf31fd9271e228b79}, //
+              0xf31fd9271e228b79, // x^2112 mod P(x) / x^2048 mod P(x)
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79, // duplicated 3 times to support 64 byte avx512 loads
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79, //
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79}, //
     .x1536 = {0x47b00921f036ff71,
-             0xb0382771eb06c453, // x^1600 mod P(x) / x^1536 mod P(x)
-             0x47b00921f036ff71,
-             0xb0382771eb06c453, // duplicated 3 times to support 64 byte avx512 loads
-             0x47b00921f036ff71,
-             0xb0382771eb06c453, //
-             0x47b00921f036ff71,
-             0xb0382771eb06c453}, //
+              0xb0382771eb06c453, // x^1600 mod P(x) / x^1536 mod P(x)
+              0x47b00921f036ff71,
+              0xb0382771eb06c453, // duplicated 3 times to support 64 byte avx512 loads
+              0x47b00921f036ff71,
+              0xb0382771eb06c453, //
+              0x47b00921f036ff71,
+              0xb0382771eb06c453}, //
     .x1024 = {0x8757d71d4fcc1000,
-             0xd7d86b2af73de740, // x^1088 mod P(x) / x^1024 mod P(x)
-             0x8757d71d4fcc1000,
-             0xd7d86b2af73de740, // duplicated 3 times to support 64 byte avx512 loads
-             0x8757d71d4fcc1000,
-             0xd7d86b2af73de740, //
-             0x8757d71d4fcc1000,
-             0xd7d86b2af73de740}, //
+              0xd7d86b2af73de740, // x^1088 mod P(x) / x^1024 mod P(x)
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740, // duplicated 3 times to support 64 byte avx512 loads
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740, //
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740}, //
     .x512 = {0x6ae3efbb9dd441f3,
              0x081f6054a7842df4, // x^576 mod P(x) / x^512 mod P(x)
              0x6ae3efbb9dd441f3,

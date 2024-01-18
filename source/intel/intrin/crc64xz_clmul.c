@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include "aws/checksums/private/crc64_priv.h"
+#include <aws/checksums/private/crc64_priv.h>
 
 #if defined(__x86_64__)
 
