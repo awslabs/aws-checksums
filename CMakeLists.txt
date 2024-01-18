@@ -95,7 +95,6 @@ if (USE_CPU_EXTENSIONS)
         if (AWS_ARM32_CRC)
             file(GLOB AWS_ARCH_SRC
                 "source/arm/*.c"
-                "source/arm/asm/*.c"
                 )
             SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
         endif()
