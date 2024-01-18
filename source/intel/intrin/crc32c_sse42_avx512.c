@@ -46,10 +46,9 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     static zalign_8 k3k4[8] = {
         0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
     static zalign_8 k9k10[8] = {
-	0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
-    static zalign_8 k1k4[8] =  {
-	0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000};
-
+        0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
+    static zalign_8 k1k4[8] = {
+        0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000};
 
     __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
     __m128i a1, a2;
@@ -88,10 +87,10 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
         y7 = _mm512_loadu_si512((__m512i *)(input + 0x80));
         y8 = _mm512_loadu_si512((__m512i *)(input + 0xC0));
 
-	x1 = _mm512_ternarylogic_epi64(x1, x5, y5, 0x96);
-	x2 = _mm512_ternarylogic_epi64(x2, x6, y6, 0x96);
-	x3 = _mm512_ternarylogic_epi64(x3, x7, y7, 0x96);
-	x4 = _mm512_ternarylogic_epi64(x4, x8, y8, 0x96);
+        x1 = _mm512_ternarylogic_epi64(x1, x5, y5, 0x96);
+        x2 = _mm512_ternarylogic_epi64(x2, x6, y6, 0x96);
+        x3 = _mm512_ternarylogic_epi64(x3, x7, y7, 0x96);
+        x4 = _mm512_ternarylogic_epi64(x4, x8, y8, 0x96);
 
         input += 256;
         length -= 256;
@@ -148,5 +147,5 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
      */
     uint64_t val;
     val = _mm_crc32_u64(0, _mm_extract_epi64(a1, 0));
-    return (uint32_t) _mm_crc32_u64(val, _mm_extract_epi64(a1, 1));
+    return (uint32_t)_mm_crc32_u64(val, _mm_extract_epi64(a1, 1));
 }
