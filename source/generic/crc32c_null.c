@@ -6,7 +6,7 @@
 
 #include <aws/common/macros.h>
 
-/* Fail gracefully. Even though the we might be able to detect the presence of the instruction
+/* Fail gracefully. Even though we might be able to detect the presence of the instruction
  * we might not have a compiler that supports assembling those instructions.
  */
 uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {

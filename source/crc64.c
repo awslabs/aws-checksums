@@ -88,21 +88,21 @@ static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t p
 uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previousCrc64) {
 
     if (AWS_UNLIKELY(!s_crc64xz_fn_ptr)) {
-#if defined(__x86_64__)
+#if defined(AWS_HAVE_CLMUL)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) && aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) &&
             aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ)) {
             s_crc64xz_fn_ptr = aws_checksums_crc64xz_intel_clmul;
         } else {
             s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
         }
-#elif defined(__aarch64__) // defined(__x86_64__)
+#elif defined(AWS_HAVE_ARMv8_1)
         // TODO need to add these feature flags to aws-c-common
         // if (aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRYPTO) && aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_PMULL64)) {
         s_crc64xz_fn_ptr = aws_checksums_crc64xz_arm_pmull;
         //} else {
         //    s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
         //}
-#else                      // defined(__aarch64__)
+#else                      // defined(AWS_HAVE_ARMv8_1)
 
         s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
 #endif

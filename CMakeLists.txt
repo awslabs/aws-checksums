@@ -58,84 +58,6 @@ file(GLOB AWS_ARCH_SRC
         "source/generic/*.c"
         )
 
-if (USE_CPU_EXTENSIONS)
-    if (AWS_ARCH_INTEL)
-        file (GLOB AWS_ARCH_INTEL_SRC
-            "source/intel/*.c"
-        )
-
-        if (AWS_HAVE_AVX512_INTRINSICS AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-            if (MSVC)
-                file(GLOB AWS_ARCH_INTRIN_SRC
-                    "source/intel/intrin/*.c"
-                    "source/intel/visualc/*.c"
-                )
-            else()
-                file(GLOB AWS_ARCH_INTRIN_SRC
-                    "source/intel/intrin/*.c"
-                )
-            endif()
-        else()
-            if (MSVC)
-               file(GLOB AWS_ARCH_INTRIN_SRC
-                    "source/intel/visualc/*.c"
-               )
-            endif()
-        endif()
-        
-        source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
-        source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
-
-        if (AWS_HAVE_GCC_INLINE_ASM)
-            file(GLOB AWS_ARCH_ASM_SRC
-                "source/intel/asm/*.c"
-            )
-
-            file(GLOB AWS_ARCH_SRC
-                    ${AWS_ARCH_INTEL_SRC}
-                    ${AWS_ARCH_INTRIN_SRC}
-                    ${AWS_ARCH_ASM_SRC}
-            )            
-        else()
-            file(GLOB AWS_ARCH_SRC
-                    ${AWS_ARCH_INTEL_SRC}
-                    ${AWS_ARCH_INTRIN_SRC}
-            )
-        endif()
-    endif()
-
-    if (MSVC AND AWS_ARCH_ARM64)
-        file(GLOB AWS_ARCH_SRC
-            "source/arm/*.c"
-            )
-        source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
-
-    elseif (AWS_ARCH_ARM64)
-        file(GLOB AWS_ARCH_SRC
-            "source/arm/*.c"
-            )
-        SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
-        SET_SOURCE_FILES_PROPERTIES(source/arm/crc64_arm.c PROPERTIES COMPILE_FLAGS "-march=armv8.1-a+crypto -mtune=neoverse-v1")
-    elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
-        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc+crypto -Werror")
-        check_c_source_compiles("
-            #include <arm_acle.h>
-            int main() {
-                int crc = __crc32d(0, 1);
-                return 0;
-            }" AWS_ARM32_CRC)
-        unset(CMAKE_REQUIRED_FLAGS)
-        if (AWS_ARM32_CRC)
-            file(GLOB AWS_ARCH_SRC
-                "source/arm/*.c"
-                "source/arm/asm/*.c"
-                )
-            SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
-            SET_SOURCE_FILES_PROPERTIES(source/arm/crc64_arm.c PROPERTIES COMPILE_FLAGS "-march=armv8.1-a+crypto -mtune=neoverse-v1")
-        endif()
-    endif()
-endif()
-
 file(GLOB CHECKSUMS_COMBINED_HEADERS
     ${AWS_CHECKSUMS_HEADERS}
     ${AWS_CHECKSUMS_PRIV_HEADERS}
@@ -159,11 +81,59 @@ aws_add_sanitizers(${PROJECT_NAME})
 # We are not ABI stable yet
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0)
 
-if (USE_CPU_EXTENSIONS AND AWS_ARCH_INTEL)
-   simd_add_source_avx(${PROJECT_NAME} ${AWS_ARCH_SRC})
+if (USE_CPU_EXTENSIONS)
+    if (AWS_ARCH_INTEL)
+        file (GLOB AWS_ARCH_INTEL_SRC
+                "source/intel/*.c"
+                )
 
-    if (NOT MSVC AND AWS_HAVE_AVX512_INTRINSICS)
-        set_property(SOURCE ${AWS_ARCH_SRC} APPEND PROPERTY COMPILE_OPTIONS -mavx512vl)
+        if (MSVC)
+            file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/intrin/*.c"
+                    "source/intel/visualc/*.c"
+                )
+
+            source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
+            source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
+        else()
+            file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/intrin/*.c"
+                )
+
+            if (AWS_HAVE_GCC_INLINE_ASM)
+                file(GLOB AWS_ARCH_ASM_SRC
+                    "source/intel/asm/*.c"
+                )
+                simd_append_source_sse42(${PROJECT_NAME} ${AWS_ARCH_ASM_SRC})
+            endif()
+        endif()
+
+        if (AWS_HAVE_AVX512_INTRINSICS)
+            simd_append_source_avx512(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
+            simd_append_source_avx2(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
+            simd_append_source_pcmul(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
+            simd_append_source_sse42(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
+
+            simd_append_source_avx512(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
+            simd_append_source_pcmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
+        endif()
+
+        if (AWS_HAVE_MM256_EXTRACT_EPI64)
+            simd_append_source_avx2(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
+            simd_append_source_clmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
+            simd_append_source_sse42(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
+        endif()
+
+        if (MSVC)
+            simd_append_source_sse42(${PROJECT_NAME} "source/intel/visualc/visualc_crc32c_sse42.c")
+        endif()
+
+    elseif(AWS_ARCH_ARM64 OR (AWS_ARCH_ARM32 AND AWS_HAVE_ARM32_CRC))
+        simd_append_source_armv81(${PROJECT_NAME} "source/arm/crc32c_arm.c")
+        simd_append_source_armv81(${PROJECT_NAME} "source/arm/crc64_arm.c")
+        if (MSVC)
+            source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
+        endif()
     endif()
 endif()
 

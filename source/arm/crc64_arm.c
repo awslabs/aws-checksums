@@ -4,8 +4,9 @@
  */
 
 #include <aws/checksums/private/crc64_priv.h>
+#include <aws/common/config.h>
 
-#if defined(__aarch64__)
+#ifdef AWS_HAVE_ARMv8_1
 
 #    include <arm_neon.h>
 
@@ -235,4 +236,4 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
     return ~vgetq_lane_u64(vreinterpretq_u64_p64(result), 1);
 }
 
-#endif // defined(__aarch64__) && defined(__GNUC__)
+#endif // AWS_HAVE_ARMv8_1
