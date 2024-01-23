@@ -153,4 +153,3 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
 }
 
 #endif /* #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX) */
-       
