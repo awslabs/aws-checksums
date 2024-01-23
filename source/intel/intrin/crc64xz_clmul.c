@@ -5,7 +5,9 @@
 
 #include <aws/checksums/private/crc64_priv.h>
 
-#if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX
+// msvc compilers older than 2019 are missing some intrinsics. Gate those off.
+#if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX && \
+    !(defined(_MSC_VER) && _MSC_VER < 1920)
 
 #    include <emmintrin.h>
 #    include <immintrin.h>
@@ -23,13 +25,6 @@
 #    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
 #    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
-
-/* if older than visual studio 2019 RTW (16.0) */
-#    if defined(_MSC_VER) && _MSC_VER < 1920
-static inline __m128i _mm_bsrli_si128(__m128i a, int count) {
-    return a >> count;
-}
-#    endif /* #defined(_MSC_VER) && _MSC_VER < 1920 */
 
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, const uint64_t previousCrc64) {
     if (!input || length <= 0) {
