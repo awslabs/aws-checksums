@@ -115,7 +115,7 @@ if (USE_CPU_EXTENSIONS)
         endif()
 
         if (AWS_HAVE_CLMUL)
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
 
         if (MSVC)
