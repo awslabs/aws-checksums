@@ -88,7 +88,7 @@ static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t p
 uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previousCrc64) {
 
     if (AWS_UNLIKELY(!s_crc64xz_fn_ptr)) {
-#if defined(AWS_HAVE_CLMUL)
+#if INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_CLMUL)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) && aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) &&
             aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ)) {
             s_crc64xz_fn_ptr = aws_checksums_crc64xz_intel_clmul;
