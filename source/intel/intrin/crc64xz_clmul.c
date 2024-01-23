@@ -6,8 +6,7 @@
 #include <aws/checksums/private/crc64_priv.h>
 
 // msvc compilers older than 2019 are missing some intrinsics. Gate those off.
-#if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX && \
-    !(defined(_MSC_VER) && _MSC_VER < 1920)
+#if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX && !(defined(_MSC_VER) && _MSC_VER < 1920)
 
 #    include <emmintrin.h>
 #    include <immintrin.h>
