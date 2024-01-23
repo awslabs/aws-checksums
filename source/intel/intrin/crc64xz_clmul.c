@@ -10,9 +10,9 @@
 #    ifndef _MSC_VER
 #        include <x86intrin.h>
 #    else
-#        include <xmmintrin.h>
-#        include <mmintrin.h>
 #        include <immintrin.h>
+#        include <mmintrin.h>
+#        include <xmmintrin.h>
 #    endif
 #    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
 #    define left_shift_bytes(xmm, count)                                                                               \

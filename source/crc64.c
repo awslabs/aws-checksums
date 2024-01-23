@@ -57,7 +57,7 @@ cheksums_constants aws_checksums_crc64xz_constants = {
              0x6ae3efbb9dd441f3,
              0x081f6054a7842df4, //
              0x6ae3efbb9dd441f3,
-             0x081f6054a7842df4},                            //
+             0x081f6054a7842df4},                        //
     .x384 = {0xb5ea1af9c013aca4, 0x69a35d91c3730254},    //  x^448 mod P(x) / x^384 mod P(x)
     .x256 = {0x60095b008a9efa44, 0x3be653a30fe1af51},    //  x^320 mod P(x) / x^256 mod P(x)
     .x128 = {0xe05dd497ca393ae4, 0xdabe95afc7875f40},    //  x^192 mod P(x) / x^128 mod P(x)
