@@ -56,7 +56,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, con
             a1 = left_shift_bytes(a1, 16 - length);
             const __m128i x128 = _mm_set_epi64x(0, aws_checksums_crc64xz_constants.x128[1]);
             // Multiply the lower half of the crc register by x^128
-            __m128i mul_by_x128 = _mm_clmulepi64_si128(a1, x128), 0x00);
+            __m128i mul_by_x128 = _mm_clmulepi64_si128(a1, x128, 0x00);
             // XOR the result with the upper half of the crc
             a1 = _mm_xor_si128(_mm_bsrli_si128(a1, 8), mul_by_x128);
         }
