@@ -7,13 +7,11 @@
 
 #if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX
 
-#    ifndef _MSC_VER
-#        include <x86intrin.h>
-#    else
-#        include <immintrin.h>
-#        include <mmintrin.h>
-#        include <xmmintrin.h>
-#    endif
+#    include <emmintrin.h>
+#    include <immintrin.h>
+#    include <smmintrin.h>
+#    include <wmmintrin.h>
+
 #    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
 #    define left_shift_bytes(xmm, count)                                                                               \
         _mm_shuffle_epi8((xmm), load_xmm(aws_checksums_masks_shifts[1] - (intptr_t)(count)))

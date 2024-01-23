@@ -7,7 +7,10 @@
 
 #if defined(AWS_HAVE_AVX512) && INTPTR_MAX == INT64_MAX
 
-#    include <x86intrin.h>
+#    include <emmintrin.h>
+#    include <immintrin.h>
+#    include <smmintrin.h>
+#    include <wmmintrin.h>
 
 #    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
 #    define mask_high_bytes(xmm, count)                                                                                \
