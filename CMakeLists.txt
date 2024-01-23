@@ -111,7 +111,7 @@ if (USE_CPU_EXTENSIONS)
 
         if (AWS_HAVE_AVX512_INTRINSICS)
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG})
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG})
         endif()
 
         if (AWS_HAVE_CLMUL)
