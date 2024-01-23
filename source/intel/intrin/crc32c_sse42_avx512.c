@@ -142,7 +142,7 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     x0 = _mm512_shuffle_i64x2(x1, x1, 0x4E);
     x0 = _mm512_xor_epi64(x1, x0);
     a1 = _mm512_extracti32x4_epi32(x0, 1);
-    a1 = _mm_xor_epi64(a1, _mm512_castsi512_si128(x0));
+    a1 = _mm_xor_si128(a1, _mm512_castsi512_si128(x0));
 
     /*
      * Fold 128-bits to 32-bits.
