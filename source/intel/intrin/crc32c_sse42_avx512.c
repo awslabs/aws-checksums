@@ -13,6 +13,8 @@
 #include <smmintrin.h>
 #include <wmmintrin.h>
 
+#if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX)
+
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 64);
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
 
@@ -149,3 +151,5 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
     val = _mm_crc32_u64(0, _mm_extract_epi64(a1, 0));
     return (uint32_t)_mm_crc32_u64(val, _mm_extract_epi64(a1, 1));
 }
+
+#endif /* #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX) */
