@@ -111,11 +111,11 @@ if (USE_CPU_EXTENSIONS)
         if (AWS_HAVE_AVX512_INTRINSICS)
             simd_append_source_avx512(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
             simd_append_source_avx2(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
-            simd_append_source_pcmul(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
+            simd_append_source_clmul(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
             simd_append_source_sse42(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c")
 
             simd_append_source_avx512(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
-            simd_append_source_pcmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
+            simd_append_source_clmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
         endif()
 
         if (AWS_HAVE_MM256_EXTRACT_EPI64)
