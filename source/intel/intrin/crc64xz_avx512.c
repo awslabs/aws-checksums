@@ -28,6 +28,13 @@
 #    define xor_zmm(zmm1, zmm2, zmm3)                                                                                  \
         _mm512_ternarylogic_epi64((zmm1), (zmm2), (zmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
+/* if older than visual studio 2019 RTW (16.0) */
+#if defined(_MSC_VER) && _MSC_VER < 1920
+static inline __m128i _mm_bsrli_si128(_m128i a, int count) {
+    return a >> count;
+}
+
+#endif /* #defined(_MSC_VER) && _MSC_VER < 1920 */
 uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previousCrc64) {
 
     if (length < 512) {
