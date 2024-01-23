@@ -77,7 +77,7 @@ static int s_test_crc_residue(
     size_t length,
     uint64_t expected) {
 
-    for (int len = 0; len < length; ++len) {
+    for (int len = 0; len < (int)length; ++len) {
         uint64_t crc = func(input, len, 0);
         uint64_t residue = func((const uint8_t *)&crc, 8, crc); // assuming little endian
         ASSERT_HEX_EQUALS(expected, residue, "len %d residue %s(%s)", len, func_name, data_name);

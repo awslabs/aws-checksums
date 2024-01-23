@@ -13,7 +13,7 @@
 
 AWS_EXTERN_C_BEGIN
 
-uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t prev_crc64);
+AWS_CHECKSUMS_API uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t prev_crc64);
 
 #if INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_CLMUL)
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previousCrc64);
