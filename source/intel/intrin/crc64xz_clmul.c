@@ -26,7 +26,7 @@
 
 /* if older than visual studio 2019 RTW (16.0) */
 #    if defined(_MSC_VER) && _MSC_VER < 1920
-static inline __m128i _mm_bsrli_si128(_m128i a, int count) {
+static inline __m128i _mm_bsrli_si128(__m128i a, int count) {
     return a >> count;
 }
 #    endif /* #defined(_MSC_VER) && _MSC_VER < 1920 */
