@@ -541,13 +541,13 @@ static uint64_t crc64xz_table[8][256] = {
 };
 
 /** Slow slice-by-8 lookup table based fallback function to compute CRC64XZ. */
-uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, const int length, const uint64_t previousCrc64) {
+uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t prev_crc64) {
 
     if (!input || length <= 0) {
-        return previousCrc64;
+        return prev_crc64;
     }
 
-    uint64_t crc = ~previousCrc64;
+    uint64_t crc = ~prev_crc64;
     int remaining = length;
     const uint64_t *current = (const uint64_t *)(const void *)input;
     while (remaining >= 8) {
