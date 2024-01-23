@@ -118,7 +118,7 @@ if (USE_CPU_EXTENSIONS)
             simd_append_source_clmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c")
         endif()
 
-        if (AWS_HAVE_MM256_EXTRACT_EPI64)
+        if (AWS_HAVE_CLMUL)
             simd_append_source_avx2(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
             simd_append_source_clmul(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
             simd_append_source_sse42(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c")
