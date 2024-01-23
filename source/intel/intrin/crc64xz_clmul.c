@@ -5,7 +5,7 @@
 
 #include <aws/checksums/private/crc64_priv.h>
 
-#if defined(__x86_64__)
+#if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX
 
 #    include <x86intrin.h>
 
@@ -173,4 +173,4 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, con
     return ~(uint64_t)_mm_extract_epi64(reduced, 1);
 }
 
-#endif /* defined(__x86_64__) */
+#endif /* defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX */
