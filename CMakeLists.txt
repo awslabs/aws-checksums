@@ -104,7 +104,8 @@ if (USE_CPU_EXTENSIONS)
                 file(GLOB AWS_ARCH_ASM_SRC
                     "source/intel/asm/*.c"
                 )
-                simd_append_source_sse42(${PROJECT_NAME} ${AWS_ARCH_ASM_SRC})
+                simd_append_source_and_features(${PROJECT_NAME} "source/intel/asm/crc32c_sse42_asm.c" ${AWS_SSE4_2_FLAG})
+
             endif()
         endif()
 
