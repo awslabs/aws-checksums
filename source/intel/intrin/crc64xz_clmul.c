@@ -7,7 +7,7 @@
 
 #if defined(AWS_HAVE_CLMUL) && INTPTR_MAX == INT64_MAX
 
-#ifndef(_MSC_VER)
+#ifndef _MSC_VER
 #    include <x86intrin.h>
 #else
 #    include <immintrin.h>
