@@ -19,9 +19,9 @@ uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t pre
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previousCrc64);
 #endif /* dINTPTR_MAX == INT64_MAX && defined(AWS_HAVE_CLMUL) */
 
-#if defined(__aarch64__)
+#if INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1)
 uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, uint64_t previousCrc64);
-#endif /* defined(__aarch64__) */
+#endif /* INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1) */
 
 /* Pre-computed constants for CRC64 */
 typedef struct {

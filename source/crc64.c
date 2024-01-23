@@ -95,7 +95,7 @@ uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previo
         } else {
             s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
         }
-#elif defined(AWS_HAVE_ARMv8_1)
+#elif INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1)
         // TODO need to add these feature flags to aws-c-common
         // if (aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRYPTO) && aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_PMULL64)) {
         s_crc64xz_fn_ptr = aws_checksums_crc64xz_arm_pmull;
@@ -103,7 +103,6 @@ uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previo
         //    s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
         //}
 #else // defined(AWS_HAVE_ARMv8_1)
-
         s_crc64xz_fn_ptr = aws_checksums_crc64xz_sw;
 #endif
     }
