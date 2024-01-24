@@ -69,7 +69,7 @@ static int s_test_known_crc_32(
     const uint32_t expected_crc,
     const uint32_t expected_residue) {
 
-    uint64_t result = func(input, (int)length, 0);
+    uint32_t result = func(input, (int)length, 0);
     ASSERT_HEX_EQUALS(expected_crc, result, "%s(%s)", func_name, data_name);
 
     // Compute the residue of the buffer (the CRC of the buffer plus its CRC) - will always be a constant value
