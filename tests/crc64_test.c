@@ -11,7 +11,7 @@
 static const uint64_t POLY_CRC64XZ = 0xc96c5795d7870f42;
 
 // Any input with the CRC of that input appended should produce this CRC value. (Note: inverting the bits)
-static const uint64_t RESIDUE_CRC64XZ = ~0x49958c9abd7d353f;
+static const uint64_t RESIDUE_CRC64XZ = (uint64_t)~0x49958c9abd7d353f;
 
 static const uint8_t DATA_32_ZEROS[32] = {0};
 static const uint64_t KNOWN_CRC64XZ_32_ZEROES = 0xC95AF8617CD5330C;
