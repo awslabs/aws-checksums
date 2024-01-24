@@ -72,7 +72,7 @@ static int s_test_known_crc(
 }
 
 /* helper function that groups crc64xz tests */
-static int s_test_known_crc64xz(const char *func_name, crc_fn *func) {
+static int s_test_known_crc64xz(struct aws_allocator *allocator, const char *func_name, crc_fn *func) {
     int res = 0;
 
     // Quick sanity check of some known CRC values for known input.
@@ -85,22 +85,26 @@ static int s_test_known_crc64xz(const char *func_name, crc_fn *func) {
         return res;
     }
 
-    uint8_t *test_buffer = malloc(TEST_BUFFER_SIZE);
+    struct aws_byte_buf test_buf;
+    ASSERT_SUCCESS(aws_byte_buf_init(&test_buf, allocator, TEST_BUFFER_SIZE));
+
     // Spin through buffer offsets
     for (int off = 0; off < 16; off++) {
         // Fill the test buffer with different values for each iteration
-        memset(test_buffer, off + 129, TEST_BUFFER_SIZE);
+        aws_byte_buf_write_u8_n(&test_buf, off + 129, test_buf.capacity - test_buf.len);
         uint64_t expected = 0;
         int len = 1;
         // Spin through input data lengths
         for (int i = 0; i < (TEST_BUFFER_SIZE - off) && !res; i++, len++) {
             // Compute the expected CRC one byte at a time using the reference function
-            expected = crc64xz_reference(&test_buffer[off + i], 1, expected);
+            expected = crc64xz_reference(&test_buf.buffer[off + i], 1, expected);
             // Recompute the full CRC of the buffer at each offset and length and compare against expected value
-            res |= s_test_known_crc(func_name, func, "test_buffer", &test_buffer[off], len, expected, RESIDUE_CRC64XZ);
+            res |=
+                s_test_known_crc(func_name, func, "test_buffer", &test_buf.buffer[off], len, expected, RESIDUE_CRC64XZ);
         }
+        aws_byte_buf_reset(&test_buf, false);
     }
-    free(test_buffer);
+    aws_byte_buf_clean_up(&test_buf);
 
     return res;
 }
@@ -109,14 +113,13 @@ static int s_test_known_crc64xz(const char *func_name, crc_fn *func) {
  * The reference functions are included in these tests to verify that they aren't obviously broken.
  */
 static int s_test_crc64xz(struct aws_allocator *allocator, void *ctx) {
-    (void)allocator;
     (void)ctx;
 
     int res = 0;
 
-    res |= s_test_known_crc64xz(CRC_FUNC_NAME(crc64xz_reference));
-    res |= s_test_known_crc64xz(CRC_FUNC_NAME(aws_checksums_crc64xz_sw));
-    res |= s_test_known_crc64xz(CRC_FUNC_NAME(aws_checksums_crc64xz));
+    res |= s_test_known_crc64xz(allocator, CRC_FUNC_NAME(crc64xz_reference));
+    res |= s_test_known_crc64xz(allocator, CRC_FUNC_NAME(aws_checksums_crc64xz_sw));
+    res |= s_test_known_crc64xz(allocator, CRC_FUNC_NAME(aws_checksums_crc64xz));
 
     return res;
 }

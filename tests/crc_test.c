@@ -91,51 +91,59 @@ static int s_test_known_crc_32(
 }
 
 /* helper function that tests increasing input data lengths vs the reference crc function */
-static int s_test_vs_reference_crc_32(uint32_t polynomial, uint32_t residue, const char *func_name, crc_fn *func) {
+static int s_test_vs_reference_crc_32(
+    struct aws_allocator *allocator,
+    uint32_t polynomial,
+    uint32_t residue,
+    const char *func_name,
+    crc_fn *func) {
 
     int res = 0;
 
-    uint8_t *test_buffer = malloc(TEST_BUFFER_SIZE);
+    struct aws_byte_buf test_buf;
+    ASSERT_SUCCESS(aws_byte_buf_init(&test_buf, allocator, TEST_BUFFER_SIZE));
+
     // Spin through buffer offsets
     for (int off = 0; off < 16; off++) {
         // Fill the test buffer with different values for each iteration
-        memset(test_buffer, off + 129, TEST_BUFFER_SIZE);
+        aws_byte_buf_write_u8_n(&test_buf, off + 129, test_buf.capacity - test_buf.len);
         uint32_t expected = 0;
         int len = 1;
         // Spin through input data lengths
         for (int i = 0; i < (TEST_BUFFER_SIZE - off) && !res; i++, len++) {
             // Compute the expected CRC one byte at a time using the reference function
-            expected = s_crc_32_reference(&test_buffer[off + i], 1, expected, polynomial);
+            expected = s_crc_32_reference(&test_buf.buffer[off + i], 1, expected, polynomial);
             // Recompute the full CRC of the buffer at each offset and length and compare against expected value
-            res |= s_test_known_crc_32(func_name, func, "test_buffer", &test_buffer[off], len, expected, residue);
+            res |= s_test_known_crc_32(func_name, func, "test_buffer", &test_buf.buffer[off], len, expected, residue);
+            aws_byte_buf_reset(&test_buf, false);
         }
     }
-    free(test_buffer);
+    aws_byte_buf_clean_up(&test_buf);
 
     return res;
 }
 
 /* helper function that groups crc32 tests*/
-static int s_test_known_crc32(const char *func_name, crc_fn *func) {
+static int s_test_known_crc32(struct aws_allocator *allocator, const char *func_name, crc_fn *func) {
     int res = 0;
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32_32_ZEROES, RESIDUE_CRC32);
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32_32_VALUES, RESIDUE_CRC32);
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32_TEST_VECTOR, RESIDUE_CRC32);
     if (func != s_crc32_reference) {
-        res |= s_test_vs_reference_crc_32(POLY_CRC32, RESIDUE_CRC32, func_name, func);
+        res |= s_test_vs_reference_crc_32(allocator, POLY_CRC32, RESIDUE_CRC32, func_name, func);
     }
     return res;
 }
 
 /* helper function that groups crc32c tests*/
-static int s_test_known_crc32c(const char *func_name, crc_fn *func) {
+static int s_test_known_crc32c(struct aws_allocator *allocator, const char *func_name, crc_fn *func) {
     int res = 0;
 
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32C_32_ZEROES, RESIDUE_CRC32C);
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32C_32_VALUES, RESIDUE_CRC32C);
     res |= s_test_known_crc_32(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32C_TEST_VECTOR, RESIDUE_CRC32C);
     if (func != s_crc32c_reference) {
-        res |= s_test_vs_reference_crc_32(POLY_CRC32C, RESIDUE_CRC32C, func_name, func);
+        res |= s_test_vs_reference_crc_32(allocator, POLY_CRC32C, RESIDUE_CRC32C, func_name, func);
     }
 
     return res;
@@ -146,28 +154,26 @@ static int s_test_known_crc32c(const char *func_name, crc_fn *func) {
  * The reference functions are included in these tests to verify that they aren't obviously broken.
  */
 static int s_test_crc32c(struct aws_allocator *allocator, void *ctx) {
-    (void)allocator;
     (void)ctx;
 
     int res = 0;
 
-    res |= s_test_known_crc32c(CRC_FUNC_NAME(s_crc32c_reference));
-    res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c_sw));
-    res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c));
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(s_crc32c_reference));
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(aws_checksums_crc32c_sw));
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(aws_checksums_crc32c));
 
     return res;
 }
 AWS_TEST_CASE(test_crc32c, s_test_crc32c)
 
 static int s_test_crc32(struct aws_allocator *allocator, void *ctx) {
-    (void)allocator;
     (void)ctx;
 
     int res = 0;
 
-    res |= s_test_known_crc32(CRC_FUNC_NAME(s_crc32_reference));
-    res |= s_test_known_crc32(CRC_FUNC_NAME(aws_checksums_crc32_sw));
-    res |= s_test_known_crc32(CRC_FUNC_NAME(aws_checksums_crc32));
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(s_crc32_reference));
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(aws_checksums_crc32_sw));
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(aws_checksums_crc32));
 
     return res;
 }
