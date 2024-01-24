@@ -97,9 +97,6 @@ if (USE_CPU_EXTENSIONS)
             source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
         else()
             if (AWS_HAVE_GCC_INLINE_ASM)
-                file(GLOB AWS_ARCH_ASM_SRC
-                    "source/intel/asm/*.c"
-                )
                 simd_append_source_and_features(${PROJECT_NAME} "source/intel/asm/crc32c_sse42_asm.c" ${AWS_SSE4_2_FLAG})
 
             endif()
