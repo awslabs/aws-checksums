@@ -106,7 +106,7 @@ static int s_test_vs_reference_crc_32(
     // Spin through buffer offsets
     for (int off = 0; off < 16; off++) {
         // Fill the test buffer with different values for each iteration
-        aws_byte_buf_write_u8_n(&test_buf, off + 129, test_buf.capacity - test_buf.len);
+        aws_byte_buf_write_u8_n(&test_buf, (uint8_t)off + 129, test_buf.capacity - test_buf.len);
         uint32_t expected = 0;
         int len = 1;
         // Spin through input data lengths
