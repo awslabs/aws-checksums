@@ -96,10 +96,6 @@ if (USE_CPU_EXTENSIONS)
             source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
             source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
         else()
-            file(GLOB AWS_ARCH_INTRIN_SRC
-                    "source/intel/intrin/*.c"
-                )
-
             if (AWS_HAVE_GCC_INLINE_ASM)
                 file(GLOB AWS_ARCH_ASM_SRC
                     "source/intel/asm/*.c"
