@@ -11,55 +11,119 @@
 #include <aws/testing/aws_test_harness.h>
 
 static const uint8_t DATA_32_ZEROS[32] = {0};
-static const uint32_t KNOWN_CRC32_32_ZEROES = 0x190A55AD;
-static const uint32_t KNOWN_CRC32C_32_ZEROES = 0x8A9136AA;
-
 static const uint8_t DATA_32_VALUES[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
                                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-static const uint32_t KNOWN_CRC32C_32_VALUES = 0x46DD794E;
-
 static const uint8_t TEST_VECTOR[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-static const uint32_t KNOWN_CRC32_TEST_VECTOR = 0xCBF43926;
-static const uint32_t KNOWN_CRC32C_TEST_VECTOR = 0xE3069283;
 
-static uint8_t *s_non_mem_aligned_vector;
+// The polynomial used for CRC32 (in bit-reflected form)
+static const uint32_t POLY_CRC32 = 0xedb88320;
+// Any input with the CRC32 of that input appended should produce this CRC32 value. (Note: inverting the bits)
+static const uint32_t RESIDUE_CRC32 = ~0xdebb20e3;
+static const uint32_t KNOWN_CRC32_32_ZEROES = 0x190A55AD;
+static const uint32_t KNOWN_CRC32_32_VALUES = 0x91267E8A;
+static const uint32_t KNOWN_CRC32_TEST_VECTOR = 0xCBF43926;
+
+// The polynomial used for CRC32C (in bit-reflected form)
+static const uint32_t POLY_CRC32C = 0x82f63b78;
+// Any input with the CRC32c of that input appended should produce this CRC32c value. (Note: inverting the bits)
+static const uint32_t RESIDUE_CRC32C = ~0xb798b438;
+static const uint32_t KNOWN_CRC32C_32_ZEROES = 0x8A9136AA;
+static const uint32_t KNOWN_CRC32C_32_VALUES = 0x46DD794E;
+static const uint32_t KNOWN_CRC32C_TEST_VECTOR = 0xE3069283;
 
 typedef uint32_t(crc_fn)(const uint8_t *input, int length, uint32_t previousCrc32);
 #define CRC_FUNC_NAME(crc_func) #crc_func, crc_func
 #define DATA_NAME(dataset) #dataset, dataset, sizeof(dataset)
+#define TEST_BUFFER_SIZE 2048 + 64
 
-/* Makes sure that the specified crc function produces the expected results for known input and output*/
-static int s_test_known_crc(
+// Slow reference implementation that computes a 32-bit bit-reflected/bit-inverted CRC using the provided polynomial.
+static uint32_t s_crc_32_reference(const uint8_t *input, int length, const uint32_t previousCrc, uint32_t polynomial) {
+
+    uint32_t crc = ~previousCrc;
+    while (length-- > 0) {
+        crc ^= *input++;
+        for (int j = 8; j > 0; --j) {
+            crc = (crc >> 1) ^ ((((crc & 1) ^ 1) - 1) & polynomial);
+        }
+    }
+    return ~crc;
+}
+
+// Very, very slow reference implementation that computes a CRC32.
+static uint32_t s_crc32_reference(const uint8_t *input, int length, const uint32_t previousCrc) {
+    return s_crc_32_reference(input, length, previousCrc, POLY_CRC32);
+}
+
+// Very, very slow reference implementation that computes a CRC32c.
+static uint32_t s_crc32c_reference(const uint8_t *input, int length, const uint32_t previousCrc) {
+    return s_crc_32_reference(input, length, previousCrc, POLY_CRC32C);
+}
+
+/* Makes sure that the specified crc function produces the expected results for known input and output */
+static int s_test_known_crc_32(
     const char *func_name,
     crc_fn *func,
     const char *data_name,
     const uint8_t *input,
-    size_t length,
-    uint32_t expected) {
+    const size_t length,
+    const uint32_t expected_crc,
+    const uint32_t expected_residue) {
 
-    uint32_t result = func(input, (int)length, 0);
-    ASSERT_HEX_EQUALS(expected, result, "%s(%s)", func_name, data_name);
+    uint64_t result = func(input, (int)length, 0);
+    ASSERT_HEX_EQUALS(expected_crc, result, "%s(%s)", func_name, data_name);
 
-    /* chain the crc computation so 2 calls each operate on about 1/2 of the buffer*/
+    // Compute the residue of the buffer (the CRC of the buffer plus its CRC) - will always be a constant value
+    uint32_t residue = func((const uint8_t *)&result, 4, result); // assuming little endian
+    ASSERT_HEX_EQUALS(expected_residue, residue, "len %d residue %s(%s)", length, func_name, data_name);
+
+    // chain the crc computation so 2 calls each operate on about 1/2 of the buffer
     uint32_t crc1 = func(input, (int)(length / 2), 0);
     result = func(input + (length / 2), (int)(length - length / 2), crc1);
-    ASSERT_HEX_EQUALS(expected, result, "chaining %s(%s)", func_name, data_name);
+    ASSERT_HEX_EQUALS(expected_crc, result, "chaining %s(%s)", func_name, data_name);
 
     crc1 = 0;
     for (size_t i = 0; i < length; ++i) {
         crc1 = func(input + i, 1, crc1);
     }
-
-    ASSERT_HEX_EQUALS(expected, crc1, "one byte at a time %s(%s)", func_name, data_name);
+    ASSERT_HEX_EQUALS(expected_crc, crc1, "one byte at a time %s(%s)", func_name, data_name);
 
     return AWS_OP_SUCCESS;
+}
+
+/* helper function that tests increasing input data lengths vs the reference crc function */
+static int s_test_vs_reference_crc_32(uint32_t polynomial, uint32_t residue, const char *func_name, crc_fn *func) {
+
+    int res = 0;
+
+    uint8_t *test_buffer = malloc(TEST_BUFFER_SIZE);
+    // Spin through buffer offsets
+    for (int off = 0; off < 16; off++) {
+        // Fill the test buffer with different values for each iteration
+        memset(test_buffer, off + 129, TEST_BUFFER_SIZE);
+        uint32_t expected = 0;
+        int len = 1;
+        // Spin through input data lengths
+        for (int i = 0; i < (TEST_BUFFER_SIZE - off) && !res; i++, len++) {
+            // Compute the expected CRC one byte at a time using the reference function
+            expected = s_crc_32_reference(&test_buffer[off + i], 1, expected, polynomial);
+            // Recompute the full CRC of the buffer at each offset and length and compare against expected value
+            res |= s_test_known_crc_32(func_name, func, "test_buffer", &test_buffer[off], len, expected, residue);
+        }
+    }
+    free(test_buffer);
+
+    return res;
 }
 
 /* helper function that groups crc32 tests*/
 static int s_test_known_crc32(const char *func_name, crc_fn *func) {
     int res = 0;
-    res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32_32_ZEROES);
-    res |= s_test_known_crc(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32_TEST_VECTOR);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32_32_ZEROES, RESIDUE_CRC32);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32_32_VALUES, RESIDUE_CRC32);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32_TEST_VECTOR, RESIDUE_CRC32);
+    if (func != s_crc32_reference) {
+        res |= s_test_vs_reference_crc_32(POLY_CRC32, RESIDUE_CRC32, func_name, func);
+    }
     return res;
 }
 
@@ -67,25 +131,13 @@ static int s_test_known_crc32(const char *func_name, crc_fn *func) {
 static int s_test_known_crc32c(const char *func_name, crc_fn *func) {
     int res = 0;
 
-    res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32C_32_ZEROES);
-    res |= s_test_known_crc(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32C_32_VALUES);
-    res |= s_test_known_crc(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32C_TEST_VECTOR);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_ZEROS), KNOWN_CRC32C_32_ZEROES, RESIDUE_CRC32C);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(DATA_32_VALUES), KNOWN_CRC32C_32_VALUES, RESIDUE_CRC32C);
+    res |= s_test_known_crc_32(func_name, func, DATA_NAME(TEST_VECTOR), KNOWN_CRC32C_TEST_VECTOR, RESIDUE_CRC32C);
+    if (func != s_crc32c_reference) {
+        res |= s_test_vs_reference_crc_32(POLY_CRC32C, RESIDUE_CRC32C, func_name, func);
+    }
 
-    /*this tests three things, first it tests the case where we aren't 8-byte aligned*/
-    /*seconde, it tests that reads aren't performed before start of buffer*/
-    /*third, it tests that writes aren't performed after the end of the buffer.*/
-    /*if any of those things happen, then the checksum will be wrong and the assertion will fail */
-    s_non_mem_aligned_vector = malloc(sizeof(DATA_32_VALUES) + 6);
-    memset(s_non_mem_aligned_vector, 1, sizeof(DATA_32_VALUES) + 6);
-    memcpy(s_non_mem_aligned_vector + 3, DATA_32_VALUES, sizeof(DATA_32_VALUES));
-    res |= s_test_known_crc(
-        func_name,
-        func,
-        "non_mem_aligned_vector",
-        s_non_mem_aligned_vector + 3,
-        sizeof(DATA_32_VALUES),
-        KNOWN_CRC32C_32_VALUES);
-    free(s_non_mem_aligned_vector);
     return res;
 }
 
@@ -99,19 +151,9 @@ static int s_test_crc32c(struct aws_allocator *allocator, void *ctx) {
 
     int res = 0;
 
-    res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c));
+    res |= s_test_known_crc32c(CRC_FUNC_NAME(s_crc32c_reference));
     res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c_sw));
-
-    struct aws_byte_buf avx_buf;
-    /* enough for two avx512 runs */
-    aws_byte_buf_init(&avx_buf, allocator, 512);
-    aws_device_random_buffer(&avx_buf);
-
-    uint32_t crc = aws_checksums_crc32c_sw(avx_buf.buffer, (int)avx_buf.len, 0);
-    uint32_t hw_crc = aws_checksums_crc32c_hw(avx_buf.buffer, (int)avx_buf.len, 0);
-
-    aws_byte_buf_clean_up(&avx_buf);
-    ASSERT_UINT_EQUALS(hw_crc, crc);
+    res |= s_test_known_crc32c(CRC_FUNC_NAME(aws_checksums_crc32c));
 
     return res;
 }
@@ -122,6 +164,9 @@ static int s_test_crc32(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
 
     int res = 0;
+
+    res |= s_test_known_crc32(CRC_FUNC_NAME(s_crc32_reference));
+    res |= s_test_known_crc32(CRC_FUNC_NAME(aws_checksums_crc32_sw));
     res |= s_test_known_crc32(CRC_FUNC_NAME(aws_checksums_crc32));
 
     return res;
