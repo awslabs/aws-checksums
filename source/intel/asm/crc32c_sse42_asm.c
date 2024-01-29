@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/crc+priv.h>
+#include <aws/checksums/private/crc_priv.h>
 
 #include <aws/common/cpuid.h>
 
