@@ -54,10 +54,6 @@ if(MSVC)
      source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
 endif()
 
-file(GLOB AWS_ARCH_SRC
-        "source/generic/*.c"
-        )
-
 file(GLOB CHECKSUMS_COMBINED_HEADERS
     ${AWS_CHECKSUMS_HEADERS}
     ${AWS_CHECKSUMS_PRIV_HEADERS}
@@ -66,7 +62,6 @@ file(GLOB CHECKSUMS_COMBINED_HEADERS
 file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_SRC}
     ${AWS_CHECKSUMS_PLATFORM_SOURCE}
-    ${AWS_ARCH_SRC}
 )
 
 

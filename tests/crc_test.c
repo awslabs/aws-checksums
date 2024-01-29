@@ -115,8 +115,12 @@ static int s_test_vs_reference_crc_32(
             expected = s_crc_32_reference(&test_buf.buffer[off + i], 1, expected, polynomial);
             // Recompute the full CRC of the buffer at each offset and length and compare against expected value
             res |= s_test_known_crc_32(func_name, func, "test_buffer", &test_buf.buffer[off], len, expected, residue);
-            aws_byte_buf_reset(&test_buf, false);
+            if (res != 0) {
+                continue;
+            }
         }
+        aws_byte_buf_reset(&test_buf, false);
+
     }
     aws_byte_buf_clean_up(&test_buf);
 

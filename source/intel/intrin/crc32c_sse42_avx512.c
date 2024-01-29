@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/intel/crc32c_compiler_shims.h>
+#include <aws/checksums/private/crc_priv.h>
 
 #include <aws/common/assert.h>
 #include <aws/common/macros.h>
+#include <aws/common/cpuid.h>
 
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
 #include <wmmintrin.h>
 
-#if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX)
+#if defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
 
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 64);
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
@@ -25,11 +26,12 @@ AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
  * "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction"
  *  V. Gopal, E. Ozturk, et al., 2009, http://download.intel.com/design/intarch/papers/323102.pdf
  */
-uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t previous_crc) {
+static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length, uint32_t previous_crc) {
     AWS_ASSERT(
         length >= 256 && "invariant violated. length must be greater than 255 bytes to use avx512 to compute crc.");
 
-    uint32_t crc = ~previous_crc;
+    uint32_t crc = previous_crc;
+
     /*
      * Definitions of the bit-reflected domain constants k1,k2,k3,k4,k5,k6
      * are similar to those given at the end of the paper
@@ -153,3 +155,93 @@ uint32_t aws_checksums_crc32c_avx512(const uint8_t *input, int length, uint32_t 
 }
 
 #endif /* #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX) */
+
+static bool detection_performed = false;
+static bool detected_sse42 = false;
+static bool detected_avx512 = false;
+static bool detected_clmul = false;
+static bool detected_vpclmulqdq = false;
+
+uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *input, int length, uint32_t previous_crc) {
+    if (AWS_UNLIKELY(!detection_performed)) {
+        detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
+        detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
+        detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+        detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
+
+        /* Simply setting the flag true to skip HW detection next time
+           Not using memory barriers since the worst that can
+           happen is a fallback to the non HW accelerated code. */
+        detection_performed = true;
+    }
+
+    /* this is the entry point. We should only do the bit flip once. It should not be done for the subfunctions and
+     * branches.*/
+    uint32_t crc = ~previous_crc;
+
+    /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
+    if (length < (int)sizeof(slice_ptr_int_type)) {
+        while (length-- > 0) {
+            crc = (uint32_t)_mm_crc32_u8(crc, *input++);
+        }
+        return ~crc;
+    }
+
+    /* Get the 8-byte memory alignment of our input buffer by looking at the least significant 3 bits */
+    int input_alignment = (uintptr_t)(input)&0x7;
+
+    /* Compute the number of unaligned bytes before the first aligned 8-byte chunk (will be in the range 0-7) */
+    int leading = (8 - input_alignment) & 0x7;
+
+    /* reduce the length by the leading unaligned bytes we are about to process */
+    length -= leading;
+
+    /* spin through the leading unaligned input bytes (if any) one-by-one */
+    while (leading-- > 0) {
+        crc = (uint32_t)_mm_crc32_u8(crc, *input++);
+    }
+
+#if defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
+    int chunk_size = length & ~63;
+
+    if (detected_avx512 && detected_vpclmulqdq && detected_clmul) {
+        if (length >= 256) {
+            crc = s_checksums_crc32c_avx512_impl(input, length, crc);
+            /* check remaining data */
+            length -= chunk_size;
+            if (!length) {
+                return ~crc;
+            }
+
+            /* Fall into the default crc32 for the remaining data. */
+            input += chunk_size;
+        }
+    }
+#endif
+
+#if !defined(_MSC_VER)
+    if (detected_sse42 && detected_clmul) {
+        // this function is an entry point on its own. It inverts the crc passed to it
+        // does its thing and then inverts it upon return. In order to keep 
+        // aws_checksums_crc32c_sse42 a standalone function (which it has to be due 
+        // to the way its implemented) it's better that it doesn't need to know it's used
+        // in a larger computation fallback.
+        return aws_checksums_crc32c_clmul_sse42(input, length, ~crc);
+    }
+#endif
+
+    /* Spin through remaining (aligned) 8-byte chunks using the CRC32Q quad word instruction */
+    while (length >= (int)sizeof(slice_ptr_int_type)) {
+        crc = (uint32_t)crc_intrin_fn(crc, *(slice_ptr_int_type *)(input));
+        input += sizeof(slice_ptr_int_type);
+        length -= (int)sizeof(slice_ptr_int_type);
+    }
+
+    /* Finish up with any trailing bytes using the CRC32B single byte instruction one-by-one */
+    while (length-- > 0) {
+        crc = (uint32_t)_mm_crc32_u8(crc, *input);
+        input++;
+    }
+
+    return ~crc;
+}
