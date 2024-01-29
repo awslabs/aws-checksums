@@ -85,7 +85,6 @@ if (USE_CPU_EXTENSIONS)
         if (MSVC)
             file(GLOB AWS_ARCH_INTRIN_SRC
                     "source/intel/intrin/*.c"
-                    "source/intel/visualc/*.c"
                 )
 
             source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
@@ -97,18 +96,24 @@ if (USE_CPU_EXTENSIONS)
             endif()
         endif()
 
+        set(UBER_FILE_FLAGS "${AWS_SSE4_2_FLAG}")
+        if (AWS_HAVE_CLMUL)
+            set(UBER_FILE_FLAGS "${AWS_CLMUL_FLAG} ${UBER_FILE_FLAGS}")
+        endif()
+
         if (AWS_HAVE_AVX512_INTRINSICS)
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+            set(UBER_FILE_FLAGS "${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${UBER_FILE_FLAGS}")
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
+
+       # this file routes all of the implementations together based on available cpu features. It gets built regardless
+       # of which flags exist. The c file sorts it out.
+       simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c" ${UBER_FILE_FLAGS})
 
         if (AWS_HAVE_CLMUL)
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
-
-        if (MSVC)
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/visualc/visualc_crc32c_sse42.c" ${AWS_SSE4_2_FLAG})
-        endif()
+               
 
     elseif(AWS_ARCH_ARM64 OR (AWS_ARCH_ARM32 AND AWS_HAVE_ARM32_CRC))
         simd_append_source_and_features(${PROJECT_NAME} "source/arm/crc32c_arm.c" ${AWS_ARMv8_1_FLAG})
