@@ -364,4 +364,5 @@ uint32_t aws_checksums_crc32c_clmul_sse42(const uint8_t *input, int length, uint
 #        pragma clang diagnostic pop
 #    endif
 
+#endif /* x86_64 */
 /* clang-format on */
