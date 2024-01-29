@@ -12,9 +12,10 @@
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
-#include <wmmintrin.h>
 
 #if defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
+
+#    include <wmmintrin.h>
 
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 64);
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
