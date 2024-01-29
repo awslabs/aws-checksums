@@ -219,7 +219,7 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *inpu
     }
 #endif
 
-#if !defined(_MSC_VER)
+#if defined(AWS_ARCH_INTEL_X64) && !defined(_MSC_VER)
     if (detected_sse42 && detected_clmul) {
         // this function is an entry point on its own. It inverts the crc passed to it
         // does its thing and then inverts it upon return. In order to keep 
