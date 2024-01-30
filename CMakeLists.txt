@@ -126,6 +126,8 @@ if (USE_CPU_EXTENSIONS)
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
         endif()
     endif()
+else()
+    target_sources(${PROJECT_NAME} "source/generic/crc_null.c")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC

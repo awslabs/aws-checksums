@@ -83,9 +83,9 @@ cheksums_constants aws_checksums_crc64xz_constants = {
         },                                            //
 };
 
-static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t previousCrc64) = 0;
+static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = 0;
 
-uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previousCrc64) {
+uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t prev_crc64) {
 
     if (AWS_UNLIKELY(!s_crc64xz_fn_ptr)) {
 #if defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
@@ -113,5 +113,5 @@ uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t previo
 #endif
     }
 
-    return s_crc64xz_fn_ptr(input, length, previousCrc64);
+    return s_crc64xz_fn_ptr(input, length, prev_crc64);
 }

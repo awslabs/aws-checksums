@@ -39,7 +39,7 @@ typedef uint32_t *slice_ptr_type;
 typedef uint32_t slice_ptr_int_type;
 #        define crc_intrin_fn _mm_crc32_u32
 #    endif
-uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *input, int length, const uint32_t previous_crc32c);
+uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *input, int length, uint32_t previous_crc32c);
 
 #endif
 
