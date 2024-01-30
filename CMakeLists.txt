@@ -127,7 +127,7 @@ if (USE_CPU_EXTENSIONS)
         endif()
     endif()
 else()
-    target_sources(${PROJECT_NAME} "source/generic/crc_null.c")
+    target_sources(${PROJECT_NAME} PRIVATE "source/generic/crc_null.c")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
