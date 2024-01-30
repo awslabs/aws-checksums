@@ -22,8 +22,8 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32_sw(const uint8_t *input, int leng
 AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t previousCrc32c);
 
 #if defined(AWS_ARCH_ARM64)
-uint32_t aws_checksums_crc32_armv8(const uint8_t *input, int length, uint64_t previous_crc32);
-uint32_t aws_checksums_crc32c_armv8(const uint8_t *input, int length, uint64_t previous_crc32c);
+uint32_t aws_checksums_crc32_armv8(const uint8_t *input, int length, uint32_t previous_crc32);
+uint32_t aws_checksums_crc32c_armv8(const uint8_t *input, int length, uint32_t previous_crc32c);
 #elif defined(AWS_ARCH_INTEL)
 #    if defined(AWS_ARCH_INTEL_X64)
 typedef uint64_t *slice_ptr_type;
