@@ -120,7 +120,6 @@ static int s_test_vs_reference_crc_32(
             }
         }
         aws_byte_buf_reset(&test_buf, false);
-
     }
     aws_byte_buf_clean_up(&test_buf);
 

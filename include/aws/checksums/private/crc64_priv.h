@@ -20,12 +20,12 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
 #endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) && !(defined(_MSC_VER) && _MSC_VER < 1920) */
 
 #if defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920)
-uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previous_crc_64);
-#endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920) */
-
+uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, uint64_t previous_crc_64);
+#endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920)  \
+        */
 
 #if defined(AWS_ARCH_ARM64)
-uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, uint64_t previousCrc64);
+uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1) */
 
 /* Pre-computed constants for CRC64 */

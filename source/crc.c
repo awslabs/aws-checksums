@@ -18,7 +18,7 @@ uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous
         } else {
             s_crc32_fn_ptr = aws_checksums_crc32_sw;
         }
- #else
+#else
         s_crc32_fn_ptr = aws_checksums_crc32_sw;
 #endif
     }
@@ -45,4 +45,4 @@ uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previou
     }
 
     return s_crc32c_fn_ptr(input, length, previous_crc32c);
- }
+}

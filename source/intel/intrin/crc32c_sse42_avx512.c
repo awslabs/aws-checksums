@@ -6,8 +6,8 @@
 #include <aws/checksums/private/crc_priv.h>
 
 #include <aws/common/assert.h>
-#include <aws/common/macros.h>
 #include <aws/common/cpuid.h>
+#include <aws/common/macros.h>
 
 #include <emmintrin.h>
 #include <immintrin.h>
@@ -223,8 +223,8 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *inpu
 #if defined(AWS_ARCH_INTEL_X64) && !defined(_MSC_VER)
     if (detected_sse42 && detected_clmul) {
         // this function is an entry point on its own. It inverts the crc passed to it
-        // does its thing and then inverts it upon return. In order to keep 
-        // aws_checksums_crc32c_sse42 a standalone function (which it has to be due 
+        // does its thing and then inverts it upon return. In order to keep
+        // aws_checksums_crc32c_sse42 a standalone function (which it has to be due
         // to the way its implemented) it's better that it doesn't need to know it's used
         // in a larger computation fallback.
         return aws_checksums_crc32c_clmul_sse42(input, length, ~crc);
