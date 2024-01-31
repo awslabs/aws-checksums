@@ -25,45 +25,45 @@
 #    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
 
-uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, const uint64_t previousCrc64) {
+uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, const uint64_t previous_crc64) {
     if (!input || length <= 0) {
-        return previousCrc64;
+        return previous_crc64;
+    }
+
+    int alignment = (intptr_t)input & 15;
+
+    if (alignment) {
+        int burnoff_for_alignment = 16 - alignment;
+        int len_processed = burnoff_for_alignment > length ? burnoff_for_alignment : length;
+        previous_crc64 = aws_checksums_crc64xz_sw(input, len_processed, previous_crc64);
+        input += len_processed;
+        length -= len_processed;
     }
 
     // Invert the previous crc bits and load into the lower half of an xmm register
-    __m128i a1 = _mm_cvtsi64_si128((int64_t)(~previousCrc64));
+    __m128i a1 = _mm_cvtsi64_si128((int64_t)(~previous_crc64));
 
     // For lengths less than 16 we need to carefully load from memory to prevent reading beyond the end of the input
     // buffer
     if (length < 16) {
-        int alignment = (intptr_t)input & 15;
-        if (alignment + length <= 16) {
-            // The input falls in a single 16 byte segment so we load from a 16 byte aligned address
-            // The input data will be loaded "into the middle" of the xmm register
-            // Right shift the input data register to eliminate any leading bytes and move the data to the least
-            // significant bytes Mask out the most significant bytes that may contain garbage XOR the masked input data
-            // with the previous crc
-            a1 = _mm_xor_si128(a1, mask_low_bytes(right_shift_bytes(load_xmm(input - alignment), alignment), length));
-        } else {
-            // The input spans two 16 byte segments so it's safe to load the input from its actual starting address
-            // The input data will be in the least significant bytes of the xmm register
-            // Mask out the most significant bytes that may contain garbage
-            // XOR the masked input data with the previous crc
-            a1 = _mm_xor_si128(a1, mask_low_bytes(load_xmm(input), length));
-        }
+        // The input spans two 16 byte segments so it's safe to load the input from its actual starting address
+        // The input data will be in the least significant bytes of the xmm register
+        // Mask out the most significant bytes that may contain garbage
+        // XOR the masked input data with the previous crc
+        a1 = _mm_xor_si128(a1, mask_low_bytes(load_xmm(input), length));
 
-        if (length <= 8) {
-            // For 8 or less bytes of input we just left shift to effectively multiply by x^64
-            a1 = left_shift_bytes(a1, 8 - length);
-        } else {
-            // For 8-15 bytes of input we need to fold the two halves of the crc register together
-            a1 = left_shift_bytes(a1, 16 - length);
-            const __m128i x128 = _mm_set_epi64x(0, aws_checksums_crc64xz_constants.x128[1]);
-            // Multiply the lower half of the crc register by x^128
-            __m128i mul_by_x128 = _mm_clmulepi64_si128(a1, x128, 0x00);
-            // XOR the result with the upper half of the crc
-            a1 = _mm_xor_si128(_mm_bsrli_si128(a1, 8), mul_by_x128);
-        }
+    if (length <= 8) {
+        // For 8 or less bytes of input we just left shift to effectively multiply by x^64
+        a1 = left_shift_bytes(a1, 8 - length);
+    } else {
+        // For 8-15 bytes of input we need to fold the two halves of the crc register together
+        a1 = left_shift_bytes(a1, 16 - length);
+        const __m128i x128 = _mm_set_epi64x(0, aws_checksums_crc64xz_constants.x128[1]);
+        // Multiply the lower half of the crc register by x^128
+        __m128i mul_by_x128 = _mm_clmulepi64_si128(a1, x128, 0x00);
+        // XOR the result with the upper half of the crc
+        a1 = _mm_xor_si128(_mm_bsrli_si128(a1, 8), mul_by_x128);
+    }
     } else {
         // There are 16 or more bytes of input - load the first 16 bytes and XOR with the previous crc
         a1 = _mm_xor_si128(a1, load_xmm(input));
