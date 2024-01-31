@@ -548,7 +548,15 @@ uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t pre
     }
 
     uint64_t crc = ~prev_crc64;
+
+    // Read byte by byte until we reach an 8 byte aligned address
+    while (length > 0 && ((intptr_t) input & 7)) {
+        crc = (crc >> 8) ^ crc64xz_table[0][(crc ^ *input++) & 0xff];
+        length--;
+    }
+
     int remaining = length;
+    // Once we are aligned, read 8 bytes at a time
     const uint64_t *current = (const uint64_t *)(const void *)input;
     while (remaining >= 8) {
         uint64_t c1 = *current++ ^ crc;
@@ -562,6 +570,8 @@ uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t pre
         crc ^= crc64xz_table[0][(c1 >> 56) & 0xff];
         remaining -= 8;
     }
+
+    // Read any remaining input byte by byte
     while (remaining > 0) {
         crc = (crc >> 8) ^ crc64xz_table[0][(crc ^ input[length - remaining]) & 0xff];
         remaining--;
