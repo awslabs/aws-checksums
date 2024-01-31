@@ -46,10 +46,11 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
     // For lengths less than 16 we need to carefully load from memory to prevent reading beyond the end of the input
     // buffer
     if (length < 16) {
-        // The input spans two 16 byte segments so it's safe to load the input from its actual starting address
-        // The input data will be in the least significant bytes of the xmm register
-        // Mask out the most significant bytes that may contain garbage
-        // XOR the masked input data with the previous crc
+        // The input falls in a single 16 byte segment so we load from a 16 byte aligned address
+        // The input data will be loaded "into the middle" of the xmm register
+        // Right shift the input data register to eliminate any leading bytes and move the data to the least
+        // significant bytes Mask out the most significant bytes that may contain garbage XOR the masked input data
+        // with the previous crc. Note, we're already aligned at this point.
         a1 = _mm_xor_si128(a1, mask_low_bytes(load_xmm(input), length));
 
         if (length <= 8) {
