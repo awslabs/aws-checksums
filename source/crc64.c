@@ -26,42 +26,38 @@ AWS_ALIGNED_TYPEDEF(aws_checksums_crc64_constants_t, cheksums_constants, 16);
 cheksums_constants aws_checksums_crc64xz_constants = {
     //
 
-    .x2048 =
-        {0x8260adf2381ad81c,
-         0xf31fd9271e228b79, // x^2112 mod P(x) / x^2048 mod P(x)
-         0x8260adf2381ad81c,
-         0xf31fd9271e228b79, // duplicated 3 times to support 64 byte avx512 loads
-         0x8260adf2381ad81c,
-         0xf31fd9271e228b79, //
-         0x8260adf2381ad81c,
-         0xf31fd9271e228b79}, //
-    .x1536 =
-        {0x47b00921f036ff71,
-         0xb0382771eb06c453, // x^1600 mod P(x) / x^1536 mod P(x)
-         0x47b00921f036ff71,
-         0xb0382771eb06c453, // duplicated 3 times to support 64 byte avx512 loads
-         0x47b00921f036ff71,
-         0xb0382771eb06c453, //
-         0x47b00921f036ff71,
-         0xb0382771eb06c453}, //
-    .x1024 =
-        {0x8757d71d4fcc1000,
-         0xd7d86b2af73de740, // x^1088 mod P(x) / x^1024 mod P(x)
-         0x8757d71d4fcc1000,
-         0xd7d86b2af73de740, // duplicated 3 times to support 64 byte avx512 loads
-         0x8757d71d4fcc1000,
-         0xd7d86b2af73de740, //
-         0x8757d71d4fcc1000,
-         0xd7d86b2af73de740}, //
-    .x512 =
-        {0x6ae3efbb9dd441f3,
-         0x081f6054a7842df4, // x^576 mod P(x) / x^512 mod P(x)
-         0x6ae3efbb9dd441f3,
-         0x081f6054a7842df4, // duplicated 3 times to support 64 byte avx512 loads
-         0x6ae3efbb9dd441f3,
-         0x081f6054a7842df4, //
-         0x6ae3efbb9dd441f3,
-         0x081f6054a7842df4},                            //
+    .x2048 = {0x8260adf2381ad81c,
+              0xf31fd9271e228b79, // x^2112 mod P(x) / x^2048 mod P(x)
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79, // duplicated 3 times to support 64 byte avx512 loads
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79, //
+              0x8260adf2381ad81c,
+              0xf31fd9271e228b79}, //
+    .x1536 = {0x47b00921f036ff71,
+              0xb0382771eb06c453, // x^1600 mod P(x) / x^1536 mod P(x)
+              0x47b00921f036ff71,
+              0xb0382771eb06c453, // duplicated 3 times to support 64 byte avx512 loads
+              0x47b00921f036ff71,
+              0xb0382771eb06c453, //
+              0x47b00921f036ff71,
+              0xb0382771eb06c453}, //
+    .x1024 = {0x8757d71d4fcc1000,
+              0xd7d86b2af73de740, // x^1088 mod P(x) / x^1024 mod P(x)
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740, // duplicated 3 times to support 64 byte avx512 loads
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740, //
+              0x8757d71d4fcc1000,
+              0xd7d86b2af73de740}, //
+    .x512 = {0x6ae3efbb9dd441f3,
+             0x081f6054a7842df4, // x^576 mod P(x) / x^512 mod P(x)
+             0x6ae3efbb9dd441f3,
+             0x081f6054a7842df4, // duplicated 3 times to support 64 byte avx512 loads
+             0x6ae3efbb9dd441f3,
+             0x081f6054a7842df4, //
+             0x6ae3efbb9dd441f3,
+             0x081f6054a7842df4},                        //
     .x384 = {0xb5ea1af9c013aca4, 0x69a35d91c3730254},    //  x^448 mod P(x) / x^384 mod P(x)
     .x256 = {0x60095b008a9efa44, 0x3be653a30fe1af51},    //  x^320 mod P(x) / x^256 mod P(x)
     .x128 = {0xe05dd497ca393ae4, 0xdabe95afc7875f40},    //  x^192 mod P(x) / x^128 mod P(x)

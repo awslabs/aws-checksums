@@ -34,7 +34,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
 
     if (alignment) {
         int burnoff_for_alignment = 16 - alignment;
-        int len_processed = burnoff_for_alignment > length ? burnoff_for_alignment : length;
+        int len_processed = burnoff_for_alignment > length ? length : burnoff_for_alignment;
         previous_crc64 = aws_checksums_crc64xz_sw(input, len_processed, previous_crc64);
         input += len_processed;
         length -= len_processed;
