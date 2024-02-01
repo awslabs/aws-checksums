@@ -27,7 +27,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
     // memory regions smaller than an xmm register does not justify the very negligible performance gains
     // we would get for using it on an input this small.
     if (length < 16) {
-        return aws_checksums_crc64xz_sw(input, length, previousCrc64);
+        return aws_checksums_crc64xz_sw(input, length, previous_crc64);
     }
 
     // Invert the previous crc bits and load into the lower half of an xmm register
