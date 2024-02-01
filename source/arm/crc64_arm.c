@@ -17,15 +17,15 @@
 // Load a poly64x2_t neon register from a uint64_t pointer
 #    define load_p64(uint64_t_ptr) vreinterpretq_p64_u64(vld1q_u64((uint64_t_ptr)))
 // Mask the bytes in a neon uint8x16_t register and preserve 0 to 15 least significant bytes.
-#    define mask_low_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_pos_5 - (intptr_t)(count)))
+#    define mask_low_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[5] - (intptr_t)(count)))
 // Mask the bytes in a neon uint8x16_t register and preserve 0 to 15 most significant bytes.
-#    define mask_high_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_pos_3 + (intptr_t)(count)))
+#    define mask_high_u8(u8, count) vandq_u8(u8, load_u8(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
 // Mask the bytes in a neon poly64x2_t register and preserve 0 to 15 most significant bytes.
 #    define mask_high_p64(poly, count) vreinterpretq_p64_u8(mask_high_u8(vreinterpretq_u8_p64(poly), count))
 // Left shift bytes in a neon uint8x16_t register - shift count from 0 to 15.
-#    define left_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_pos_1 - (intptr_t)(count)))
+#    define left_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] - (intptr_t)(count)))
 // Right shift bytes in a neon uint8x16_t register - shift count from 0 to 15.
-#    define right_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_pos_1 + (intptr_t)(count)))
+#    define right_shift_u8(u8, count) vqtbl1q_u8(u8, load_u8(aws_checksums_masks_shifts[1] + (intptr_t)(count)))
 // Left shift bytes in a neon poly64x2_t register - shift count from 0 to 15.
 #    define left_shift_p64(poly, count) vreinterpretq_p64_u8(left_shift_u8(vreinterpretq_u8_p64(poly), count))
 // Right shift a neon poly64x2_t register 0 to 15 bytes - imm must be an immediate constant

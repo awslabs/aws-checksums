@@ -13,7 +13,8 @@
 #    include <wmmintrin.h>
 
 #    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
-#    define mask_high_bytes(xmm, count) _mm_and_si128((xmm), load_xmm(aws_checksums_masks_pos_3 + (intptr_t)(count)))
+#    define mask_high_bytes(xmm, count)                                                                                \
+        _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
 #    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
 #    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
@@ -27,16 +28,16 @@
 #    define xor_zmm(zmm1, zmm2, zmm3)                                                                                  \
         _mm512_ternarylogic_epi64((zmm1), (zmm2), (zmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
-uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previousCrc64) {
+uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previous_crc64) {
 
     if (length < 512) {
-        return aws_checksums_crc64xz_intel_clmul(input, length, previousCrc64);
+        return aws_checksums_crc64xz_intel_clmul(input, length, previous_crc64);
     }
 
     // The following code assumes a minimum of 256 bytes of input
 
     // Load the first 64 bytes into a zmm register and XOR with the (inverted) crc
-    __m512i x1 = _mm512_xor_si512(_mm512_zextsi128_si512(_mm_cvtsi64_si128((int64_t)~previousCrc64)), load_zmm(input));
+    __m512i x1 = _mm512_xor_si512(_mm512_zextsi128_si512(_mm_cvtsi64_si128((int64_t)~previous_crc64)), load_zmm(input));
     // Load 192 more bytes of input
     __m512i x2 = load_zmm(input + 0x40);
     __m512i x3 = load_zmm(input + 0x80);

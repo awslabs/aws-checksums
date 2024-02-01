@@ -16,10 +16,12 @@ AWS_EXTERN_C_BEGIN
 AWS_CHECKSUMS_API uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t prev_crc64);
 
 #if defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) && !(defined(_MSC_VER) && _MSC_VER < 1920)
+/* Does not handle inputs smaller than 16 bytes! */
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) && !(defined(_MSC_VER) && _MSC_VER < 1920) */
 
 #if defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920)
+/* Does not handle inputs smaller than 16 bytes! */
 uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920)  \
         */
@@ -41,13 +43,8 @@ typedef struct {
     uint64_t trailing[15][2]; // Folding constants for 15 possible trailing input data lengths
 } aws_checksums_crc64_constants_t;
 
+extern uint8_t aws_checksums_masks_shifts[6][16];
 extern aws_checksums_crc64_constants_t aws_checksums_crc64xz_constants;
-extern const uint8_t *aws_checksums_masks_pos_5;
-extern const uint8_t *aws_checksums_masks_pos_4;
-extern const uint8_t *aws_checksums_masks_pos_3;
-extern const uint8_t *aws_checksums_masks_pos_2;
-extern const uint8_t *aws_checksums_masks_pos_1;
-extern const uint8_t *aws_checksums_masks_pos_0;
 
 AWS_EXTERN_C_END
 
