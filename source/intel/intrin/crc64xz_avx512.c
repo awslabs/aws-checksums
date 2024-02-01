@@ -12,7 +12,7 @@
 #    include <smmintrin.h>
 #    include <wmmintrin.h>
 
-#define load_zmm(ptr) _mm512_loadu_si512((const uint8_t *) (const void *) (ptr))
+#    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
 #    define mask_high_bytes(xmm, count)                                                                                \
         _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
 #    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
@@ -21,7 +21,7 @@
 #    define xor_xmm(xmm1, xmm2, xmm3)                                                                                  \
         _mm_ternarylogic_epi64((xmm1), (xmm2), (xmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
-#    define load_zmm(ptr) _mm512_loadu_epi64((const __m512i *)(const void *)(ptr))
+#    define load_zmm(ptr) _mm512_loadu_si512((const uint8_t *) (const void *) (ptr))
 #    define cmull_zmm_hi(zmm1, zmm2) _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x11)
 #    define cmull_zmm_lo(zmm1, zmm2) _mm512_clmulepi64_epi128((zmm1), (zmm2), 0x00)
 #    define cmull_zmm_pair(zmm1, zmm2) _mm512_xor_si512(cmull_zmm_hi((zmm1), (zmm2)), cmull_zmm_lo((zmm1), (zmm2)))
