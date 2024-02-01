@@ -41,8 +41,13 @@ typedef struct {
     uint64_t trailing[15][2]; // Folding constants for 15 possible trailing input data lengths
 } aws_checksums_crc64_constants_t;
 
-extern uint8_t aws_checksums_masks_shifts[6][16];
 extern aws_checksums_crc64_constants_t aws_checksums_crc64xz_constants;
+extern const uint8_t *aws_checksums_masks_pos_5;
+extern const uint8_t *aws_checksums_masks_pos_4;
+extern const uint8_t *aws_checksums_masks_pos_3;
+extern const uint8_t *aws_checksums_masks_pos_2;
+extern const uint8_t *aws_checksums_masks_pos_1;
+extern const uint8_t *aws_checksums_masks_pos_0;
 
 AWS_EXTERN_C_END
 
