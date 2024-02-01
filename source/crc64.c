@@ -112,12 +112,5 @@ uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t prev_c
 #endif
     }
 
-    // the amount of complexity required to handle vector instructions on
-    // memory regions smaller than an xmm register does not justify the very negligible performance gains
-    // we would get for using it on an input this small.
-    if (length < 16) {
-        return aws_checksums_crc64xz_sw(input, length, prev_crc64);
-    }
-
     return s_crc64xz_fn_ptr(input, length, prev_crc64);
 }

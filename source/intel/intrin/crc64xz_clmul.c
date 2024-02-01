@@ -22,8 +22,14 @@
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
 
 uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc64) {
-    AWS_FATAL_ASSERT(length >= 16 && "the intel clmul implementation of crc64xz does not handle inputs smaller than 16 bytes.");
-    
+
+    // the amount of complexity required to handle vector instructions on
+    // memory regions smaller than an xmm register does not justify the very negligible performance gains
+    // we would get for using it on an input this small.
+    if (length < 16) {
+        return aws_checksums_crc64xz_sw(input, length, previousCrc64);
+    }
+
     // Invert the previous crc bits and load into the lower half of an xmm register
     __m128i a1 = _mm_cvtsi64_si128((int64_t)(~previous_crc64));
 

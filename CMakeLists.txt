@@ -98,11 +98,13 @@ if (USE_CPU_EXTENSIONS)
 
         set(UBER_FILE_FLAGS "${AWS_SSE4_2_FLAG}")
         if (AWS_HAVE_CLMUL)
-            set(UBER_FILE_FLAGS "${AWS_CLMUL_FLAG} ${UBER_FILE_FLAGS}")
+            list(PREPEND UBER_FILE_FLAGS ${AWS_CLMUL_FLAG})
         endif()
 
         if (AWS_HAVE_AVX512_INTRINSICS)
-            set(UBER_FILE_FLAGS "${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${UBER_FILE_FLAGS}")
+            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
+            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
+            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX512_FLAG})
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
 
