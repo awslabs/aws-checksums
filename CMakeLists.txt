@@ -96,17 +96,21 @@ if (USE_CPU_EXTENSIONS)
             endif()
         endif()
 
-        set(UBER_FILE_FLAGS "${AWS_SSE4_2_FLAG}")
-        if (AWS_HAVE_CLMUL)
-            list(PREPEND UBER_FILE_FLAGS ${AWS_CLMUL_FLAG})
-        endif()
 
+
+        set(UBER_FILE_FLAGS "")
         if (AWS_HAVE_AVX512_INTRINSICS)
-            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
-            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
-            list(PREPEND UBER_FILE_FLAGS ${AWS_AVX512_FLAG})
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX512_FLAG})
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
+
+        if (AWS_HAVE_CLMUL)
+            list(APPEND UBER_FILE_FLAGS ${AWS_CLMUL_FLAG})
+        endif()
+
+        list(APPEND UBER_FILE_FLAGS "${AWS_SSE4_2_FLAG}")
 
        # this file routes all of the implementations together based on available cpu features. It gets built regardless
        # of which flags exist. The c file sorts it out.
