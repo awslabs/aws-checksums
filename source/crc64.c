@@ -7,9 +7,9 @@
 #include <aws/checksums/private/crc64_priv.h>
 #include <aws/common/cpuid.h>
 
-AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
+//AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
 // Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
-checksums_maxks_shifts_type aws_checksums_masks_shifts = {
+uint8_t aws_checksums_masks_shifts[6][16] = {
     {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, //
     {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}, // left/right
                                                                                                       // shifts
@@ -86,6 +86,8 @@ cheksums_constants aws_checksums_crc64xz_constants = {
 static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = 0;
 
 uint64_t aws_checksums_crc64xz(const uint8_t *input, int length, uint64_t prev_crc64) {
+
+    size_t blah = sizeof(aws_checksums_masks_shifts);
 
     if (AWS_UNLIKELY(!s_crc64xz_fn_ptr)) {
 #if defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
