@@ -96,6 +96,7 @@ static int s_test_known_crc64xz(struct aws_allocator *allocator, const char *fun
         int len = 1;
         // Spin through input data lengths
         for (int i = 0; i < (TEST_BUFFER_SIZE - off) && !res; i++, len++) {
+            test_buf.buffer[off + i] = (uint8_t)((i + 1) * 131);
             // Compute the expected CRC one byte at a time using the reference function
             expected = crc64xz_reference(&test_buf.buffer[off + i], 1, expected);
             // Recompute the full CRC of the buffer at each offset and length and compare against expected value
