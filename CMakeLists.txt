@@ -92,10 +92,8 @@ if (USE_CPU_EXTENSIONS)
         else()
             if (AWS_HAVE_GCC_INLINE_ASM)
                 simd_append_source_and_features(${PROJECT_NAME} "source/intel/asm/crc32c_sse42_asm.c" ${AWS_SSE4_2_FLAG})
-
             endif()
         endif()
-
 
 
         set(UBER_FILE_FLAGS "")
@@ -104,6 +102,7 @@ if (USE_CPU_EXTENSIONS)
             list(APPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
             list(APPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+
         endif()
 
         if (AWS_HAVE_CLMUL)
@@ -131,6 +130,8 @@ if (USE_CPU_EXTENSIONS)
                     )
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
         endif()
+    else()
+        target_sources(${PROJECT_NAME} PRIVATE "source/generic/crc_sw_only.c")
     endif()
 else()
     target_sources(${PROJECT_NAME} PRIVATE "source/generic/crc_sw_only.c")
