@@ -129,12 +129,8 @@ if (USE_CPU_EXTENSIONS)
                     "source/arm/*.c"
                     )
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
-        endif()
-    else()
-        target_sources(${PROJECT_NAME} PRIVATE "source/generic/crc_sw_only.c")
+        endif()   
     endif()
-else()
-    target_sources(${PROJECT_NAME} PRIVATE "source/generic/crc_sw_only.c")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
