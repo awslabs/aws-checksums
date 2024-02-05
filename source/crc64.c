@@ -21,10 +21,11 @@ checksums_maxks_shifts_type aws_checksums_masks_shifts = {
 
 AWS_ALIGNED_TYPEDEF(aws_checksums_crc64_constants_t, cheksums_constants, 16);
 
+/* clang-format off */
+
 // Pre-computed bit-reflected constants for CRC64XZ
 // The actual exponents are reduced by 1 to compensate for bit-reflection (e.g. x^1024 is actually x^1023)
 cheksums_constants aws_checksums_crc64xz_constants = {
-    /* clang-format off */
 
     .x2048 =
         {0x8260adf2381ad81c,
@@ -84,9 +85,9 @@ cheksums_constants aws_checksums_crc64xz_constants = {
             {0xb91b6176fc36363f, 0xdda9f27ee08373ad}, // 13 trailing bytes: x^168 mod P(x) / x^104 mod P(x)
             {0x4dcec64d2edf818c, 0x0dd9b4240837fd99}, // 14 trailing bytes: x^176 mod P(x) / x^112 mod P(x)
             {0x4550ddde9a383296, 0xf075e4ae5e05bdff}  // 15 trailing bytes: x^184 mod P(x) / x^120 mod P(x)
-        },                                           
-    /* clang-format on */
+        },                                            //
 };
+/* clang-format on */
 
 static uint64_t (*s_crc64xz_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = 0;
 
