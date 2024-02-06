@@ -5,7 +5,7 @@
 
 #include <aws/checksums/private/crc64_priv.h>
 
-#if defined(AWS_HAVE_AVX2_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
+#if defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
 
 #    include <emmintrin.h>
 #    include <immintrin.h>
@@ -127,4 +127,4 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     return ~(uint64_t)_mm_extract_epi64(reduced, 1);
 }
 
-#endif /* defined(AWS_HAVE_AVX2_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)*/
+#endif /* defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)*/
