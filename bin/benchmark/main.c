@@ -26,22 +26,22 @@ struct checksum_profile_run {
 };
 
 static void s_runcrc32_sw(struct aws_byte_cursor checksum_this) {
-    uint32_t crc = aws_checksums_crc32_sw(checksum_this.ptr, checksum_this.len, 0);
+    uint32_t crc = aws_checksums_crc32_sw(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
 static void s_runcrc32(struct aws_byte_cursor checksum_this) {
-    uint32_t crc = aws_checksums_crc32(checksum_this.ptr, checksum_this.len, 0);
+    uint32_t crc = aws_checksums_crc32(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
 static void s_runcrc32c_sw(struct aws_byte_cursor checksum_this) {
-    uint32_t crc = aws_checksums_crc32c_sw(checksum_this.ptr, checksum_this.len, 0);
+    uint32_t crc = aws_checksums_crc32c_sw(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
 static void s_runcrc32c(struct aws_byte_cursor checksum_this) {
-    uint32_t crc = aws_checksums_crc32c(checksum_this.ptr, checksum_this.len, 0);
+    uint32_t crc = aws_checksums_crc32c(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
