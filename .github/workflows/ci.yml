@@ -6,8 +6,8 @@ on:
       - 'main'
 
 env:
-  BUILDER_VERSION: v0.9.43
-  BUILDER_SOURCE: releases
+  BUILDER_VERSION: better_vectorization_and_crc64
+  BUILDER_SOURCE: channels
   BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
   PACKAGE_NAME: aws-checksums
   LINUX_BASE_IMAGE: ubuntu-18-x64
@@ -145,6 +145,18 @@ jobs:
         python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
         chmod a+x builder
         ./builder build -p ${{ env.PACKAGE_NAME }}
+
+  osx-m1:
+    runs-on: macos-latest-xlarge # latest arm build
+    strategy:
+      matrix:
+        arch: [ macos-armv8 ]
+    steps:
+      - name: Build ${{ env.PACKAGE_NAME }} + consumers
+        run: |
+          python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
+          chmod a+x builder
+          ./builder build -p ${{ env.PACKAGE_NAME }} --target=${{matrix.arch}}
 
   osx-no-cpu-extensions:
     runs-on: macos-12 # latest

@@ -14,8 +14,8 @@
 #        define PREFETCH(p) __builtin_prefetch(p)
 #    endif
 
-uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    uint32_t crc = ~previousCrc32;
+uint32_t aws_checksums_crc32c_armv8(const uint8_t *data, int length, uint32_t previous_crc32c) {
+    uint32_t crc = ~previous_crc32c;
 
     // Align data if it's not aligned
     while (((uintptr_t)data & 7) && length > 0) {
@@ -54,8 +54,8 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
     return ~crc;
 }
 
-uint32_t aws_checksums_crc32_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    uint32_t crc = ~previousCrc32;
+uint32_t aws_checksums_crc32_armv8(const uint8_t *data, int length, uint32_t previous_crc32) {
+    uint32_t crc = ~previous_crc32;
 
     // Align data if it's not aligned
     while (((uintptr_t)data & 7) && length > 0) {

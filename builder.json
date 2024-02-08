@@ -6,5 +6,9 @@
     "downstream": [
         { "name": "aws-c-event-stream" },
         { "name": "aws-c-s3" }
+    ],
+    "test_steps": [
+        "test",
+        "{install_dir}/bin/checksum-profile{exe}"
     ]
 }
