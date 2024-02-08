@@ -13,6 +13,8 @@
 #include <aws/common/device_random.h>
 #include <aws/common/cpuid.h>
 
+#include <inttypes.h>
+
 struct aws_allocator_types {
     struct aws_allocator *allocator;
     const char *name;
@@ -100,7 +102,7 @@ int main(void) {
 
             // warm it up to factor out the cpuid checks:
             struct aws_byte_cursor warmup_cur = aws_byte_cursor_from_array(buffer_sizes, buffer_sizes_len);
-            profile_runs[i].profile_run(aws_byte_cursor_from_buf(&warmup_cur));
+            profile_runs[i].profile_run(warmup_cur);
 
             for (size_t k = 0; k < buffer_sizes_len; ++k) {
                 struct aws_byte_buf x_bytes;
@@ -111,7 +113,7 @@ int main(void) {
                 profile_runs[i].profile_run(aws_byte_cursor_from_buf(&x_bytes));
                 uint64_t end_time = 0;
                 aws_high_res_clock_get_ticks(&end_time);
-                fprintf(stdout, "buffer size %zu (bytes), latency: %llu ns\n", buffer_sizes[k], end_time - start_time);
+                fprintf(stdout, "buffer size %zu (bytes), latency: %" PRIu64 " ns\n", buffer_sizes[k], end_time - start_time);
                 aws_byte_buf_clean_up(&x_bytes);
             }
             fprintf(stdout, "\n");
