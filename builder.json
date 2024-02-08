@@ -9,6 +9,6 @@
     ],
     "test-steps": [
         "aws-checksums-test",
-        "{install_dir}/bin/checksum-profile{exe}\""
+        "{install_dir}/bin/checksum-profile{exe}"
     ]
 }
