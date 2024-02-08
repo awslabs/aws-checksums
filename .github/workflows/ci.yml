@@ -148,6 +148,9 @@ jobs:
 
   osx-m1:
     runs-on: macos-latest-xlarge # latest arm build
+    strategy:
+      matrix:
+        arch: [ aarch64 ]
     steps:
       - name: Build ${{ env.PACKAGE_NAME }} + consumers
         run: |
