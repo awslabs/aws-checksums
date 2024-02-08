@@ -1,17 +1,17 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/checksums/crc.h>
-#include <aws/checksums/private/crc_priv.h>
 #include <aws/checksums/private/crc64_priv.h>
+#include <aws/checksums/private/crc_priv.h>
 
 #include <aws/common/allocator.h>
 #include <aws/common/byte_buf.h>
 #include <aws/common/clock.h>
-#include <aws/common/device_random.h>
 #include <aws/common/cpuid.h>
+#include <aws/common/device_random.h>
 
 #include <inttypes.h>
 
@@ -58,16 +58,16 @@ static void s_runcrc64(struct aws_byte_cursor checksum_this) {
 int main(void) {
 
     fprintf(stdout, "hw features for this run:\n");
-    fprintf(stdout, "clmul: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) ? "true": "false");
-    fprintf(stdout, "sse4.1: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_1) ? "true": "false");
-    fprintf(stdout, "sse4.2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2) ? "true": "false");
-    fprintf(stdout, "avx2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2) ? "true": "false");
-    fprintf(stdout, "avx512: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) ? "true": "false");
-    fprintf(stdout, "arm crc: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC) ? "true": "false");
-    fprintf(stdout, "bmi2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_BMI2) ? "true": "false");
-    fprintf(stdout, "vpclmul: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ) ? "true": "false");
-    fprintf(stdout, "arm pmull: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_PMULL) ? "true": "false");
-    fprintf(stdout, "arm crypto: %s\n\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRYPTO) ? "true": "false");
+    fprintf(stdout, "clmul: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) ? "true" : "false");
+    fprintf(stdout, "sse4.1: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_1) ? "true" : "false");
+    fprintf(stdout, "sse4.2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2) ? "true" : "false");
+    fprintf(stdout, "avx2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2) ? "true" : "false");
+    fprintf(stdout, "avx512: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) ? "true" : "false");
+    fprintf(stdout, "arm crc: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC) ? "true" : "false");
+    fprintf(stdout, "bmi2: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_BMI2) ? "true" : "false");
+    fprintf(stdout, "vpclmul: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ) ? "true" : "false");
+    fprintf(stdout, "arm pmull: %s\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_PMULL) ? "true" : "false");
+    fprintf(stdout, "arm crypto: %s\n\n", aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRYPTO) ? "true" : "false");
 
     struct aws_allocator_types allocators[2];
     allocators[0].allocator = aws_default_allocator();
@@ -113,7 +113,11 @@ int main(void) {
                 profile_runs[i].profile_run(aws_byte_cursor_from_buf(&x_bytes));
                 uint64_t end_time = 0;
                 aws_high_res_clock_get_ticks(&end_time);
-                fprintf(stdout, "buffer size %zu (bytes), latency: %" PRIu64 " ns\n", buffer_sizes[k], end_time - start_time);
+                fprintf(
+                    stdout,
+                    "buffer size %zu (bytes), latency: %" PRIu64 " ns\n",
+                    buffer_sizes[k],
+                    end_time - start_time);
                 aws_byte_buf_clean_up(&x_bytes);
             }
             fprintf(stdout, "\n");
