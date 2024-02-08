@@ -150,7 +150,7 @@ jobs:
     runs-on: macos-latest-xlarge # latest arm build
     strategy:
       matrix:
-        arch: [ armv8 ]
+        arch: [ osx-arm64v8a ]
     steps:
       - name: Build ${{ env.PACKAGE_NAME }} + consumers
         run: |
