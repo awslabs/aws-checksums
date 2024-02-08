@@ -114,6 +114,7 @@ if (USE_CPU_EXTENSIONS)
        # this file routes all of the implementations together based on available cpu features. It gets built regardless
        # of which flags exist. The c file sorts it out.
        simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c" ${UBER_FILE_FLAGS})
+       #simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32_hw.c" ${UBER_FILE_FLAGS})
 
         if (AWS_HAVE_CLMUL)
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
@@ -166,4 +167,5 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
 include(CTest)
 if (BUILD_TESTING)
     add_subdirectory(tests)
+    add_subdirectory(bin/benchmark)
 endif ()
