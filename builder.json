@@ -7,7 +7,7 @@
         { "name": "aws-c-event-stream" },
         { "name": "aws-c-s3" }
     ],
-    "test-steps": [
+    "test_steps": [
         "aws-checksums-test",
         "{install_dir}/bin/checksum-profile{exe}"
     ]
