@@ -8,7 +8,7 @@
         { "name": "aws-c-s3" }
     ],
     "test_steps": [
-        "aws-checksums-test",
+        "ctest",
         "{install_dir}/bin/checksum-profile{exe}"
     ]
 }
