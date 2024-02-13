@@ -1,7 +1,7 @@
 /**
-* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-* SPDX-License-Identifier: Apache-2.0.
-*/
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/checksums/private/crc_priv.h>
 #include <aws/common/assert.h>
@@ -16,7 +16,7 @@
 
 #    define load_xmm(ptr) _mm_loadu_si128((const __m128i *)(const void *)(ptr))
 #    define mask_high_bytes(xmm, count)                                                                                \
-       _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
+        _mm_and_si128((xmm), load_xmm(aws_checksums_masks_shifts[3] + (intptr_t)(count)))
 #    define cmull_xmm_hi(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x11)
 #    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
@@ -148,4 +148,4 @@ uint32_t aws_checksums_crc32_intel_clmul(const uint8_t *input, int length, uint3
     return ~(uint32_t)_mm_extract_epi32(reduced, 2);
 }
 
-#endif
+#endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) && !(defined(_MSC_VER) && _MSC_VER < 1920) */

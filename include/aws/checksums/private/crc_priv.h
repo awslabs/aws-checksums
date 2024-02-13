@@ -6,10 +6,8 @@
  */
 
 #define AWS_CRC32_SIZE_BYTES 4
-#include <aws/checksums/exports.h>
-#include <aws/common/common.h>
+#include <aws/checksums/private/crc_common.h>
 
-#include <aws/common/config.h>
 #include <stdint.h>
 
 /* Pre-computed constants for CRC32 */
@@ -25,7 +23,6 @@ typedef struct {
     uint64_t mu_poly[2];      // Barrett mu / 33-bit polynomial P(x)
     uint64_t trailing[15][2]; // Folding constants for 15 possible trailing input data lengths
 } aws_checksums_crc32_constants_t;
-extern uint8_t aws_checksums_masks_shifts[6][16];
 
 AWS_EXTERN_C_BEGIN
 

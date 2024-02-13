@@ -10,6 +10,9 @@
 static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32c) = 0;
 static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32) = 0;
 
+/* clang-format off */
+AWS_ALIGNED_TYPEDEF(aws_checksums_crc32_constants_t, cheksums_constants, 16);
+
 // Pre-computed bit-reflected constants for CRC32
 // The actual exponents are reduced by 1 to compensate for bit-reflection (e.g. x^1024 is actually x^1023)
 // Inconsistent alignment of the 32-bit constants is by design so that carryless multiplication results align
@@ -75,10 +78,11 @@ aws_checksums_crc32_constants_t aws_checksums_crc32_constants = {
             {0xd7e2805800000000, 0xc18edfc000000000}  // 15 trailing bytes: x^184 mod P(x) / x^120 mod P(x)
         },
 };
+/* clang-format on */
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous_crc32) {
     if (AWS_UNLIKELY(!s_crc32_fn_ptr)) {
-#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
+#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) && aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
             s_crc32_fn_ptr = aws_checksums_crc32_intel_clmul;
         } else {

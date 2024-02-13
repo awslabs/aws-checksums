@@ -6,9 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/exports.h>
-#include <aws/common/config.h>
-#include <aws/common/macros.h>
+#include <aws/checksums/private/crc_common.h>
 #include <stdint.h>
 
 AWS_EXTERN_C_BEGIN
@@ -43,7 +41,6 @@ typedef struct {
     uint64_t trailing[15][2]; // Folding constants for 15 possible trailing input data lengths
 } aws_checksums_crc64_constants_t;
 
-extern uint8_t aws_checksums_masks_shifts[6][16];
 extern aws_checksums_crc64_constants_t aws_checksums_crc64xz_constants;
 
 AWS_EXTERN_C_END
