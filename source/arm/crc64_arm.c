@@ -160,7 +160,8 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
         }
 
         // Fold 32 bytes down to 16 bytes by multiplying by x^192 and x^128 constants
-        a1 = xor3_p64(b1, pmull_lo(x128, a1), pmull_hi(x128, a1));
+        a1 = xor3_p64(b1,
+                      (x128, a1), pmull_hi(x128, a1));
     }
 
     if (length & 16) {
