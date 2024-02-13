@@ -82,7 +82,8 @@ aws_checksums_crc32_constants_t aws_checksums_crc32_constants = {
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous_crc32) {
     if (AWS_UNLIKELY(!s_crc32_fn_ptr)) {
-#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
+#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) &&                       \
+    !(defined(_MSC_VER) && _MSC_VER < 1920)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) && aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
             s_crc32_fn_ptr = aws_checksums_crc32_intel_clmul;
         } else {

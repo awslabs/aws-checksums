@@ -22,7 +22,7 @@ typedef struct {
     uint64_t x64[2];          // x^96   mod P(x) / x^64   mod P(x)
     uint64_t mu_poly[2];      // Barrett mu / 33-bit polynomial P(x)
     uint64_t trailing[15][2]; // Folding constants for 15 possible trailing input data lengths
-}  aws_checksums_crc32_constants_t;
+} aws_checksums_crc32_constants_t;
 extern aws_checksums_crc32_constants_t aws_checksums_crc32_constants;
 
 AWS_EXTERN_C_BEGIN
@@ -56,7 +56,9 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(
     int length,
     uint32_t previous_crc32c);
 
+#    if defined(AWS_HAVE_CLMUL)
 uint32_t aws_checksums_crc32_intel_clmul(const uint8_t *input, int length, uint32_t previous_crc);
+#    endif /* defined(AWS_HAVE_CLUMUL) */
 #endif
 
 AWS_EXTERN_C_END
