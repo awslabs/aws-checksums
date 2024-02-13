@@ -6,8 +6,9 @@ on:
       - 'main'
 
 env:
-  BUILDER_VERSION: better_vectorization_and_crc64
-  BUILDER_SOURCE: channels
+
+  BUILDER_VERSION: v0.9.55
+  BUILDER_SOURCE: releases
   BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
   PACKAGE_NAME: aws-checksums
   LINUX_BASE_IMAGE: ubuntu-18-x64
