@@ -87,16 +87,16 @@ uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) && aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
             s_crc32_fn_ptr = aws_checksums_crc32_intel_clmul;
         } else {
-            s_crc32c_fn_ptr = aws_checksums_crc32_sw;
+            s_crc32_fn_ptr = aws_checksums_crc32_sw;
         }
 #elif defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_ARM64)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC)) {
-            s_crc32c_fn_ptr = aws_checksums_crc32_armv8;
+            s_crc32_fn_ptr = aws_checksums_crc32_armv8;
         } else {
-            s_crc32c_fn_ptr = aws_checksums_crc32_sw;
+            s_crc32_fn_ptr = aws_checksums_crc32_sw;
         }
 #else
-        s_crc32c_fn_ptr = aws_checksums_crc32_sw;
+        s_crc32_fn_ptr = aws_checksums_crc32_sw;
 #endif
     }
     return s_crc32_fn_ptr(input, length, previous_crc32);
