@@ -28,6 +28,7 @@ string(REPLACE ";" "${AWS_MODULE_DIR};" AWS_MODULE_PATH "${CMAKE_PREFIX_PATH}${A
 # Append that generated list to the module search path
 list(APPEND CMAKE_MODULE_PATH ${AWS_MODULE_PATH})
 
+include(AwsSIMD)
 include(AwsCFlags)
 include(AwsCheckHeaders)
 include(AwsSharedLibSetup)
@@ -53,54 +54,6 @@ if(MSVC)
      source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
 endif()
 
-file(GLOB AWS_ARCH_SRC
-        "source/generic/*.c"
-        )
-
-if (USE_CPU_EXTENSIONS)
-    if(AWS_ARCH_INTEL)
-        # First, check if inline assembly is available. Inline assembly can also be supported by MSVC if the compiler in use is Clang.
-        if(AWS_HAVE_GCC_INLINE_ASM)
-            file(GLOB AWS_ARCH_SRC
-                    "source/intel/asm/*.c"
-                )
-        elseif (MSVC)
-            file(GLOB AWS_ARCH_SRC
-                    "source/intel/visualc/*.c"
-            )
-            source_group("Source Files\\intel\\visualc" FILES ${AWS_ARCH_SRC})
-        endif()
-    endif()
-
-    if (MSVC AND AWS_ARCH_ARM64)
-        file(GLOB AWS_ARCH_SRC
-            "source/arm/*.c"
-            )
-        source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
-
-    elseif (AWS_ARCH_ARM64)
-        file(GLOB AWS_ARCH_SRC
-            "source/arm/*.c"
-            )
-        SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
-    elseif ((NOT MSVC) AND AWS_ARCH_ARM32)
-        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+crc -Werror")
-        check_c_source_compiles("
-            #include <arm_acle.h>
-            int main() {
-                int crc = __crc32d(0, 1);
-                return 0;
-            }" AWS_ARM32_CRC)
-        unset(CMAKE_REQUIRED_FLAGS)
-        if (AWS_ARM32_CRC)
-            file(GLOB AWS_ARCH_SRC
-                "source/arm/*.c"
-                )
-            SET_SOURCE_FILES_PROPERTIES(source/arm/crc32c_arm.c PROPERTIES COMPILE_FLAGS -march=armv8-a+crc )
-        endif()
-    endif()
-endif()
-
 file(GLOB CHECKSUMS_COMBINED_HEADERS
     ${AWS_CHECKSUMS_HEADERS}
     ${AWS_CHECKSUMS_PRIV_HEADERS}
@@ -109,11 +62,11 @@ file(GLOB CHECKSUMS_COMBINED_HEADERS
 file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_SRC}
     ${AWS_CHECKSUMS_PLATFORM_SOURCE}
-    ${AWS_ARCH_SRC}
 )
 
 
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
+
 aws_set_common_properties(${PROJECT_NAME})
 aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_CHECKSUMS")
 aws_check_headers(${PROJECT_NAME} ${AWS_CHECKSUMS_HEADERS})
@@ -122,6 +75,65 @@ aws_add_sanitizers(${PROJECT_NAME})
 
 # We are not ABI stable yet
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0)
+
+if (USE_CPU_EXTENSIONS)
+    if (AWS_ARCH_INTEL)
+        file (GLOB AWS_ARCH_INTEL_SRC
+                "source/intel/*.c"
+                )
+
+        if (MSVC)
+            file(GLOB AWS_ARCH_INTRIN_SRC
+                    "source/intel/intrin/*.c"
+                )
+
+            source_group("Source Files\\intel" FILES ${AWS_ARCH_INTEL_SRC})
+            source_group("Source Files\\intel\\intrin" FILES ${AWS_ARCH_INTRIN_SRC})
+        else()
+            if (AWS_HAVE_GCC_INLINE_ASM)
+                simd_append_source_and_features(${PROJECT_NAME} "source/intel/asm/crc32c_sse42_asm.c" ${AWS_SSE4_2_FLAG})
+            endif()
+        endif()
+
+
+        set(UBER_FILE_FLAGS "")
+        if (AWS_HAVE_AVX512_INTRINSICS)
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX512_FLAG})
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
+            list(APPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+
+        endif()
+
+        if (AWS_HAVE_CLMUL)
+            list(APPEND UBER_FILE_FLAGS ${AWS_CLMUL_FLAG})
+        endif()
+
+        list(APPEND UBER_FILE_FLAGS "${AWS_SSE4_2_FLAG}")
+
+       # this file routes all of the implementations together based on available cpu features. It gets built regardless
+       # of which flags exist. The c file sorts it out.
+       simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32c_sse42_avx512.c" ${UBER_FILE_FLAGS})
+       #simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32_hw.c" ${UBER_FILE_FLAGS})
+
+        if (AWS_HAVE_CLMUL)
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+        endif()
+               
+
+    elseif(AWS_ARCH_ARM64 OR (AWS_ARCH_ARM32 AND AWS_HAVE_ARM32_CRC))
+        simd_append_source_and_features(${PROJECT_NAME} "source/arm/crc32c_arm.c" ${AWS_ARMv8_1_FLAG})
+        simd_append_source_and_features(${PROJECT_NAME} "source/arm/crc64_arm.c" ${AWS_ARMv8_1_FLAG})
+
+        if (MSVC)
+            file(GLOB AWS_ARCH_SRC
+                    "source/arm/*.c"
+                    )
+            source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
+        endif()   
+    endif()
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -156,4 +168,5 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
 include(CTest)
 if (BUILD_TESTING)
     add_subdirectory(tests)
+    add_subdirectory(bin/benchmark)
 endif ()
