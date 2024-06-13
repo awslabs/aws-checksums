@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 #include <aws/checksums/private/crc_priv.h>
+#include <aws/common/byte_order.h>
 #include <stddef.h>
 
 /* The Ethernet, gzip, et.al CRC32 polynomial (reverse of 0x04C11DB7) */
@@ -1105,6 +1106,20 @@ const uint32_t CRC32C_TABLE[16][256] = {
         0x5A26B1E2, 0xA82ABC1C, 0xBBD2DCEF, 0x49DED111, 0x9C221D09, 0x6E2E10F7, 0x7DD67004, 0x8FDA7DFA  /* [15][0x100]*/
     }};
 
+/* helper function to reverse byte order on big-endian platforms*/
+static inline uint32_t swap_bytes_if_needed(uint32_t x) {
+    if (!aws_is_big_endian()) {
+        return x;
+    }
+
+    uint8_t c1 = x & 0xFF;
+    uint8_t c2 = (x >> 8) & 0xFF;
+    uint8_t c3 = (x >> 16) & 0xFF;
+    uint8_t c4 = (x >> 24) & 0xFF;
+
+    return ((uint32_t)c1 << 24) + ((uint32_t)c2 << 16) + ((uint32_t)c3 << 8) + c4;
+}
+
 /* private (static) function factoring out byte-by-byte CRC computation using just one slice of the lookup table*/
 static uint32_t s_crc_generic_sb1(const uint8_t *input, int length, uint32_t crc, const uint32_t *table_ptr) {
     uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
@@ -1149,7 +1164,7 @@ static uint32_t s_crc_generic_sb4(const uint8_t *input, int length, uint32_t crc
     uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 4) {
-        crc ^= *current++;
+        crc ^= swap_bytes_if_needed(*current++);
         crc = (*table)[3][crc & 0xff] ^ (*table)[2][(crc >> 8) & 0xff] ^ (*table)[1][(crc >> 16) & 0xff] ^
               (*table)[0][crc >> 24];
         remaining -= 4;
@@ -1165,8 +1180,8 @@ static uint32_t s_crc_generic_sb8(const uint8_t *input, int length, uint32_t crc
     uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 8) {
-        uint32_t c1 = *current++ ^ crc;
-        uint32_t c2 = *current++;
+        uint32_t c1 = swap_bytes_if_needed(*current++) ^ crc;
+        uint32_t c2 = swap_bytes_if_needed(*current++);
         uint32_t t1 = (*table)[7][c1 & 0xff] ^ (*table)[6][(c1 >> 8) & 0xff] ^ (*table)[5][(c1 >> 16) & 0xff] ^
                       (*table)[4][(c1 >> 24) & 0xff];
         uint32_t t2 = (*table)[3][c2 & 0xff] ^ (*table)[2][(c2 >> 8) & 0xff] ^ (*table)[1][(c2 >> 16) & 0xff] ^
@@ -1185,10 +1200,10 @@ static uint32_t s_crc_generic_sb16(const uint8_t *input, int length, uint32_t cr
     uint32_t(*table)[16][256] = (uint32_t(*)[16][256])table_ptr;
 
     while (remaining >= 16) {
-        uint32_t c1 = *current++ ^ crc;
-        uint32_t c2 = *current++;
-        uint32_t c3 = *current++;
-        uint32_t c4 = *current++;
+        uint32_t c1 = swap_bytes_if_needed(*current++) ^ crc;
+        uint32_t c2 = swap_bytes_if_needed(*current++);
+        uint32_t c3 = swap_bytes_if_needed(*current++);
+        uint32_t c4 = swap_bytes_if_needed(*current++);
         uint32_t t1 = (*table)[15][c1 & 0xff] ^ (*table)[14][(c1 >> 8) & 0xff] ^ (*table)[13][(c1 >> 16) & 0xff] ^
                       (*table)[12][(c1 >> 24) & 0xff];
         uint32_t t2 = (*table)[11][c2 & 0xff] ^ (*table)[10][(c2 >> 8) & 0xff] ^ (*table)[9][(c2 >> 16) & 0xff] ^
