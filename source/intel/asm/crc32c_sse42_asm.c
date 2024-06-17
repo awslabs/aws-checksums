@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/intel/crc32c_compiler_shims.h>
 
 #include <aws/common/cpuid.h>
 
@@ -283,7 +283,7 @@ static bool detected_clmul = false;
  * Pass 0 in the previousCrc32 parameter as an initial value unless continuing to update a running CRC in a subsequent
  * call.
  */
-uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
+uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
 
     if (AWS_UNLIKELY(!detection_performed)) {
         detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
@@ -293,7 +293,8 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
         detection_performed = true;
     }
 
-    uint32_t crc = ~previousCrc32;
+    /* this is called by a higher-level shim and previousCRC32 is already ~ */
+    uint32_t crc = previousCrc32;
 
     /* For small input, forget about alignment checks - simply compute the CRC32c one byte at a time */
     if (AWS_UNLIKELY(length < 8)) {
@@ -358,22 +359,17 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t prev
 
     return ~crc;
 }
-uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
-}
 
 #    if defined(__clang__)
 #        pragma clang diagnostic pop
 #    endif
 
 #else
-uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
+uint32_t aws_checksums_crc32c_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
+    /* these are nested in a larger computation. As a result the crc doesn't need to be bit flipped.
+       However, the sw function is also used as a standalone implementation that does need to do the
+       bit flip. So go ahead and flip it here, so the sw implementation flips it back. */
+    return aws_checksums_crc32c_sw(input, length, ~previousCrc32);
 }
-
-uint32_t aws_checksums_crc32c_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32c_sw(input, length, previousCrc32);
-}
-
 #endif
 /* clang-format on */
