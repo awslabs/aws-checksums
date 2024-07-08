@@ -3,26 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/crc_priv.h>
-#include <intrin.h>
-
-#if defined(_M_X64) || defined(_M_IX86)
-
-#    if defined(_M_X64)
-typedef uint64_t *slice_ptr_type;
-typedef uint64_t slice_ptr_int_type;
-#    else
-typedef uint32_t *slice_ptr_type;
-typedef uint32_t slice_ptr_int_type;
-#    endif
+#include <aws/checksums/private/intel/crc32c_compiler_shims.h>
 
 /**
  * This implements crc32c via the intel sse 4.2 instructions.
  *  This is separate from the straight asm version, because visual c does not allow
  *  inline assembly for x64.
  */
-uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previousCrc32) {
-    uint32_t crc = ~previousCrc32;
+uint32_t aws_checksums_crc32c_sse42(const uint8_t *data, int length, uint32_t previousCrc32) {
+    uint32_t crc = previousCrc32;
     int length_to_process = length;
 
     slice_ptr_type temp = (slice_ptr_type)data;
@@ -54,11 +43,11 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
     uint32_t remainder = length_to_process % sizeof(temp);
 
     while (slices--) {
-#    if defined(_M_X64)
+#if defined(_M_X64)
         crc = (uint32_t)_mm_crc32_u64(crc, *temp++);
-#    else
+#else
         crc = _mm_crc32_u32(crc, *temp++);
-#    endif
+#endif
     }
 
     /* process the remaining parts that can't be done on the slice size. */
@@ -70,8 +59,3 @@ uint32_t aws_checksums_crc32c_hw(const uint8_t *data, int length, uint32_t previ
 
     return ~crc;
 }
-
-uint32_t aws_checksums_crc32_hw(const uint8_t *input, int length, uint32_t previousCrc32) {
-    return aws_checksums_crc32_sw(input, length, previousCrc32);
-}
-#endif /* x64 || x86 */
