@@ -4,10 +4,6 @@ option(STATIC_CRT "Windows specific option that to specify static/dynamic run-ti
 
 project (aws-checksums C)
 
-if (POLICY CMP0069)
-    cmake_policy(SET CMP0069 NEW) # Enable LTO/IPO if available in the compiler, see AwsCFlags
-endif()
-
 if (DEFINED CMAKE_PREFIX_PATH)
     file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" CMAKE_PREFIX_PATH)
 endif()
@@ -112,7 +108,7 @@ file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_ARCH_SRC}
 )
 
-
+aws_set_common_policies()
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
 aws_set_common_properties(${PROJECT_NAME})
 aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_CHECKSUMS")
