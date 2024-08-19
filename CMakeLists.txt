@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.13)
 
 option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
 
@@ -108,7 +108,6 @@ file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_ARCH_SRC}
 )
 
-aws_set_common_policies()
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
 aws_set_common_properties(${PROJECT_NAME})
 aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_CHECKSUMS")
