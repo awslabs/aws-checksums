@@ -46,12 +46,12 @@ static void s_runcrc32c(struct aws_byte_cursor checksum_this) {
 }
 
 static void s_runcrc64_sw(struct aws_byte_cursor checksum_this) {
-    uint64_t crc = aws_checksums_crc64xz_sw(checksum_this.ptr, (int)checksum_this.len, 0);
+    uint64_t crc = aws_checksums_crc64nvme_sw(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
 static void s_runcrc64(struct aws_byte_cursor checksum_this) {
-    uint64_t crc = aws_checksums_crc64xz(checksum_this.ptr, (int)checksum_this.len, 0);
+    uint64_t crc = aws_checksums_crc64nvme(checksum_this.ptr, (int)checksum_this.len, 0);
     (void)crc;
 }
 
@@ -80,8 +80,8 @@ int main(void) {
         {.profile_run = s_runcrc32, .name = "crc32 with hw optimizations"},
         {.profile_run = s_runcrc32c_sw, .name = "crc32c C only"},
         {.profile_run = s_runcrc32c, .name = "crc32c with hw optimizations"},
-        {.profile_run = s_runcrc64_sw, .name = "crc64xz C only"},
-        {.profile_run = s_runcrc64, .name = "crc64xz with hw optimizations"},
+        {.profile_run = s_runcrc64_sw, .name = "crc64nvme C only"},
+        {.profile_run = s_runcrc64, .name = "crc64nvme with hw optimizations"},
     };
 
     const size_t allocators_array_size = AWS_ARRAY_SIZE(allocators);
