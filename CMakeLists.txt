@@ -101,7 +101,7 @@ if (USE_CPU_EXTENSIONS)
             list(APPEND UBER_FILE_FLAGS ${AWS_AVX512_FLAG})
             list(APPEND UBER_FILE_FLAGS ${AWS_AVX512vL_FLAG})
             list(APPEND UBER_FILE_FLAGS ${AWS_AVX2_FLAG})
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64nvme_avx512.c" ${AWS_AVX512_FLAG} ${AWS_AVX512vL_FLAG} ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
 
         endif()
 
@@ -117,7 +117,7 @@ if (USE_CPU_EXTENSIONS)
        #simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc32_hw.c" ${UBER_FILE_FLAGS})
 
         if (AWS_HAVE_CLMUL)
-            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64xz_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
+            simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64nvme_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
                
 

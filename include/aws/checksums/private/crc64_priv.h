@@ -13,21 +13,21 @@
 
 AWS_EXTERN_C_BEGIN
 
-AWS_CHECKSUMS_API uint64_t aws_checksums_crc64xz_sw(const uint8_t *input, int length, uint64_t prev_crc64);
+AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme_sw(const uint8_t *input, int length, uint64_t prev_crc64);
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) &&                       \
     !(defined(_MSC_VER) && _MSC_VER < 1920)
-uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc_64);
+uint64_t aws_checksums_crc64nvme_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_CLMUL) && !(defined(_MSC_VER) && _MSC_VER < 1920) */
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) &&             \
     !(defined(_MSC_VER) && _MSC_VER < 1920)
-uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, uint64_t previous_crc_64);
+uint64_t aws_checksums_crc64nvme_intel_avx512(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* defined(AWS_ARCH_INTEL_X64) && defined(AWS_HAVE_AVX2_INTRINSICS) && !(defined(_MSC_VER) && _MSC_VER < 1920)  \
         */
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_ARM64)
-uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, uint64_t previous_crc_64);
+uint64_t aws_checksums_crc64nvme_arm_pmull(const uint8_t *input, int length, uint64_t previous_crc_64);
 #endif /* INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1) */
 
 /* Pre-computed constants for CRC64 */
@@ -44,7 +44,7 @@ typedef struct {
 } aws_checksums_crc64_constants_t;
 
 extern uint8_t aws_checksums_masks_shifts[6][16];
-extern aws_checksums_crc64_constants_t aws_checksums_crc64xz_constants;
+extern aws_checksums_crc64_constants_t aws_checksums_crc64nvme_constants;
 
 AWS_EXTERN_C_END
 

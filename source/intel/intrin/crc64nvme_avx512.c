@@ -28,10 +28,10 @@
 #    define xor_zmm(zmm1, zmm2, zmm3)                                                                                  \
         _mm512_ternarylogic_epi64((zmm1), (zmm2), (zmm3), 0x96) // The constant 0x96 produces a 3-way XOR
 
-uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, const uint64_t previous_crc64) {
+uint64_t aws_checksums_crc64nvme_intel_avx512(const uint8_t *input, int length, const uint64_t previous_crc64) {
 
     if (length < 512) {
-        return aws_checksums_crc64xz_intel_clmul(input, length, previous_crc64);
+        return aws_checksums_crc64nvme_intel_clmul(input, length, previous_crc64);
     }
 
     // The following code assumes a minimum of 256 bytes of input
@@ -47,8 +47,8 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     input += 256;
     length -= 256;
 
-    const __m512i kp_2048 = load_zmm(aws_checksums_crc64xz_constants.x2048);
-    const __m512i kp_512 = load_zmm(aws_checksums_crc64xz_constants.x512);
+    const __m512i kp_2048 = load_zmm(aws_checksums_crc64nvme_constants.x2048);
+    const __m512i kp_512 = load_zmm(aws_checksums_crc64nvme_constants.x512);
 
     int loops = length / 256;
     length &= 255;
@@ -63,8 +63,8 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     }
 
     // Fold 2048 bits into 512 bits
-    const __m512i kp_1536 = load_zmm(aws_checksums_crc64xz_constants.x1536);
-    const __m512i kp_1024 = load_zmm(aws_checksums_crc64xz_constants.x1024);
+    const __m512i kp_1536 = load_zmm(aws_checksums_crc64nvme_constants.x1536);
+    const __m512i kp_1024 = load_zmm(aws_checksums_crc64nvme_constants.x1024);
 
     x1 = xor_zmm(cmull_zmm_lo(kp_1536, x1), cmull_zmm_hi(kp_1536, x1), cmull_zmm_lo(kp_1024, x2));
     x2 = xor_zmm(cmull_zmm_hi(kp_1024, x2), cmull_zmm_lo(kp_512, x3), cmull_zmm_hi(kp_512, x3));
@@ -79,7 +79,7 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     }
 
     // Load 64 bytes of constants: x^448, x^384, x^320, x^256, x^192, x^128, N/A, N/A
-    const __m512i kp_384 = load_zmm(aws_checksums_crc64xz_constants.x384);
+    const __m512i kp_384 = load_zmm(aws_checksums_crc64nvme_constants.x384);
 
     // Fold 512 bits to 128 bits
     x2 = cmull_zmm_pair(kp_384, x1);
@@ -98,13 +98,13 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     length &= 15;
 
     // Load the x^128 constant (note that we don't need x^192).
-    const __m128i x128 = _mm_set_epi64x(0, aws_checksums_crc64xz_constants.x128[1]);
+    const __m128i x128 = _mm_set_epi64x(0, aws_checksums_crc64nvme_constants.x128[1]);
     if (length == 0) {
         // Multiply the lower half of the crc register by x^128 and XOR the result with the upper half of the crc.
         a1 = _mm_xor_si128(_mm_bsrli_si128(a1, 8), cmull_xmm_lo(a1, x128));
     } else {
         // Handle any trailing input from 1-15 bytes.
-        __m128i trailing_constants = load_xmm(aws_checksums_crc64xz_constants.trailing[length - 1]);
+        __m128i trailing_constants = load_xmm(aws_checksums_crc64nvme_constants.trailing[length - 1]);
         // Multiply the crc by a pair of trailing length constants in order to fold it into the trailing input.
         a1 = cmull_xmm_pair(a1, trailing_constants);
         // Safely load ending at the trailing input and mask out any leading garbage
@@ -116,7 +116,7 @@ uint64_t aws_checksums_crc64xz_intel_avx512(const uint8_t *input, int length, co
     }
 
     // Barrett modular reduction
-    const __m128i mu_poly = load_xmm(&aws_checksums_crc64xz_constants.mu_poly);
+    const __m128i mu_poly = load_xmm(&aws_checksums_crc64nvme_constants.mu_poly);
     // Multiply the lower half of input by mu
     __m128i mul_by_mu = _mm_clmulepi64_si128(mu_poly, a1, 0x00);
     // Multiply the lower half of the mul_by_mu result by poly (it's in the upper half)

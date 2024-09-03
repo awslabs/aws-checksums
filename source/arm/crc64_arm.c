@@ -48,8 +48,8 @@
 #        define xor3_p64(a, b, c) xor_p64(xor_p64(a, b), c)
 #    endif // defined(__ARM_FEATURE_SHA3)
 
-/** Compute CRC64XZ using ARMv8 NEON +crypto/pmull64 instructions. */
-uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const uint64_t previous_crc64) {
+/** Compute CRC64NVME using ARMv8 NEON +crypto/pmull64 instructions. */
+uint64_t aws_checksums_crc64nvme_arm_pmull(const uint8_t *input, int length, const uint64_t previous_crc64) {
     if (!input || length <= 0) {
         return previous_crc64;
     }
@@ -58,14 +58,14 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
     // memory regions smaller than an xmm register does not justify the very negligible performance gains
     // we would get for using it on an input this small.
     if (length < 16) {
-        return aws_checksums_crc64xz_sw(input, length, previous_crc64);
+        return aws_checksums_crc64nvme_sw(input, length, previous_crc64);
     }
 
     // Invert the previous crc bits and load into the lower half of a neon register
     poly64x2_t a1 = vreinterpretq_p64_u64(vcombine_u64(vcreate_u64(~previous_crc64), vcreate_u64(0)));
 
     // Load the x^128 and x^192 constants - they'll (very likely) be needed
-    const poly64x2_t x128 = load_p64(aws_checksums_crc64xz_constants.x128);
+    const poly64x2_t x128 = load_p64(aws_checksums_crc64nvme_constants.x128);
 
     // Load the next 16 bytes of input and XOR with the previous crc
     a1 = xor_p64(a1, load_p64_u8(input));
@@ -74,13 +74,13 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
 
     if (length < 112) {
 
-        const poly64x2_t x256 = load_p64(aws_checksums_crc64xz_constants.x256);
+        const poly64x2_t x256 = load_p64(aws_checksums_crc64nvme_constants.x256);
 
         if (length & 64) {
             // Fold the current crc register with 64 bytes of input by multiplying 64-bit chunks by x^576 through
             // x^128
-            const poly64x2_t x512 = load_p64(aws_checksums_crc64xz_constants.x512);
-            const poly64x2_t x384 = load_p64(aws_checksums_crc64xz_constants.x384);
+            const poly64x2_t x512 = load_p64(aws_checksums_crc64nvme_constants.x512);
+            const poly64x2_t x384 = load_p64(aws_checksums_crc64nvme_constants.x384);
             poly64x2_t b1 = load_p64_u8(input + 0);
             poly64x2_t c1 = load_p64_u8(input + 16);
             poly64x2_t d1 = load_p64_u8(input + 32);
@@ -103,7 +103,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
         }
     } else { // There are 112 or more bytes of input
 
-        const poly64x2_t x1024 = load_p64(aws_checksums_crc64xz_constants.x1024);
+        const poly64x2_t x1024 = load_p64(aws_checksums_crc64nvme_constants.x1024);
 
         // Load another 112 bytes of input
         poly64x2_t b1 = load_p64_u8(input + 0);
@@ -132,7 +132,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
         }
 
         // Fold 128 bytes down to 64 bytes by multiplying by the x^576 and x^512 constants
-        const poly64x2_t x512 = load_p64(aws_checksums_crc64xz_constants.x512);
+        const poly64x2_t x512 = load_p64(aws_checksums_crc64nvme_constants.x512);
         a1 = xor3_p64(e1, pmull_lo(x512, a1), pmull_hi(x512, a1));
         b1 = xor3_p64(f1, pmull_lo(x512, b1), pmull_hi(x512, b1));
         c1 = xor3_p64(g1, pmull_lo(x512, c1), pmull_hi(x512, c1));
@@ -148,7 +148,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
         }
 
         // Fold 64 bytes down to 32 bytes by multiplying by the x^320 and x^256 constants
-        const poly64x2_t x256 = load_p64(aws_checksums_crc64xz_constants.x256);
+        const poly64x2_t x256 = load_p64(aws_checksums_crc64nvme_constants.x256);
         a1 = xor3_p64(c1, pmull_lo(x256, a1), pmull_hi(x256, a1));
         b1 = xor3_p64(d1, pmull_lo(x256, b1), pmull_hi(x256, b1));
 
@@ -179,7 +179,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
         a1 = xor_p64(right_shift_imm_p64(a1, 8), mul_by_x128);
     } else {
         // Handle any trailing input from 1-15 bytes
-        const poly64x2_t trailing_constants = load_p64(aws_checksums_crc64xz_constants.trailing[length - 1]);
+        const poly64x2_t trailing_constants = load_p64(aws_checksums_crc64nvme_constants.trailing[length - 1]);
         // Multiply the crc by a pair of trailing length constants in order to fold it into the trailing input
         a1 = xor_p64(pmull_lo(a1, trailing_constants), pmull_hi(a1, trailing_constants));
         // Safely load ending at the last byte of trailing input and mask out any leading garbage
@@ -193,7 +193,7 @@ uint64_t aws_checksums_crc64xz_arm_pmull(const uint8_t *input, int length, const
     // Barrett modular reduction
 
     // Load the Barrett mu and (bit-reflected) polynomial
-    const poly64x2_t mu_poly = load_p64(aws_checksums_crc64xz_constants.mu_poly);
+    const poly64x2_t mu_poly = load_p64(aws_checksums_crc64nvme_constants.mu_poly);
     // Multiply the lower half of the crc register by mu (mu is in the lower half of mu_poly)
     poly64x2_t mul_by_mu = pmull_lo(a1, mu_poly);
     // Multiply lower half of mul_by_mu result by poly (which is swapped into the lower half)

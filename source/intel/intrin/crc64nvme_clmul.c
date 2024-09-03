@@ -21,13 +21,13 @@
 #    define cmull_xmm_lo(xmm1, xmm2) _mm_clmulepi64_si128((xmm1), (xmm2), 0x00)
 #    define cmull_xmm_pair(xmm1, xmm2) _mm_xor_si128(cmull_xmm_hi((xmm1), (xmm2)), cmull_xmm_lo((xmm1), (xmm2)))
 
-uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc64) {
+uint64_t aws_checksums_crc64nvme_intel_clmul(const uint8_t *input, int length, uint64_t previous_crc64) {
 
     // the amount of complexity required to handle vector instructions on
     // memory regions smaller than an xmm register does not justify the very negligible performance gains
     // we would get for using it on an input this small.
     if (length < 16) {
-        return aws_checksums_crc64xz_sw(input, length, previous_crc64);
+        return aws_checksums_crc64nvme_sw(input, length, previous_crc64);
     }
 
     // Invert the previous crc bits and load into the lower half of an xmm register
@@ -39,7 +39,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
     length -= 16;
 
     // Load the folding constants x^128 and x^192
-    const __m128i x128 = load_xmm(aws_checksums_crc64xz_constants.x128);
+    const __m128i x128 = load_xmm(aws_checksums_crc64nvme_constants.x128);
 
     if (length >= 48) {
         // Load the next 48 bytes
@@ -51,7 +51,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
         length -= 48;
 
         // Load the folding constants x^512 and x^576
-        const __m128i x512 = load_xmm(aws_checksums_crc64xz_constants.x512);
+        const __m128i x512 = load_xmm(aws_checksums_crc64nvme_constants.x512);
 
         if (length >= 64) {
             // Load the next 64 bytes
@@ -63,7 +63,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
             length -= 64;
 
             // Load the folding constants x^1024 and x^1088
-            const __m128i x1024 = load_xmm(aws_checksums_crc64xz_constants.x1024);
+            const __m128i x1024 = load_xmm(aws_checksums_crc64nvme_constants.x1024);
 
             // Spin through 128 bytes and fold in parallel
             int loops = length / 128;
@@ -97,8 +97,8 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
         length &= 63;
 
         // Load the x^256, x^320, x^384, and x^448 constants
-        const __m128i x384 = load_xmm(aws_checksums_crc64xz_constants.x384);
-        const __m128i x256 = load_xmm(aws_checksums_crc64xz_constants.x256);
+        const __m128i x384 = load_xmm(aws_checksums_crc64nvme_constants.x384);
+        const __m128i x256 = load_xmm(aws_checksums_crc64nvme_constants.x256);
 
         // Fold 64 bytes to 16 bytes
         a1 = _mm_xor_si128(d1, cmull_xmm_pair(x384, a1));
@@ -122,7 +122,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
         a1 = _mm_xor_si128(_mm_bsrli_si128(a1, 8), mul_by_x128);
     } else { // Handle any trailing input from 1-15 bytes
         // Multiply the crc by a pair of trailing length constants in order to fold it into the trailing input
-        a1 = cmull_xmm_pair(a1, load_xmm(aws_checksums_crc64xz_constants.trailing[length - 1]));
+        a1 = cmull_xmm_pair(a1, load_xmm(aws_checksums_crc64nvme_constants.trailing[length - 1]));
         // Safely load (ending at the trailing input) and mask out any leading garbage
         __m128i trailing_input = mask_high_bytes(load_xmm(input + length - 16), length);
         // Multiply the lower half of the trailing input register by x^128 (it's in the upper half)
@@ -133,7 +133,7 @@ uint64_t aws_checksums_crc64xz_intel_clmul(const uint8_t *input, int length, uin
     }
 
     // Barrett modular reduction
-    const __m128i mu_poly = load_xmm(aws_checksums_crc64xz_constants.mu_poly);
+    const __m128i mu_poly = load_xmm(aws_checksums_crc64nvme_constants.mu_poly);
     // Multiply the lower half of input by mu
     __m128i mul_by_mu = _mm_clmulepi64_si128(mu_poly, a1, 0x00);
     // Multiply the lower half of the mul_by_mu result by poly (it's in the upper half)
