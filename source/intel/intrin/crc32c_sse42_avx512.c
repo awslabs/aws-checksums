@@ -187,7 +187,7 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *inpu
     }
 
     /* Get the 8-byte memory alignment of our input buffer by looking at the least significant 3 bits */
-    int input_alignment = (uintptr_t)(input)&0x7;
+    int input_alignment = (uintptr_t)(input) & 0x7;
 
     /* Compute the number of unaligned bytes before the first aligned 8-byte chunk (will be in the range 0-7) */
     int leading = (8 - input_alignment) & 0x7;

@@ -139,7 +139,7 @@ static uint64_t crc64nvme_table[8][256] = {
         0x760c2eb272bed2b6, 0xf17a87cf01030ddf, 0x4c385a1bcd52ff0f, 0xcb4ef366beef2066, // [1][0xf0]
         0x0264c7e10d6689c4, 0x85126e9c7edb56ad, 0x3850b348b28aa47d, 0xbf261a35c1377b14, // [1][0xf4]
         0x9eddfc148d0e6452, 0x19ab5569feb3bb3b, 0xa4e988bd32e249eb, 0x239f21c0415f9682, // [1][0xf8]
-        0xeab51547f2d63f20, 0x6dc3bc3a816be049, 0xd08161ee4d3a1299, 0x57f7c8933e87cdf0  // [1][0xfc]   
+        0xeab51547f2d63f20, 0x6dc3bc3a816be049, 0xd08161ee4d3a1299, 0x57f7c8933e87cdf0  // [1][0xfc]
     },
     {
         0x0000000000000000, 0xff6e4e1f4e4038be, 0xca05ba6dc417e217, 0x356bf4728a57daa9, // [2][0x00]
@@ -536,8 +536,7 @@ static uint64_t crc64nvme_table[8][256] = {
         0x12c53c27973df4b4, 0x332c4a39b21bd518, 0x5117d01bdd71b7ec, 0x70fea605f8579640, // [7][0xf4]
         0xaef272fd7203ec0f, 0x8f1b04e35725cda3, 0xed209ec1384faf57, 0xccc9e8df1d698efb, // [7][0xf8]
         0x2957aa85e69b6abf, 0x08bedc9bc3bd4b13, 0x6a8546b9acd729e7, 0x4b6c30a789f1084b  // [7][0xfc]
-    }                                                                                
-};
+    }};
 
 /** Slow slice-by-8 lookup table based fallback function to compute CRC64NVME. */
 uint64_t aws_checksums_crc64nvme_sw(const uint8_t *input, int length, uint64_t prev_crc64) {
