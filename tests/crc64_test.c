@@ -100,8 +100,8 @@ static int s_test_known_crc64nvme(struct aws_allocator *allocator, const char *f
             // Compute the expected CRC one byte at a time using the reference function
             expected = crc64nvme_reference(&test_buf.buffer[off + i], 1, expected);
             // Recompute the full CRC of the buffer at each offset and length and compare against expected value
-            res |=
-                s_test_known_crc(func_name, func, "test_buffer", &test_buf.buffer[off], len, expected, RESIDUE_CRC64NVME);
+            res |= s_test_known_crc(
+                func_name, func, "test_buffer", &test_buf.buffer[off], len, expected, RESIDUE_CRC64NVME);
         }
         aws_byte_buf_reset(&test_buf, false);
     }
