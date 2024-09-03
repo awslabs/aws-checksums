@@ -6,8 +6,8 @@ on:
       - 'main'
 
 env:
-  BUILDER_VERSION: better_vectorization_and_crc64
-  BUILDER_SOURCE: channels
+  BUILDER_VERSION: v0.9.63
+  BUILDER_SOURCE: releases
   BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
   PACKAGE_NAME: aws-checksums
   LINUX_BASE_IMAGE: ubuntu-18-x64
@@ -137,8 +137,8 @@ jobs:
       run: |
         python .\aws-checksums\build\deps\aws-c-common\scripts\appverifier_ctest.py --build_directory .\aws-checksums\build\aws-checksums
 
-  osx:
-    runs-on: macos-12 # latest
+  macos:
+    runs-on: macos-14 # latest
     steps:
     - name: Build ${{ env.PACKAGE_NAME }} + consumers
       run: |
@@ -147,7 +147,7 @@ jobs:
         ./builder build -p ${{ env.PACKAGE_NAME }}
 
   osx-m1:
-    runs-on: macos-latest-xlarge # latest arm build
+    runs-on: macos-14-xlarge # latest arm build
     strategy:
       matrix:
         arch: [ macos-armv8 ]
@@ -158,8 +158,17 @@ jobs:
           chmod a+x builder
           ./builder build -p ${{ env.PACKAGE_NAME }} --target=${{matrix.arch}}
 
-  osx-no-cpu-extensions:
-    runs-on: macos-12 # latest
+  macos-x64:
+    runs-on: macos-14-large # latest
+    steps:
+    - name: Build ${{ env.PACKAGE_NAME }} + consumers
+      run: |
+        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
+        chmod a+x builder
+        ./builder build -p ${{ env.PACKAGE_NAME }}
+
+  macos-no-cpu-extensions:
+    runs-on: macos-14 # latest
     steps:
     - name: Build ${{ env.PACKAGE_NAME }} + consumers
       run: |
