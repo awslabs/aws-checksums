@@ -135,7 +135,7 @@ static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx)
     const size_t len = 3 * 1024 * 1024 * 1024ULL;
     const uint8_t *many_zeroes = aws_mem_calloc(allocator, len, sizeof(uint8_t));
     uint64_t result = aws_checksums_crc64nvme_u64(many_zeroes, len, 0);
-    aws_mem_release(allocator, many_zeroes);
+    aws_mem_release(allocator, (void *)many_zeroes);
     ASSERT_HEX_EQUALS(0xa1dddd7c6fd17075, result);
     return AWS_OP_SUCCESS;
 #endif
