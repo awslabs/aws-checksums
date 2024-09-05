@@ -9,5 +9,6 @@ file(GLOB TESTS ${TEST_HDRS} ${TEST_SRC})
 
 add_test_case(test_crc32c)
 add_test_case(test_crc32)
+add_test_case(test_crc64nvme)
 
 generate_test_driver(${PROJECT_NAME}-tests)
