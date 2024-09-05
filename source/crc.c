@@ -4,8 +4,11 @@
  */
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc_util.h>
 
 #include <aws/common/cpuid.h>
+
+large_buffer_apply_impl(crc32, uint32_t)
 
 static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32c) = 0;
 static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32) = 0;
@@ -23,6 +26,10 @@ uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous
 #endif
     }
     return s_crc32_fn_ptr(input, length, previous_crc32);
+}
+
+uint32_t aws_checksums_crc32_u64(const uint8_t *input, uint64_t length, uint32_t previous_crc32) {
+    return aws_large_buffer_apply_crc32(aws_checksums_crc32, input, length, previous_crc32);
 }
 
 uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previous_crc32c) {
@@ -45,4 +52,8 @@ uint32_t aws_checksums_crc32c(const uint8_t *input, int length, uint32_t previou
     }
 
     return s_crc32c_fn_ptr(input, length, previous_crc32c);
+}
+
+uint32_t aws_checksums_crc32c_u64(const uint8_t *input, uint64_t length, uint32_t previous_crc32) {
+    return aws_large_buffer_apply_crc32(aws_checksums_crc32c, input, length, previous_crc32);
 }

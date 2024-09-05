@@ -183,3 +183,19 @@ static int s_test_crc32(struct aws_allocator *allocator, void *ctx) {
     return res;
 }
 AWS_TEST_CASE(test_crc32, s_test_crc32)
+
+
+static int s_test_large_buffer_crc32(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+#if SIZE_BITS == 32
+    return AWS_OP_SKIP;
+#else
+    const size_t len = 3 * 1024 * 1024 * 1024ULL;
+    const uint8_t *many_zeroes = aws_mem_calloc(allocator, len, sizeof(uint8_t));
+    uint32_t result = aws_checksums_crc32_u64(many_zeroes, len, 0);
+    aws_mem_release(allocator, many_zeroes);
+    ASSERT_HEX_EQUALS(0x480BBE37, result);
+    return AWS_OP_SUCCESS;
+#endif
+}
+AWS_TEST_CASE(test_large_buffer_crc32, s_test_large_buffer_crc32)
