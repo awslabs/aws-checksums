@@ -7,7 +7,7 @@
 
 #include <aws/checksums/exports.h>
 #include <aws/common/macros.h>
-#include <stdint.h>
+#include <aws/common/stdint.h>
 
 AWS_PUSH_SANE_WARNING_LEVEL
 AWS_EXTERN_C_BEGIN
