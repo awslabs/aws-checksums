@@ -126,6 +126,6 @@ uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev
     return s_crc64nvme_fn_ptr(input, length, prev_crc64);
 }
 
-uint64_t aws_checksums_crc64nvme_u64(const uint8_t *input, uint64_t length, uint64_t previous_crc64) {
+uint64_t aws_checksums_crc64nvme_u64(const uint8_t *input, size_t length, uint64_t previous_crc64) {
     return aws_large_buffer_apply_crc64(aws_checksums_crc64nvme, input, length, previous_crc64);
 }
