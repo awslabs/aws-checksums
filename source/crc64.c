@@ -10,7 +10,7 @@
 
 large_buffer_apply_impl(crc64, uint64_t)
 
-AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
+    AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
 // Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
 checksums_maxks_shifts_type aws_checksums_masks_shifts = {
     {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, //
