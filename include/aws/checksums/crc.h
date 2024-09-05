@@ -27,7 +27,7 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32(const uint8_t *input, int length,
  * Pass 0 in the previousCrc32 parameter as an initial value unless continuing
  * to update a running crc in a subsequent call.
  */
-AWS_CHECKSUMS_API uint32_t aws_checksums_crc32_u64(const uint8_t *input, size_t length, uint32_t previous_crc32);
+AWS_CHECKSUMS_API uint32_t aws_checksums_crc32_st(const uint8_t *input, size_t length, uint32_t previous_crc32);
 
 /**
  * The entry point function to perform a Castagnoli CRC32c (iSCSI) computation.
@@ -44,7 +44,7 @@ AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c(const uint8_t *input, int length
  * Pass 0 in the previousCrc32 parameter as an initial value unless continuing
  * to update a running crc in a subsequent call.
  */
-AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_u64(const uint8_t *input, size_t length, uint32_t previous_crc32c);
+AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_st(const uint8_t *input, size_t length, uint32_t previous_crc32c);
 
 /**
  * The entry point function to perform a CRC64-NVME (a.k.a. CRC64-Rocksoft) computation.
@@ -65,7 +65,7 @@ AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme(const uint8_t *input, int len
  * There are many variants of CRC64 algorithms. This CRC64 variant is bit-reflected (based on
  * the non bit-reflected polynomial 0xad93d23594c93659) and inverts the CRC input and output bits.
  */
-AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme_u64(const uint8_t *input, size_t length, uint64_t previous_crc64);
+AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme_st(const uint8_t *input, size_t length, uint64_t previous_crc64);
 
 AWS_EXTERN_C_END
 AWS_POP_SANE_WARNING_LEVEL
