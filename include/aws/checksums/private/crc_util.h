@@ -9,7 +9,7 @@
 #include <limits.h>
 
 #define large_buffer_apply_impl(Name, T)                                                                               \
-    T aws_large_buffer_apply_##Name(                                                                                   \
+    static T aws_large_buffer_apply_##Name(                                                                                   \
         T (*checksum_fn)(const uint8_t *, int, T), const uint8_t *buffer, size_t length, T previous) {                 \
         T val = previous;                                                                                              \
         while (length > INT_MAX) {                                                                                     \
