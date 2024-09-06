@@ -17,7 +17,8 @@
 
 #    include <wmmintrin.h>
 
-AWS_ALIGNED_TYPEDEF(const uint64_t, aligned64_constants[8], 64);
+AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 64);
+AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
 
 // This macro uses casting to ensure the compiler actually uses the unaligned load instructions
 #    define load_zmm(ptr) _mm512_loadu_si512((const uint8_t *)(const void *)(ptr))
@@ -47,13 +48,13 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
      * k6 = ( x ^ ( 128 - 32 ) mod P(x) << 32 )' << 1
      */
 
-    static aligned64_constants k1k2 = {
+    static zalign_8 k1k2[8] = {
         0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86};
-    static aligned64_constants k3k4 = {
+    static zalign_8 k3k4[8] = {
         0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
-    static aligned64_constants k9k10 = {
+    static zalign_8 k9k10[8] = {
         0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
-    static aligned64_constants k1k4 = {
+    static zalign_8 k1k4[8] = {
         0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000};
 
     __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
@@ -71,7 +72,7 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
     x5 = _mm512_inserti32x4(_mm512_setzero_si512(), _mm_cvtsi32_si128((int)crc), 0);
     x1 = _mm512_xor_si512(x1, x5);
 
-    x0 = load_zmm(k1k2);
+    x0 = _mm512_set_epi64(0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86);
 
     input += 256;
     length -= 256;
@@ -107,7 +108,7 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
     /*
      * Fold 256 bytes into 64 bytes.
      */
-    x0 = load_zmm(k9k10);
+    x0 = _mm512_set_epi64(0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092);
     x5 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
     x6 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
     x3 = _mm512_ternarylogic_epi64(x3, x5, x6, 0x96);
@@ -116,7 +117,7 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
     x8 = _mm512_clmulepi64_epi128(x2, x0, 0x11);
     x4 = _mm512_ternarylogic_epi64(x4, x7, x8, 0x96);
 
-    x0 = load_zmm(k3k4);
+    x0 = _mm512_set_epi64(0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8);
     y5 = _mm512_clmulepi64_epi128(x3, x0, 0x00);
     y6 = _mm512_clmulepi64_epi128(x3, x0, 0x11);
     x1 = _mm512_ternarylogic_epi64(x4, y5, y6, 0x96);
@@ -138,7 +139,7 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
     /*
      * Fold 512-bits to 128-bits.
      */
-    x0 = load_zmm(k1k4);
+    x0 = _mm512_set_epi64(0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000);
     x4 = _mm512_clmulepi64_epi128(x1, x0, 0x00);
     x3 = _mm512_clmulepi64_epi128(x1, x0, 0x11);
     x2 = _mm512_xor_si512(x3, x4);
