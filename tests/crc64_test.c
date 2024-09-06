@@ -126,3 +126,19 @@ static int s_test_crc64nvme(struct aws_allocator *allocator, void *ctx) {
 }
 
 AWS_TEST_CASE(test_crc64nvme, s_test_crc64nvme)
+
+static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+#if SIZE_BITS == 32
+    (void)allocator;
+    return AWS_OP_SKIP;
+#else
+    const size_t len = 3 * 1024 * 1024 * 1024ULL;
+    const uint8_t *many_zeroes = aws_mem_calloc(allocator, len, sizeof(uint8_t));
+    uint64_t result = aws_checksums_crc64nvme_ex(many_zeroes, len, 0);
+    aws_mem_release(allocator, (void *)many_zeroes);
+    ASSERT_HEX_EQUALS(0xa1dddd7c6fd17075, result);
+    return AWS_OP_SUCCESS;
+#endif
+}
+AWS_TEST_CASE(test_large_buffer_crc64, s_test_large_buffer_crc64)
