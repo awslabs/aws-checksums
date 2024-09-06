@@ -48,15 +48,6 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
      * k6 = ( x ^ ( 128 - 32 ) mod P(x) << 32 )' << 1
      */
 
-    static zalign_8 k1k2[8] = {
-        0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86, 0xdcb17aa4, 0xb9e02b86};
-    static zalign_8 k3k4[8] = {
-        0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8, 0x740eef02, 0x9e4addf8};
-    static zalign_8 k9k10[8] = {
-        0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092, 0x6992cea2, 0x0d3b6092};
-    static zalign_8 k1k4[8] = {
-        0x1c291d04, 0xddc0152b, 0x3da6d0cb, 0xba4fc28e, 0xf20c0dfe, 0x493c7d27, 0x00000000, 0x00000000};
-
     __m512i x0, x1, x2, x3, x4, x5, x6, x7, x8, y5, y6, y7, y8;
     __m128i a1;
 
