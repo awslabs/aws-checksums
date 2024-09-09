@@ -115,7 +115,7 @@ int main(void) {
                 aws_high_res_clock_get_ticks(&end_time);
                 fprintf(
                     stdout,
-                    "buffer size %zu (bytes), latency: %" PRIu64 " ns throughput: %d  GB/s\n",
+                    "buffer size %zu (bytes), latency: %" PRIu64 " ns throughput: %f GB/s\n",
                     buffer_sizes[k],
                     end_time - start_time,
                     (buffer_sizes[k] * 1000000000.0 / 1024.0 / 1024.0 / 1024.0) / (end_time - start_time));
