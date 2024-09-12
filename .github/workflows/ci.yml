@@ -6,7 +6,7 @@ on:
       - 'main'
 
 env:
-  BUILDER_VERSION: v0.9.63
+  BUILDER_VERSION: v0.9.64
   BUILDER_SOURCE: releases
   BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
   PACKAGE_NAME: aws-checksums
@@ -243,6 +243,7 @@ jobs:
         uses: cross-platform-actions/action@v0.24.0
         with:
           operating_system: openbsd
+          architecture: x86-64
           version: ${{ matrix.version }}
           cpu_count: 4
           shell: bash
