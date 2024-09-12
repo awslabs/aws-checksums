@@ -186,7 +186,7 @@ AWS_TEST_CASE(test_crc32, s_test_crc32)
 
 static int s_test_large_buffer_crc32(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
-#if SIZE_BITS == 32
+#if SIZE_BITS == 32 || defined(__OpenBSD__) /* openbsd fails to allocate big buffer */
     (void)allocator;
     return AWS_OP_SKIP;
 #else
