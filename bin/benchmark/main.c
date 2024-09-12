@@ -102,7 +102,7 @@ int main(void) {
             // get buffer sizes large enough that all the simd code paths get hit hard, but
             // also measure the smaller buffer paths since they often can't be optimized as thoroughly.
             size_t buffer_sizes[] = {8, 16, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
-                KB_TO_BYTES(32), KB_TO_BYTES(64), MB_TO_BYTES(10), MB_TO_BYTES(100), GB_TO_BYTES(1)};
+                KB_TO_BYTES(32), KB_TO_BYTES(64), KB_TO_BYTES(256), MB_TO_BYTES(1), MB_TO_BYTES(10), MB_TO_BYTES(100), GB_TO_BYTES(1)};
             size_t buffer_sizes_len = AWS_ARRAY_SIZE(buffer_sizes);
 
             // warm it up to factor out the cpuid checks:
