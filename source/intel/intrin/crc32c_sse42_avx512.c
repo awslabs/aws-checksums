@@ -17,7 +17,7 @@
 
 #    include <wmmintrin.h>
 
-AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 8);
+AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_8, 64);
 AWS_ALIGNED_TYPEDEF(const uint64_t, zalign_2, 16);
 
 // This macro uses casting to ensure the compiler actually uses the unaligned load instructions
