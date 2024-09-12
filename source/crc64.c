@@ -101,8 +101,8 @@ uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev
             s_crc64nvme_fn_ptr = aws_checksums_crc64nvme_intel_avx512;
         } else
 #    endif
-#       if defined(AWS_HAVE_CLMUL) && defined(AWS_HAVE_AVX2_INTRINSICS)
-        if (aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) && aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
+#    if defined(AWS_HAVE_CLMUL) && defined(AWS_HAVE_AVX2_INTRINSICS)
+            if (aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL) && aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
             s_crc64nvme_fn_ptr = aws_checksums_crc64nvme_intel_clmul;
         } else {
             s_crc64nvme_fn_ptr = aws_checksums_crc64nvme_sw;
