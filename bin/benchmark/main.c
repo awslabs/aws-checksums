@@ -55,6 +55,10 @@ static void s_runcrc64(struct aws_byte_cursor checksum_this) {
     (void)crc;
 }
 
+#define KB_TO_BYTES(kb) ((kb) * 1024)
+#define MB_TO_BYTES(mb) ((mb) * 1024 * 1024)
+#define GB_TO_BYTES(gb) ((gb) * 1024 * 1024 * 1024ULL)
+
 int main(void) {
 
     fprintf(stdout, "hw features for this run:\n");
@@ -97,7 +101,8 @@ int main(void) {
 
             // get buffer sizes large enough that all the simd code paths get hit hard, but
             // also measure the smaller buffer paths since they often can't be optimized as thoroughly.
-            size_t buffer_sizes[] = {8, 16, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536};
+            size_t buffer_sizes[] = {8, 16, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+                KB_TO_BYTES(32), KB_TO_BYTES(64), KB_TO_BYTES(256), MB_TO_BYTES(1), MB_TO_BYTES(10), MB_TO_BYTES(100), GB_TO_BYTES(1)};
             size_t buffer_sizes_len = AWS_ARRAY_SIZE(buffer_sizes);
 
             // warm it up to factor out the cpuid checks:
@@ -115,9 +120,10 @@ int main(void) {
                 aws_high_res_clock_get_ticks(&end_time);
                 fprintf(
                     stdout,
-                    "buffer size %zu (bytes), latency: %" PRIu64 " ns\n",
+                    "buffer size %zu (bytes), latency: %" PRIu64 " ns throughput: %f GiB/s\n",
                     buffer_sizes[k],
-                    end_time - start_time);
+                    end_time - start_time,
+                    (buffer_sizes[k] * 1000000000.0 /* ns -> sec factor */ / GB_TO_BYTES(1)) / (end_time - start_time));
                 aws_byte_buf_clean_up(&x_bytes);
             }
             fprintf(stdout, "\n");
