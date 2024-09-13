@@ -54,18 +54,6 @@ uint64_t aws_checksums_crc64nvme_intel_avx512(const uint8_t *input, int length, 
     length &= 255;
 
     // Parallel fold blocks of 256 bytes, if any
-    while (loops > 32) {
-        x1 = xor_zmm(cmull_zmm_lo(kp_2048, x1), cmull_zmm_hi(kp_2048, x1), load_zmm(input + 0x00));
-        x2 = xor_zmm(cmull_zmm_lo(kp_2048, x2), cmull_zmm_hi(kp_2048, x2), load_zmm(input + 0x40));
-        x3 = xor_zmm(cmull_zmm_lo(kp_2048, x3), cmull_zmm_hi(kp_2048, x3), load_zmm(input + 0x80));
-        x4 = xor_zmm(cmull_zmm_lo(kp_2048, x4), cmull_zmm_hi(kp_2048, x4), load_zmm(input + 0xc0));
-        __builtin_prefetch(input + 8192, 0, 3);
-        __builtin_prefetch(input + 8192 + 64, 0, 3);
-        __builtin_prefetch(input + 8192 + 128, 0, 3);
-        __builtin_prefetch(input + 8192 + 192, 0, 3);
-        loops--;
-        input += 256;
-    } 
     while (loops--) {
         x1 = xor_zmm(cmull_zmm_lo(kp_2048, x1), cmull_zmm_hi(kp_2048, x1), load_zmm(input + 0x00));
         x2 = xor_zmm(cmull_zmm_lo(kp_2048, x2), cmull_zmm_hi(kp_2048, x2), load_zmm(input + 0x40));
