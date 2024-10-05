@@ -243,6 +243,27 @@ jobs:
             chmod a+x builder
             ./builder build -p ${{ env.PACKAGE_NAME }}
 
+  s390x: #big-endian
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: s390x
+          distro: ubuntu_latest
+          install: |
+            apt-get update -q -y
+            apt-get -y install cmake
+            apt-get -y install make
+            apt-get -y install g++
+          run: |
+            lscpu | grep Endian
+            python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
+            chmod a+x builder
+            ./builder build -p ${{ env.PACKAGE_NAME }}
+            
   openbsd:
     runs-on: ubuntu-24.04 # latest
     strategy:
