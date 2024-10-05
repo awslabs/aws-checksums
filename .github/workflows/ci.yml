@@ -252,7 +252,7 @@ jobs:
         id: runcmd
         with:
           arch: s390x
-          distro: ubuntu_latest
+          distro: ubuntu22.04
           install: |
             apt-get update -q -y
             apt-get -y install cmake
