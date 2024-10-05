@@ -5,8 +5,8 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
-#include <aws/testing/aws_test_harness.h>
 #include <aws/common/encoding.h>
+#include <aws/testing/aws_test_harness.h>
 
 // The polynomial used for CRC64NVME (in bit-reflected form)
 static const uint64_t POLY_CRC64NVME = 0x9a6c9329ac4bc9b5;
@@ -151,6 +151,5 @@ static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx)
     aws_byte_buf_clean_up(&out);
 
     return AWS_OP_SUCCESS;
-
 }
 AWS_TEST_CASE(test_large_buffer_crc64, s_test_large_buffer_crc64)
