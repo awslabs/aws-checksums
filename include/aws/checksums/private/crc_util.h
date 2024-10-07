@@ -50,5 +50,4 @@ static inline uint64_t aws_swap_bytes_if_needed_64(uint64_t x) {
     return x >> 32 | x << 32;
 }
 
-
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
