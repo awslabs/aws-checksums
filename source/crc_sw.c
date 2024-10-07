@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 #include <aws/checksums/private/crc_priv.h>
-#include <aws/common/byte_order.h>
+#include <aws/checksums/private/crc_util.h>
 #include <stddef.h>
 
 /* The Ethernet, gzip, et.al CRC32 polynomial (reverse of 0x04C11DB7) */
