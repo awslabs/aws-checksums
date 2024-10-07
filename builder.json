@@ -10,5 +10,15 @@
     "test_steps": [
         "test",
         "{install_dir}/bin/checksum-profile{exe}"
-    ]
+    ],
+
+    "variants": {
+        "s390x": {
+            "hosts": {
+                "ubuntu": {
+                    "!pkg_setup": []
+                }
+            }
+        }
+    }
 }
