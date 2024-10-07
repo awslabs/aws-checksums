@@ -232,6 +232,7 @@ jobs:
         id: test
         uses: cross-platform-actions/action@v0.24.0
         with:
+          #note: sanitizer seems to be broken on s390x (fails trying to allocate several tbs of mem) and package manager works slightly differently that on regular ubuntu
           operating_system: freebsd
           architecture: x86-64
           version: '14.0'
