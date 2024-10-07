@@ -6,6 +6,7 @@
  */
 
 #include <aws/common/stdint.h>
+#include <aws/common/byte_order.h>
 #include <limits.h>
 
 #define large_buffer_apply_impl(Name, T)                                                                               \
