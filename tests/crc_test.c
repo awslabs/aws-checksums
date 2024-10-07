@@ -5,6 +5,7 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc_util.h>
 
 #include <aws/common/device_random.h>
 
@@ -72,9 +73,10 @@ static int s_test_known_crc_32(
     uint32_t result = func(input, (int)length, 0);
     ASSERT_HEX_EQUALS(expected_crc, result, "%s(%s)", func_name, data_name);
 
+    uint32_t result_swapped = aws_swap_bytes_if_needed_32(result);
     // Compute the residue of the buffer (the CRC of the buffer plus its CRC) - will always be a constant value
-    // uint32_t residue = (uint32_t)func((const uint8_t *)&result, 4, result); // assuming little endian
-    //ASSERT_HEX_EQUALS(expected_residue, residue, "len %d residue %s(%s)", length, func_name, data_name);
+    uint32_t residue = (uint32_t)func((const uint8_t *)&result_swapped, 4, result); // assuming little endian
+    ASSERT_HEX_EQUALS(expected_residue, residue, "len %d residue %s(%s)", length, func_name, data_name);
 
     // chain the crc computation so 2 calls each operate on about 1/2 of the buffer
     uint32_t crc1 = func(input, (int)(length / 2), 0);

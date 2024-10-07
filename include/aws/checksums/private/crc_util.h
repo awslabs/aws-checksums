@@ -21,4 +21,18 @@
         return val;                                                                                                    \
     }
 
+/* helper function to reverse byte order on big-endian platforms*/
+static inline uint32_t aws_swap_bytes_if_needed_32(uint32_t x) {
+    if (!aws_is_big_endian()) {
+        return x;
+    }
+
+    uint8_t c1 = x & 0xFF;
+    uint8_t c2 = (x >> 8) & 0xFF;
+    uint8_t c3 = (x >> 16) & 0xFF;
+    uint8_t c4 = (x >> 24) & 0xFF;
+
+    return ((uint32_t)c1 << 24) + ((uint32_t)c2 << 16) + ((uint32_t)c3 << 8) + c4;
+}
+
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
