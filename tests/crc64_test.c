@@ -5,6 +5,7 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
+#include <aws/checksums/private/crc_util.h>
 #include <aws/common/encoding.h>
 #include <aws/testing/aws_test_harness.h>
 
