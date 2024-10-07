@@ -36,4 +36,19 @@ static inline uint32_t aws_swap_bytes_if_needed_32(uint32_t x) {
     return ((uint32_t)c1 << 24) + ((uint32_t)c2 << 16) + ((uint32_t)c3 << 8) + c4;
 }
 
+/* Reverse the bytes in a 64-bit word. */
+static inline uint64_t aws_swap_bytes_if_needed_64(uint64_t x) {
+    if (!aws_is_big_endian()) {
+        return x;
+    }
+
+    uint64_t m;
+    m = 0xff00ff00ff00ff;
+    x = ((x >> 8) & m) | (x & m) << 8;
+    m = 0xffff0000ffff;
+    x = ((x >> 16) & m) | (x & m) << 16;
+    return x >> 32 | x << 32;
+}
+
+
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */

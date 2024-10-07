@@ -5,8 +5,7 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
-
-#include <aws/common/byte_order.h>
+#include <aws/checksums/private/crc_util.h>
 
 /* CRC64NVME slice-by-8 lookup table (bit-reflected poly 0x9a6c9329ac4bc9b5) */
 /* little endian variant */
@@ -1072,20 +1071,9 @@ static uint64_t crc64nvme_table_be[8][256] = {
         0xbf6a9be685aa5729, 0x134bbdc39bdcbe08, 0xe729d7acb946856a, 0x4b08f189a7306c4b  // [7][0xfc]
     }};
 
-/* Reverse the bytes in a 64-bit word. */
-static inline uint64_t s_reverse_bytes_64(uint64_t a) {
-    uint64_t m;
-
-    m = UINT64_C(0xff00ff00ff00ff);
-    a = ((a >> 8) & m) | (a & m) << 8;
-    m = UINT64_C(0xffff0000ffff);
-    a = ((a >> 16) & m) | (a & m) << 16;
-    return a >> 32 | a << 32;
-}
-
 /* Calculate a CRC-64 eight bytes at a time on a big-endian architecture. */
 static inline uint64_t s_crc64_sw_be(const uint8_t *input, int length, uint64_t prev_crc64) {
-    uint64_t crc = ~s_reverse_bytes_64(prev_crc64);
+    uint64_t crc = ~aws_swap_bytes_if_needed_64(prev_crc64);
     // Read byte by byte until we reach an 8 byte aligned address
     while (length > 0 && ((intptr_t)input & 7)) {
         crc = (crc << 8) ^ crc64nvme_table_be[0][((crc >> 56) ^ *input++)];
@@ -1107,7 +1095,7 @@ static inline uint64_t s_crc64_sw_be(const uint8_t *input, int length, uint64_t 
         crc = (crc << 8) ^ crc64nvme_table_be[0][((crc >> 56) ^ input[length - remaining]) & 0xff];
         remaining--;
     }
-    return ~s_reverse_bytes_64(crc);
+    return ~aws_swap_bytes_if_needed_64(crc);
 }
 
 /** Slow slice-by-8 lookup table based fallback function to compute CRC64NVME. */
