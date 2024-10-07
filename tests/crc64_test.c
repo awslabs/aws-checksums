@@ -131,26 +131,16 @@ AWS_TEST_CASE(test_crc64nvme, s_test_crc64nvme)
 
 static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
-
-    static const uint8_t foo[] = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-    uint64_t result = aws_checksums_crc64nvme_ex(foo, 11, 0);
-    ASSERT_HEX_EQUALS(0x38E259D03F312ADB, result);
-
-    struct aws_byte_buf buf;
-    aws_byte_buf_init(&buf, allocator, 30);
-    struct aws_byte_buf out;
-    aws_byte_buf_init(&out, allocator, 30);
-    uint64_t tmp = aws_hton64(result);
-    aws_byte_buf_write(&buf, (uint8_t *)&tmp, 8);
-
-    struct aws_byte_cursor checksum_result_cursor = aws_byte_cursor_from_buf(&buf);
-    aws_base64_encode(&checksum_result_cursor, &out);
-
-    AWS_LOGF_DEBUG(0, "b64 " PRInSTR, AWS_BYTE_BUF_PRI(out));
-
-    aws_byte_buf_clean_up(&buf);
-    aws_byte_buf_clean_up(&out);
-
+#if SIZE_BITS == 32 || defined(__OpenBSD__) /* openbsd fails to allocate big buffer */
+    (void)allocator;
+    return AWS_OP_SKIP;
+#else
+    const size_t len = 3 * 1024 * 1024 * 1024ULL;
+    const uint8_t *many_zeroes = aws_mem_calloc(allocator, len, sizeof(uint8_t));
+    uint64_t result = aws_checksums_crc64nvme_ex(many_zeroes, len, 0);
+    aws_mem_release(allocator, (void *)many_zeroes);
+    ASSERT_HEX_EQUALS(0xa1dddd7c6fd17075, result);
     return AWS_OP_SUCCESS;
+#endif
 }
 AWS_TEST_CASE(test_large_buffer_crc64, s_test_large_buffer_crc64)
