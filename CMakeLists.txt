@@ -1,12 +1,8 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 
 option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
 
 project (aws-checksums C)
-
-if (POLICY CMP0069)
-    cmake_policy(SET CMP0069 NEW) # Enable LTO/IPO if available in the compiler, see AwsCFlags
-endif()
 
 if (DEFINED CMAKE_PREFIX_PATH)
     file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" CMAKE_PREFIX_PATH)
@@ -64,7 +60,6 @@ file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_PLATFORM_SOURCE}
 )
 
-
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
 
 aws_set_common_properties(${PROJECT_NAME})
@@ -118,7 +113,7 @@ if (USE_CPU_EXTENSIONS)
         if (AWS_HAVE_CLMUL)
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64nvme_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
-               
+
 
     elseif(AWS_ARCH_ARM64 OR (AWS_ARCH_ARM32 AND AWS_HAVE_ARM32_CRC))
         simd_append_source_and_features(${PROJECT_NAME} "source/arm/crc32c_arm.c" ${AWS_ARMv8_1_FLAG})
@@ -129,7 +124,7 @@ if (USE_CPU_EXTENSIONS)
                     "source/arm/*.c"
                     )
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
-        endif()   
+        endif()
     endif()
 endif()
 
