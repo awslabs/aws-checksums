@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required(VERSION 3.9)
 
 option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
 
@@ -113,7 +113,7 @@ if (USE_CPU_EXTENSIONS)
         if (AWS_HAVE_CLMUL)
             simd_append_source_and_features(${PROJECT_NAME} "source/intel/intrin/crc64nvme_clmul.c" ${AWS_AVX2_FLAG} ${AWS_CLMUL_FLAG} ${AWS_SSE4_2_FLAG})
         endif()
-               
+
 
     elseif(AWS_ARCH_ARM64 OR (AWS_ARCH_ARM32 AND AWS_HAVE_ARM32_CRC))
         simd_append_source_and_features(${PROJECT_NAME} "source/arm/crc32c_arm.c" ${AWS_ARMv8_1_FLAG})
@@ -124,7 +124,7 @@ if (USE_CPU_EXTENSIONS)
                     "source/arm/*.c"
                     )
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
-        endif()   
+        endif()
     endif()
 endif()
 
