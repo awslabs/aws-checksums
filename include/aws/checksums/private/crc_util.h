@@ -8,6 +8,7 @@
 #include <aws/common/byte_order.h>
 #include <aws/common/stdint.h>
 #include <limits.h>
+#include <stdlib.h>
 
 #define large_buffer_apply_impl(Name, T)                                                                               \
     static T aws_large_buffer_apply_##Name(                                                                            \
@@ -29,7 +30,7 @@ static inline uint32_t aws_bswap32_if_be(uint32_t x) {
     }
 
 #if _MSC_VER
-    return _byteswap_uint32(x);
+    return _byteswap_ulong(x);
 #elif defined(__GNUC__) || defined(__clang__)
     return __builtin_bswap32(x);
 #else
