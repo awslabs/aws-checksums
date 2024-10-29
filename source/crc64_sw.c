@@ -1073,7 +1073,7 @@ static uint64_t crc64nvme_table_be[8][256] = {
 
 /* Calculate a CRC-64 eight bytes at a time on a big-endian architecture. */
 static inline uint64_t s_crc64_sw_be(const uint8_t *input, int length, uint64_t prev_crc64) {
-    uint64_t crc = ~aws_swap_bytes_if_needed_64(prev_crc64);
+    uint64_t crc = ~aws_bswap64_if_be(prev_crc64);
     // Read byte by byte until we reach an 8 byte aligned address
     while (length > 0 && ((intptr_t)input & 7)) {
         crc = (crc << 8) ^ crc64nvme_table_be[0][((crc >> 56) ^ *input++)];
@@ -1095,7 +1095,7 @@ static inline uint64_t s_crc64_sw_be(const uint8_t *input, int length, uint64_t 
         crc = (crc << 8) ^ crc64nvme_table_be[0][((crc >> 56) ^ input[length - remaining]) & 0xff];
         remaining--;
     }
-    return ~aws_swap_bytes_if_needed_64(crc);
+    return ~aws_bswap64_if_be(crc);
 }
 
 /** Slow slice-by-8 lookup table based fallback function to compute CRC64NVME. */

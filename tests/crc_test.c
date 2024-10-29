@@ -73,9 +73,9 @@ static int s_test_known_crc_32(
     uint32_t result = func(input, (int)length, 0);
     ASSERT_HEX_EQUALS(expected_crc, result, "%s(%s)", func_name, data_name);
 
-    uint32_t result_swapped = aws_swap_bytes_if_needed_32(result);
+    uint32_t result_le = aws_bswap32_if_be(result);
     // Compute the residue of the buffer (the CRC of the buffer plus its CRC) - will always be a constant value
-    uint32_t residue = (uint32_t)func((const uint8_t *)&result_swapped, 4, result); // assuming little endian
+    uint32_t residue = (uint32_t)func((const uint8_t *)&result_le, 4, result); // assuming little endian
     ASSERT_HEX_EQUALS(expected_residue, residue, "len %d residue %s(%s)", length, func_name, data_name);
 
     // chain the crc computation so 2 calls each operate on about 1/2 of the buffer
