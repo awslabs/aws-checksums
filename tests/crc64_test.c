@@ -5,6 +5,8 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
+#include <aws/checksums/private/crc_util.h>
+#include <aws/common/encoding.h>
 #include <aws/testing/aws_test_harness.h>
 
 // The polynomial used for CRC64NVME (in bit-reflected form)
@@ -54,7 +56,8 @@ static int s_test_known_crc(
     ASSERT_HEX_EQUALS(expected_crc, result, "%s(%s)", func_name, data_name);
 
     // Compute the residue of the buffer (the CRC of the buffer plus its CRC) - will always be a constant value
-    uint64_t residue = func((const uint8_t *)&result, 8, result); // assuming little endian
+    uint64_t result_le = aws_bswap64_if_be(result);
+    uint64_t residue = func((const uint8_t *)&result_le, 8, result); // assuming little endian
     ASSERT_HEX_EQUALS(expected_residue, residue, "len %d residue %s(%s)", length, func_name, data_name);
 
     // chain the crc computation so 2 calls each operate on about 1/2 of the buffer
