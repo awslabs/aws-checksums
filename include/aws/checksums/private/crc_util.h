@@ -31,7 +31,9 @@ static inline uint32_t aws_bswap32_if_be(uint32_t x) {
 
 #if _MSC_VER
     return _byteswap_ulong(x);
-#elif defined(__GNUC__) || defined(__clang__)
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+    return __builtin_bswap32(x);
+#elif defined(__clang__) && __clang_major__ >= 3
     return __builtin_bswap32(x);
 #else
     return (
@@ -47,7 +49,9 @@ static inline uint64_t aws_bswap64_if_be(uint64_t x) {
 
 #if _MSC_VER
     return _byteswap_uint64(x);
-#elif defined(__GNUC__) || defined(__clang__)
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+    return __builtin_bswap64(x);
+#elif defined(__clang__) && __clang_major__ >= 3
     return __builtin_bswap64(x);
 #else
     return ((x << 56) & 0xff00000000000000ULL) | ((x << 40) & 0x00ff000000000000ULL) |
