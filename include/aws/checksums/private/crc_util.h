@@ -50,6 +50,7 @@ static inline uint64_t aws_bswap64_if_be(uint64_t x) {
 #if _MSC_VER
     return _byteswap_uint64(x);
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+    /* Note: gcc supports it starting with 4.2. here its just picking the lowest version we run test on. */
     return __builtin_bswap64(x);
 #elif defined(__clang__) && __clang_major__ >= 3
     return __builtin_bswap64(x);
