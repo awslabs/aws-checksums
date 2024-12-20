@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.9...3.31)
 
 option(STATIC_CRT "Windows specific option that to specify static/dynamic run-time library" OFF)
 
