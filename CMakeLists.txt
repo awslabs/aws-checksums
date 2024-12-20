@@ -122,7 +122,7 @@ aws_use_package(aws-c-common)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEP_AWS_LIBS})
 aws_prepare_shared_lib_exports(${PROJECT_NAME})
 
-install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "include/aws/checksums" COMPONENT Development)
+install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "${INCLUDE_DIRECTORY}/aws/checksums" COMPONENT Development)
 
 if (BUILD_SHARED_LIBS)
     set (TARGET_DIR "shared")
