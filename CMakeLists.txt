@@ -17,6 +17,7 @@ include(AwsSanitizers)
 include(CheckCCompilerFlag)
 include(AwsFindPackage)
 include(AwsFeatureTests)
+include(GNUInstallDirs)
 
 file(GLOB AWS_CHECKSUMS_HEADERS
      "include/aws/checksums/*.h"
@@ -122,7 +123,7 @@ aws_use_package(aws-c-common)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEP_AWS_LIBS})
 aws_prepare_shared_lib_exports(${PROJECT_NAME})
 
-install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "${INCLUDE_DIRECTORY}/aws/checksums" COMPONENT Development)
+install(FILES ${AWS_CHECKSUMS_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/aws/checksums" COMPONENT Development)
 
 if (BUILD_SHARED_LIBS)
     set (TARGET_DIR "shared")
@@ -131,7 +132,7 @@ else()
 endif()
 
 install(EXPORT "${PROJECT_NAME}-targets"
-        DESTINATION "${LIBRARY_DIRECTORY}/cmake/${PROJECT_NAME}/${TARGET_DIR}"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${TARGET_DIR}"
         NAMESPACE AWS::
         COMPONENT Development)
 
@@ -140,7 +141,7 @@ configure_file("cmake/${PROJECT_NAME}-config.cmake"
         @ONLY)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-        DESTINATION "${LIBRARY_DIRECTORY}/cmake/${PROJECT_NAME}/"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/"
         COMPONENT Development)
 
 include(CTest)
