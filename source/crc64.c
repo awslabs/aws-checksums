@@ -8,7 +8,7 @@
 #include <aws/checksums/private/crc_util.h>
 #include <aws/common/cpuid.h>
 
-large_buffer_apply_impl(crc64, uint64_t);
+large_buffer_apply_impl(crc64, uint64_t)
 
 AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
 
