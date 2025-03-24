@@ -8,9 +8,9 @@
 
 #include <aws/common/cpuid.h>
 
-large_buffer_apply_impl(crc32, uint32_t)
+large_buffer_apply_impl(crc32, uint32_t);
 
-    static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32c) = 0;
+static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32c) = 0;
 static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32) = 0;
 
 uint32_t aws_checksums_crc32(const uint8_t *input, int length, uint32_t previous_crc32) {

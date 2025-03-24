@@ -8,10 +8,11 @@
 #include <aws/checksums/private/crc_util.h>
 #include <aws/common/cpuid.h>
 
-large_buffer_apply_impl(crc64, uint64_t)
+large_buffer_apply_impl(crc64, uint64_t);
 
-    AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
-// Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
+AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
+
+    // Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
 checksums_maxks_shifts_type aws_checksums_masks_shifts = {
     {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, //
     {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}, // left/right

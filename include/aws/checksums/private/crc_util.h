@@ -10,18 +10,20 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#define large_buffer_apply_impl(Name, T)                                                                               \
-    static T aws_large_buffer_apply_##Name(                                                                            \
-        T (*checksum_fn)(const uint8_t *, int, T), const uint8_t *buffer, size_t length, T previous) {                 \
-        T val = previous;                                                                                              \
-        while (length > INT_MAX) {                                                                                     \
-            val = checksum_fn(buffer, INT_MAX, val);                                                                   \
-            buffer += (size_t)INT_MAX;                                                                                 \
-            length -= (size_t)INT_MAX;                                                                                 \
-        }                                                                                                              \
-        val = checksum_fn(buffer, (int)length, val);                                                                   \
-        return val;                                                                                                    \
-    }
+#define large_buffer_apply_impl(Name, T)                                                                                   \
+    do {                                                                                                                   \
+        static T aws_large_buffer_apply_##Name(                                                                            \
+            T (*checksum_fn)(const uint8_t *, int, T), const uint8_t *buffer, size_t length, T previous) {                 \
+            T val = previous;                                                                                              \
+            while (length > INT_MAX) {                                                                                     \
+                val = checksum_fn(buffer, INT_MAX, val);                                                                   \
+                buffer += (size_t)INT_MAX;                                                                                 \
+                length -= (size_t)INT_MAX;                                                                                 \
+            }                                                                                                              \
+            val = checksum_fn(buffer, (int)length, val);                                                                   \
+            return val;                                                                                                    \
+        }                                                                                                                  \
+    } while(0)
 
 /* helper function to reverse byte order on big-endian platforms*/
 static inline uint32_t aws_bswap32_if_be(uint32_t x) {
