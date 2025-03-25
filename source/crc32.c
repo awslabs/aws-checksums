@@ -13,7 +13,7 @@ large_buffer_apply_impl(crc32, uint32_t)
     static uint32_t (*s_crc32c_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32c) = NULL;
 static uint32_t (*s_crc32_fn_ptr)(const uint8_t *input, int length, uint32_t previous_crc32) = NULL;
 
-void aws_checksums_crc32_init() {
+void aws_checksums_crc32_init(void) {
     if (s_crc32_fn_ptr == NULL) {
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_ARM64)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_ARM_CRC)) {
