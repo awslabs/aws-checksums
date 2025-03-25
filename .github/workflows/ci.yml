@@ -322,7 +322,7 @@ jobs:
         role-to-assume: ${{ env.CRT_CI_ROLE }}
         aws-region: ${{ env.AWS_DEFAULT_REGION }}
     - uses: actions/checkout@v4
-    - uses: uraimo/run-on-arch-action@v2
+    - uses: uraimo/run-on-arch-action@v3
       name: Run commands
       id: runcmd
       with:
