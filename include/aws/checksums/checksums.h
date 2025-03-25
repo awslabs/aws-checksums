@@ -2,6 +2,7 @@
 #define AWS_COMMON_COMMON_H
 
 #include <aws/checksums/exports.h>
+#include <aws/common/allocator.h>
 
 /**
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
