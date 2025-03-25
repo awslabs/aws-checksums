@@ -123,15 +123,16 @@ void aws_checksums_crc64_init() {
         s_crc64nvme_fn_ptr = aws_checksums_crc64nvme_sw;
 #endif
     }
+}
 
-    uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
-        if (AWS_UNLIKELY(s_crc64nvme_fn_ptr == NULL)) {
-            aws_checksums_crc64_init();
-        }
-
-        return s_crc64nvme_fn_ptr(input, length, prev_crc64);
+uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
+    if (AWS_UNLIKELY(s_crc64nvme_fn_ptr == NULL)) {
+        aws_checksums_crc64_init();
     }
 
-    uint64_t aws_checksums_crc64nvme_ex(const uint8_t *input, size_t length, uint64_t previous_crc64) {
-        return aws_large_buffer_apply_crc64(aws_checksums_crc64nvme, input, length, previous_crc64);
-    }
+    return s_crc64nvme_fn_ptr(input, length, prev_crc64);
+}
+
+uint64_t aws_checksums_crc64nvme_ex(const uint8_t *input, size_t length, uint64_t previous_crc64) {
+    return aws_large_buffer_apply_crc64(aws_checksums_crc64nvme, input, length, previous_crc64);
+}
