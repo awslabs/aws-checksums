@@ -10,9 +10,9 @@
 
 large_buffer_apply_impl(crc64, uint64_t)
 
-AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
+    AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
 
-    // Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
+// Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
 checksums_maxks_shifts_type aws_checksums_masks_shifts = {
     {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, //
     {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}, // left/right
@@ -92,10 +92,10 @@ checksums_constants aws_checksums_crc64nvme_constants = {
 };
 /* clang-format on */
 
-static uint64_t (*s_crc64nvme_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = 0;
+static uint64_t (*s_crc64nvme_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = NULL;
 
-uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
-    if (AWS_UNLIKELY(!s_crc64nvme_fn_ptr)) {
+void aws_checksums_crc64_init() {
+    if (s_crc64nvme_fn_ptr == NULL) {
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
 #    if defined(AWS_HAVE_AVX512_INTRINSICS)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) && aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ)) {
@@ -124,9 +124,14 @@ uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev
 #endif
     }
 
-    return s_crc64nvme_fn_ptr(input, length, prev_crc64);
-}
+    uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
+        if (AWS_UNLIKELY(s_crc64nvme_fn_ptr == NULL)) {
+            aws_checksums_crc64_init();
+        }
 
-uint64_t aws_checksums_crc64nvme_ex(const uint8_t *input, size_t length, uint64_t previous_crc64) {
-    return aws_large_buffer_apply_crc64(aws_checksums_crc64nvme, input, length, previous_crc64);
-}
+        return s_crc64nvme_fn_ptr(input, length, prev_crc64);
+    }
+
+    uint64_t aws_checksums_crc64nvme_ex(const uint8_t *input, size_t length, uint64_t previous_crc64) {
+        return aws_large_buffer_apply_crc64(aws_checksums_crc64nvme, input, length, previous_crc64);
+    }

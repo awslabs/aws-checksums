@@ -10,7 +10,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#define large_buffer_apply_impl(Name, T)                                                                                                                                                                                             \
+#define large_buffer_apply_impl(Name, T)                                                                               \
     static T aws_large_buffer_apply_##Name(                                                                            \
         T (*checksum_fn)(const uint8_t *, int, T), const uint8_t *buffer, size_t length, T previous) {                 \
         T val = previous;                                                                                              \
@@ -21,7 +21,7 @@
         }                                                                                                              \
         val = checksum_fn(buffer, (int)length, val);                                                                   \
         return val;                                                                                                    \
-    } 
+    }
 
 /* helper function to reverse byte order on big-endian platforms*/
 static inline uint32_t aws_bswap32_if_be(uint32_t x) {
@@ -61,5 +61,19 @@ static inline uint64_t aws_bswap64_if_be(uint64_t x) {
            ((x >> 40) & 0x000000000000ff00ULL) | ((x >> 56) & 0x00000000000000ffULL);
 #endif
 }
+
+/**
+ * Force resolution of any global variables for CRC32.
+ * Note: in usual flow those are resolved on the first call to crc32 functions, which
+ * which might be deemed non-thread safe by some tools.
+ */
+AWS_CHECKSUMS_API void aws_checksums_crc32_init();
+
+/**
+ * Force resolution of any global variables for CRC64.
+ * Note: in usual flow those are resolved on the first call to crc64 functions, which
+ * which might be deemed non-thread safe by some tools.
+ */
+AWS_CHECKSUMS_API void aws_checksums_crc64_init();
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */

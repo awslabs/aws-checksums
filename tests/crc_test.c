@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+#include <aws/checksums/checksums.h>
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc_priv.h>
 #include <aws/checksums/private/crc_util.h>
@@ -172,6 +173,23 @@ static int s_test_crc32c(struct aws_allocator *allocator, void *ctx) {
 }
 AWS_TEST_CASE(test_crc32c, s_test_crc32c)
 
+static int s_test_crc32c_init(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    int res = 0;
+
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(s_crc32c_reference));
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(aws_checksums_crc32c_sw));
+    res |= s_test_known_crc32c(allocator, CRC_FUNC_NAME(aws_checksums_crc32c));
+
+    aws_checksums_library_clean_up();
+
+    return res;
+}
+AWS_TEST_CASE(test_crc32c_init, s_test_crc32c_init)
+
 static int s_test_crc32(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
 
@@ -184,6 +202,23 @@ static int s_test_crc32(struct aws_allocator *allocator, void *ctx) {
     return res;
 }
 AWS_TEST_CASE(test_crc32, s_test_crc32)
+
+static int s_test_crc32_init(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    int res = 0;
+
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(s_crc32_reference));
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(aws_checksums_crc32_sw));
+    res |= s_test_known_crc32(allocator, CRC_FUNC_NAME(aws_checksums_crc32));
+
+    aws_checksums_library_clean_up();
+
+    return res;
+}
+AWS_TEST_CASE(test_crc32_init, s_test_crc32_init)
 
 static int s_test_large_buffer_crc32(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
