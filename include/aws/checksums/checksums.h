@@ -1,5 +1,5 @@
-#ifndef AWS_COMMON_COMMON_H
-#define AWS_COMMON_COMMON_H
+#ifndef AWS_CHECKSUMS_CHECKSUMS_H
+#define AWS_CHECKSUMS_CHECKSUMS_H
 
 #include <aws/common/common.h>
 
@@ -24,4 +24,4 @@ AWS_CHECKSUMS_API void aws_checksums_library_init(struct aws_allocator *allocato
  */
 AWS_CHECKSUMS_API void aws_checksums_library_clean_up(void);
 
-#endif /* AWS_COMMON_COMMON_H */
+#endif /* AWS_CHECKSUMS_CHECKSUMS_H */
