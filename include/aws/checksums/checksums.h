@@ -21,6 +21,6 @@ AWS_CHECKSUMS_API void aws_checksums_library_init(struct aws_allocator *allocato
 /**
  * Shuts down the internal data structures used by aws-checksums.
  */
-AWS_CHECKSUMS_API void aws_common_library_clean_up(void);
+AWS_CHECKSUMS_API void aws_checksums_library_clean_up(void);
 
 #endif /* AWS_COMMON_COMMON_H */
