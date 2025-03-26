@@ -12,10 +12,9 @@
 
 /**
  * Initializes internal data structures used by aws-checksums.
- * Should be called before using any functionality in aws-checksums.
- * Note: historically aws-checksums lazily initialized some internal pointers,
- * which some tools picked up as thread unsafe. As best practice prefer explicit init
- * before using this library.
+ * MUST be called before using any functionality in aws-checksums.
+ * Note: historically aws-checksums lazily initialized stuff and things worked without init.
+ * However, DO NOT rely on that behavior and explicitly call init instead.
  */
 AWS_CHECKSUMS_API void aws_checksums_library_init(struct aws_allocator *allocator);
 

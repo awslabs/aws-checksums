@@ -6,11 +6,20 @@
 #include <aws/checksums/checksums.h>
 #include <aws/checksums/private/crc_util.h>
 
-void aws_checksums_library_init(struct aws_allocator *allocator) {
-    (void)allocator;
+static bool s_checksums_library_initialized = false;
 
-    aws_checksums_crc32_init();
-    aws_checksums_crc64_init();
+void aws_checksums_library_init(struct aws_allocator *allocator) {
+    if (!s_checksums_library_initialized) {
+        s_checksums_library_initialized = true;
+
+        aws_common_library_init(allocator);
+
+        aws_checksums_crc32_init();
+        aws_checksums_crc64_init();
+    }
 }
 
-void aws_checksums_library_clean_up(void) {}
+void aws_checksums_library_clean_up(void) {
+    s_checksums_library_initialized = false;
+    aws_common_library_clean_up();
+}

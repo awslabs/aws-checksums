@@ -67,13 +67,13 @@ static inline uint64_t aws_bswap64_if_be(uint64_t x) {
  * Note: in usual flow those are resolved on the first call to crc32 functions, which
  * which might be deemed non-thread safe by some tools.
  */
-AWS_CHECKSUMS_API void aws_checksums_crc32_init(void);
+void aws_checksums_crc32_init(void);
 
 /**
  * Force resolution of any global variables for CRC64.
  * Note: in usual flow those are resolved on the first call to crc64 functions, which
  * which might be deemed non-thread safe by some tools.
  */
-AWS_CHECKSUMS_API void aws_checksums_crc64_init(void);
+void aws_checksums_crc64_init(void);
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
