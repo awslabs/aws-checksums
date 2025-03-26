@@ -11,6 +11,7 @@
 large_buffer_apply_impl(crc64, uint64_t)
 
     AWS_ALIGNED_TYPEDEF(uint8_t, checksums_maxks_shifts_type[6][16], 16);
+
 // Intel PSHUFB / ARM VTBL patterns for left/right shifts and masks
 checksums_maxks_shifts_type aws_checksums_masks_shifts = {
     {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, //
@@ -91,10 +92,10 @@ checksums_constants aws_checksums_crc64nvme_constants = {
 };
 /* clang-format on */
 
-static uint64_t (*s_crc64nvme_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = 0;
+static uint64_t (*s_crc64nvme_fn_ptr)(const uint8_t *input, int length, uint64_t prev_crc64) = NULL;
 
-uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
-    if (AWS_UNLIKELY(!s_crc64nvme_fn_ptr)) {
+void aws_checksums_crc64_init(void) {
+    if (s_crc64nvme_fn_ptr == NULL) {
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64) && !(defined(_MSC_VER) && _MSC_VER < 1920)
 #    if defined(AWS_HAVE_AVX512_INTRINSICS)
         if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512) && aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ)) {
@@ -121,6 +122,12 @@ uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev
 #else // this branch being taken means it's not arm64 and not intel with avx extensions
         s_crc64nvme_fn_ptr = aws_checksums_crc64nvme_sw;
 #endif
+    }
+}
+
+uint64_t aws_checksums_crc64nvme(const uint8_t *input, int length, uint64_t prev_crc64) {
+    if (AWS_UNLIKELY(s_crc64nvme_fn_ptr == NULL)) {
+        aws_checksums_crc64_init();
     }
 
     return s_crc64nvme_fn_ptr(input, length, prev_crc64);

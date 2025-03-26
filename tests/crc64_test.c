@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+#include <aws/checksums/checksums.h>
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
 #include <aws/checksums/private/crc_util.h>
@@ -129,6 +130,23 @@ static int s_test_crc64nvme(struct aws_allocator *allocator, void *ctx) {
 }
 
 AWS_TEST_CASE(test_crc64nvme, s_test_crc64nvme)
+
+static int s_test_crc64nvme_init(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    int res = 0;
+
+    res |= s_test_known_crc64nvme(allocator, CRC_FUNC_NAME(crc64nvme_reference));
+    res |= s_test_known_crc64nvme(allocator, CRC_FUNC_NAME(aws_checksums_crc64nvme_sw));
+    res |= s_test_known_crc64nvme(allocator, CRC_FUNC_NAME(aws_checksums_crc64nvme));
+
+    aws_checksums_library_clean_up();
+
+    return res;
+}
+AWS_TEST_CASE(test_crc64nvme_init, s_test_crc64nvme_init)
 
 static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
