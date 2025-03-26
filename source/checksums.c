@@ -20,6 +20,8 @@ void aws_checksums_library_init(struct aws_allocator *allocator) {
 }
 
 void aws_checksums_library_clean_up(void) {
-    s_checksums_library_initialized = false;
-    aws_common_library_clean_up();
+    if (s_checksums_library_initialized) {
+        s_checksums_library_initialized = false;
+        aws_common_library_clean_up();
+    }
 }
