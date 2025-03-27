@@ -1,14 +1,17 @@
 #ifndef AWS_CHECKSUMS_CHECKSUMS_H
 #define AWS_CHECKSUMS_CHECKSUMS_H
-
-#include <aws/common/common.h>
-
-#include <aws/checksums/exports.h>
-
 /**
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+
+
+#include <aws/common/common.h>
+#include <aws/checksums/exports.h>
+
+
+AWS_PUSH_SANE_WARNING_LEVEL
+AWS_EXTERN_C_BEGIN
 
 /**
  * Initializes internal data structures used by aws-checksums.
@@ -22,5 +25,8 @@ AWS_CHECKSUMS_API void aws_checksums_library_init(struct aws_allocator *allocato
  * Shuts down the internal data structures used by aws-checksums.
  */
 AWS_CHECKSUMS_API void aws_checksums_library_clean_up(void);
+
+AWS_EXTERN_C_END
+AWS_POP_SANE_WARNING_LEVEL
 
 #endif /* AWS_CHECKSUMS_CHECKSUMS_H */
