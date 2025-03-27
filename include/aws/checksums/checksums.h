@@ -5,10 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-
-#include <aws/common/common.h>
 #include <aws/checksums/exports.h>
-
+#include <aws/common/common.h>
 
 AWS_PUSH_SANE_WARNING_LEVEL
 AWS_EXTERN_C_BEGIN
