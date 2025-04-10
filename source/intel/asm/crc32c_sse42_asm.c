@@ -4,8 +4,7 @@
  */
 
 #include <aws/checksums/private/crc32_priv.h>
-
-#include <aws/common/cpuid.h>
+#include <aws/checksums/private/crc_util.h>
 
 /* clang-format off */
 

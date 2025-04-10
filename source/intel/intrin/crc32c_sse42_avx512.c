@@ -4,9 +4,9 @@
  */
 
 #include <aws/checksums/private/crc32_priv.h>
+#include <aws/checksums/private/crc_util.h>
 
 #include <aws/common/assert.h>
-#include <aws/common/cpuid.h>
 #include <aws/common/macros.h>
 
 #include <emmintrin.h>
