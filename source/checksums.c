@@ -14,7 +14,7 @@ void aws_checksums_library_init(struct aws_allocator *allocator) {
         s_checksums_library_initialized = true;
 
         aws_common_library_init(allocator);
-        
+
         (void)aws_cpu_has_clmul_cached(); /* warm up the cache */
         aws_checksums_crc32_init();
         aws_checksums_crc64_init();
@@ -69,5 +69,3 @@ static bool aws_cpu_has_vpclmulqdq_cached() {
     }
     return s_detected_vpclmulqdq;
 }
-
-

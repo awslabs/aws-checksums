@@ -154,8 +154,6 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
 }
 #endif /* #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX) */
 
-
-
 uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *input, int length, uint32_t previous_crc) {
     /* this is the entry point. We should only do the bit flip once. It should not be done for the subfunctions and
      * branches.*/
