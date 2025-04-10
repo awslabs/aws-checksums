@@ -76,9 +76,46 @@ void aws_checksums_crc32_init(void);
  */
 void aws_checksums_crc64_init(void);
 
-extern inline bool aws_cpu_has_clmul_cached();
-extern inline bool aws_cpu_has_sse42_cached();
-extern inline bool aws_cpu_has_avx512_cached();
-extern inline bool aws_cpu_has_vpclmulqdq_cached();
+extern bool s_detection_performed;
+extern bool s_detected_sse42;
+extern bool s_detected_avx512;
+extern bool s_detected_clmul;
+extern bool s_detected_vpclmulqdq;
+
+static inline void s_init_detection_cache() {
+    s_detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+    s_detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
+    s_detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
+    s_detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+    s_detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
+}
+
+static inline bool aws_cpu_has_clmul_cached() {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        s_init_detection_cache();
+    }
+    return s_detected_clmul;
+}
+
+static inline bool aws_cpu_has_sse42_cached() {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        s_init_detection_cache();
+    }
+    return s_detected_sse42;
+}
+
+static inline bool aws_cpu_has_avx512_cached() {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        s_init_detection_cache();
+    }
+    return s_detected_avx512;
+}
+
+static inline bool aws_cpu_has_vpclmulqdq_cached() {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        s_init_detection_cache();
+    }
+    return s_detected_vpclmulqdq;
+}
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
