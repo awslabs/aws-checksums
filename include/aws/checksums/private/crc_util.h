@@ -6,6 +6,7 @@
  */
 
 #include <aws/common/byte_order.h>
+#include <aws/common/cpuid.h>
 #include <aws/common/stdint.h>
 #include <limits.h>
 #include <stdlib.h>
