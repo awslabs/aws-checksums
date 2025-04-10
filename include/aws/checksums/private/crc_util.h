@@ -77,6 +77,12 @@ void aws_checksums_crc32_init(void);
  */
 void aws_checksums_crc64_init(void);
 
+/**
+ * Note: this is slightly different from our typical pattern.
+ * This check is currently performed in a tight loop, so jumping through
+ * some hoops with inlining to avoid perf regressions, which forces
+ * below functions to be declared in a header.
+ */
 extern bool s_detection_performed;
 extern bool s_detected_sse42;
 extern bool s_detected_avx512;
