@@ -42,28 +42,28 @@ static void s_init_detection_cache() {
     s_detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
 }
 
-static bool aws_cpu_has_clmul_cached() {
+extern inline bool aws_cpu_has_clmul_cached() {
     if (AWS_UNLIKELY(!s_detection_performed)) {
         s_init_detection_cache();
     }
     return s_detected_clmul;
 }
 
-static bool aws_cpu_has_sse42_cached() {
+extern inline bool aws_cpu_has_sse42_cached() {
     if (AWS_UNLIKELY(!s_detection_performed)) {
         s_init_detection_cache();
     }
     return s_detected_sse42;
 }
 
-static bool aws_cpu_has_avx512_cached() {
+extern inline bool aws_cpu_has_avx512_cached() {
     if (AWS_UNLIKELY(!s_detection_performed)) {
         s_init_detection_cache();
     }
     return s_detected_avx512;
 }
 
-static bool aws_cpu_has_vpclmulqdq_cached() {
+extern inline bool aws_cpu_has_vpclmulqdq_cached() {
     if (AWS_UNLIKELY(!s_detection_performed)) {
         s_init_detection_cache();
     }

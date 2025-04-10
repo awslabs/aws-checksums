@@ -76,9 +76,9 @@ void aws_checksums_crc32_init(void);
  */
 void aws_checksums_crc64_init(void);
 
-static bool aws_cpu_has_clmul_cached();
-static bool aws_cpu_has_sse42_cached();
-static bool aws_cpu_has_avx512_cached();
-static bool aws_cpu_has_vpclmulqdq_cached();
+extern inline bool aws_cpu_has_clmul_cached();
+extern inline bool aws_cpu_has_sse42_cached();
+extern inline bool aws_cpu_has_avx512_cached();
+extern inline bool aws_cpu_has_vpclmulqdq_cached();
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
