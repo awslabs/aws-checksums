@@ -66,7 +66,7 @@ static void s_runcrc64_multi(struct aws_byte_cursor checksum_this) {
             size_t chunk_size = ((offset + 8 * 1024) > checksum_this.len) ? 
                                (checksum_this.len - offset) : 8 * 1024;
 
-            crc = aws_checksums_crc64nvme(checksum_this.ptr + offset, chunk_size, crc);
+            crc = aws_checksums_crc64nvme(checksum_this.ptr + offset, (int)chunk_size, crc);
         }
         (void)crc;
     }
