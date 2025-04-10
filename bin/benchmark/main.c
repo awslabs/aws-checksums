@@ -5,7 +5,7 @@
 
 #include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc64_priv.h>
-#include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc32_priv.h>
 
 #include <aws/common/allocator.h>
 #include <aws/common/byte_buf.h>
@@ -55,6 +55,23 @@ static void s_runcrc64(struct aws_byte_cursor checksum_this) {
     (void)crc;
 }
 
+static void s_runcrc64_multi(struct aws_byte_cursor checksum_this) {
+    if (checksum_this.len <= 8 * 1024) {
+        uint64_t crc = aws_checksums_crc64nvme(checksum_this.ptr, (int)checksum_this.len, 0);
+        (void)crc;
+    } else {
+        uint64_t crc = 0;
+        for (size_t offset = 0; offset < checksum_this.len; offset += 8 * 1024) {
+            // Calculate size of this chunk (handles last chunk if not full 8KB)
+            size_t chunk_size = ((offset + 8 * 1024) > checksum_this.len) ? 
+                               (checksum_this.len - offset) : 8 * 1024;
+
+            crc = aws_checksums_crc64nvme(checksum_this.ptr + offset, chunk_size, crc);
+        }
+        (void)crc;
+    }
+}
+
 #define KB_TO_BYTES(kb) ((kb) * 1024)
 #define MB_TO_BYTES(mb) ((mb) * 1024 * 1024)
 #define GB_TO_BYTES(gb) ((gb) * 1024 * 1024 * 1024ULL)
@@ -86,6 +103,7 @@ int main(void) {
         {.profile_run = s_runcrc32c, .name = "crc32c with hw optimizations"},
         {.profile_run = s_runcrc64_sw, .name = "crc64nvme C only"},
         {.profile_run = s_runcrc64, .name = "crc64nvme with hw optimizations"},
+        {.profile_run = s_runcrc64_multi, .name = "crc64nvme with hw optimizations(multi)"},
     };
 
     const size_t allocators_array_size = AWS_ARRAY_SIZE(allocators);

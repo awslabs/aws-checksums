@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-#include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc32_priv.h>
 #include <aws/checksums/private/crc_util.h>
 #include <stddef.h>
 

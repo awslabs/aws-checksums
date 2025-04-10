@@ -5,7 +5,7 @@
 
 #include <aws/checksums/checksums.h>
 #include <aws/checksums/crc.h>
-#include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc32_priv.h>
 #include <aws/checksums/private/crc_util.h>
 
 #include <aws/common/device_random.h>
