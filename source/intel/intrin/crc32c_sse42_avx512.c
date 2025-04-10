@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/crc_priv.h>
+#include <aws/checksums/private/crc32_priv.h>
+#include <aws/checksums/private/crc_util.h>
 
 #include <aws/common/assert.h>
-#include <aws/common/cpuid.h>
 #include <aws/common/macros.h>
 
 #include <emmintrin.h>
@@ -154,25 +154,7 @@ static uint32_t s_checksums_crc32c_avx512_impl(const uint8_t *input, int length,
 }
 #endif /* #if defined(AWS_HAVE_AVX512_INTRINSICS) && (INTPTR_MAX == INT64_MAX) */
 
-static bool detection_performed = false;
-static bool detected_sse42 = false;
-static bool detected_avx512 = false;
-static bool detected_clmul = false;
-static bool detected_vpclmulqdq = false;
-
 uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *input, int length, uint32_t previous_crc) {
-    if (AWS_UNLIKELY(!detection_performed)) {
-        detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
-        detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
-        detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
-        detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
-
-        /* Simply setting the flag true to skip HW detection next time
-           Not using memory barriers since the worst that can
-           happen is a fallback to the non HW accelerated code. */
-        detection_performed = true;
-    }
-
     /* this is the entry point. We should only do the bit flip once. It should not be done for the subfunctions and
      * branches.*/
     uint32_t crc = ~previous_crc;
@@ -202,7 +184,7 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *inpu
 #if defined(AWS_HAVE_AVX512_INTRINSICS) && defined(AWS_ARCH_INTEL_X64)
     int chunk_size = length & ~63;
 
-    if (detected_avx512 && detected_vpclmulqdq && detected_clmul) {
+    if (aws_cpu_has_avx512_cached() && aws_cpu_has_vpclmulqdq_cached() && aws_cpu_has_clmul_cached()) {
         if (length >= 256) {
             crc = s_checksums_crc32c_avx512_impl(input, length, crc);
             /* check remaining data */
@@ -218,7 +200,7 @@ uint32_t aws_checksums_crc32c_intel_avx512_with_sse_fallback(const uint8_t *inpu
 #endif
 
 #if defined(AWS_ARCH_INTEL_X64) && !defined(_MSC_VER)
-    if (detected_sse42 && detected_clmul) {
+    if (aws_cpu_has_sse42_cached() && aws_cpu_has_clmul_cached()) {
         // this function is an entry point on its own. It inverts the crc passed to it
         // does its thing and then inverts it upon return. In order to keep
         // aws_checksums_crc32c_sse42 a standalone function (which it has to be due

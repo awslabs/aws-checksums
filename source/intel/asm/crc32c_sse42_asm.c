@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/checksums/private/crc_priv.h>
-
-#include <aws/common/cpuid.h>
+#include <aws/checksums/private/crc32_priv.h>
+#include <aws/checksums/private/crc_util.h>
 
 /* clang-format off */
 
@@ -273,9 +272,6 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
     return crc;
 }
 
-static bool detection_performed = false;
-static bool detected_clmul = false;
-
 /*
  * Computes the Castagnoli CRC32c (iSCSI) of the specified data buffer using the Intel CRC32Q (64-bit quad word) and
  * PCLMULQDQ machine instructions (if present).
@@ -284,14 +280,6 @@ static bool detected_clmul = false;
  * call.
  */
 uint32_t aws_checksums_crc32c_clmul_sse42(const uint8_t *input, int length, uint32_t previousCrc32) {
-
-    if (AWS_UNLIKELY(!detection_performed)) {
-        detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
-        /* Simply setting the flag true to skip HW detection next time
-           Not using memory barriers since the worst that can
-           happen is a fallback to the non HW accelerated code. */
-        detection_performed = true;
-    }
 
     /* this is called by a higher-level shim and previousCRC32 is already ~ */
     uint32_t crc = ~previousCrc32;
@@ -321,7 +309,7 @@ uint32_t aws_checksums_crc32c_clmul_sse42(const uint8_t *input, int length, uint
     }
 
     /* Using likely to keep this code inlined */
-    if (AWS_LIKELY(detected_clmul)) {
+    if (AWS_LIKELY(aws_cpu_has_clmul_cached())) {
 
         while (AWS_LIKELY(length >= 3072)) {
             /* Compute crc32c on each block, chaining each crc result */

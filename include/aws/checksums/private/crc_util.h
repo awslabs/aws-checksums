@@ -6,6 +6,7 @@
  */
 
 #include <aws/common/byte_order.h>
+#include <aws/common/cpuid.h>
 #include <aws/common/stdint.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -75,5 +76,53 @@ void aws_checksums_crc32_init(void);
  * which might be deemed non-thread safe by some tools.
  */
 void aws_checksums_crc64_init(void);
+
+/**
+ * Note: this is slightly different from our typical pattern.
+ * This check is currently performed in a tight loop, so jumping through
+ * some hoops with inlining to avoid perf regressions, which forces
+ * below functions to be declared in a header.
+ */
+extern bool s_detection_performed;
+extern bool s_detected_sse42;
+extern bool s_detected_avx512;
+extern bool s_detected_clmul;
+extern bool s_detected_vpclmulqdq;
+
+static inline void aws_checksums_init_detection_cache(void) {
+    s_detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+    s_detected_sse42 = aws_cpu_has_feature(AWS_CPU_FEATURE_SSE_4_2);
+    s_detected_avx512 = aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512);
+    s_detected_clmul = aws_cpu_has_feature(AWS_CPU_FEATURE_CLMUL);
+    s_detected_vpclmulqdq = aws_cpu_has_feature(AWS_CPU_FEATURE_VPCLMULQDQ);
+}
+
+static inline bool aws_cpu_has_clmul_cached(void) {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        aws_checksums_init_detection_cache();
+    }
+    return s_detected_clmul;
+}
+
+static inline bool aws_cpu_has_sse42_cached(void) {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        aws_checksums_init_detection_cache();
+    }
+    return s_detected_sse42;
+}
+
+static inline bool aws_cpu_has_avx512_cached(void) {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        aws_checksums_init_detection_cache();
+    }
+    return s_detected_avx512;
+}
+
+static inline bool aws_cpu_has_vpclmulqdq_cached(void) {
+    if (AWS_UNLIKELY(!s_detection_performed)) {
+        aws_checksums_init_detection_cache();
+    }
+    return s_detected_vpclmulqdq;
+}
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
