@@ -235,3 +235,65 @@ static int s_test_large_buffer_crc32(struct aws_allocator *allocator, void *ctx)
 #endif
 }
 AWS_TEST_CASE(test_large_buffer_crc32, s_test_large_buffer_crc32)
+
+static int s_test_crc32_combine(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    uint8_t *a = (uint8_t *)"aaaa";
+    uint8_t *b = (uint8_t *)"bbbb";
+    uint8_t *ab = (uint8_t *)"aaaabbbb";
+
+    uint32_t crc_a = aws_checksums_crc32(a, 4, 0);
+    uint32_t crc_b = aws_checksums_crc32(b, 4, 0);
+    uint32_t crc_ab = aws_checksums_crc32(ab, 8, 0);
+
+    ASSERT_INT_EQUALS(crc_ab, aws_checksums_crc32_combine(crc_a, crc_b, 4));
+
+    uint8_t *c = (uint8_t *)"cccccccccccccccccccc";
+    uint8_t *d = (uint8_t *)"dd";
+    uint8_t *cd = (uint8_t *)"ccccccccccccccccccccdd";
+
+    uint32_t crc_c = aws_checksums_crc32(c, 20, 0);
+    uint32_t crc_d = aws_checksums_crc32(d, 2, 0);
+    uint32_t crc_cd = aws_checksums_crc32(cd, 22, 0);
+
+    ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc32_combine(crc_c, crc_d, 2));
+
+    aws_checksums_library_clean_up();
+
+    return AWS_OP_SUCCESS;
+}
+AWS_TEST_CASE(test_crc32_combine, s_test_crc32_combine)
+
+static int s_test_crc32c_combine(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    uint8_t *a = (uint8_t *)"aaaa";
+    uint8_t *b = (uint8_t *)"bbbb";
+    uint8_t *ab = (uint8_t *)"aaaabbbb";
+
+    uint32_t crc_a = aws_checksums_crc32c(a, 4, 0);
+    uint32_t crc_b = aws_checksums_crc32c(b, 4, 0);
+    uint32_t crc_ab = aws_checksums_crc32c(ab, 8, 0);
+
+    ASSERT_INT_EQUALS(crc_ab, aws_checksums_crc32c_combine(crc_a, crc_b, 4));
+
+    uint8_t *c = (uint8_t *)"cccccccccccccccccccc";
+    uint8_t *d = (uint8_t *)"dd";
+    uint8_t *cd = (uint8_t *)"ccccccccccccccccccccdd";
+
+    uint32_t crc_c = aws_checksums_crc32c(c, 20, 0);
+    uint32_t crc_d = aws_checksums_crc32c(d, 2, 0);
+    uint32_t crc_cd = aws_checksums_crc32c(cd, 22, 0);
+
+    ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc32c_combine(crc_c, crc_d, 2));
+
+    aws_checksums_library_clean_up();
+
+    return AWS_OP_SUCCESS;
+}
+AWS_TEST_CASE(test_crc32c_combine, s_test_crc32c_combine)

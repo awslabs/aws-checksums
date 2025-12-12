@@ -67,6 +67,21 @@ AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme(const uint8_t *input, int len
  */
 AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme_ex(const uint8_t *input, size_t length, uint64_t previous_crc64);
 
+/**
+ * Combines 2 CRC32 checksums.
+ */
+AWS_CHECKSUMS_API uint32_t aws_checksums_crc32_combine(uint32_t crc1, uint32_t crc2, uint64_t len2);
+
+/**
+ * Combines 2 CRC32C checksums.
+ */
+AWS_CHECKSUMS_API uint32_t aws_checksums_crc32c_combine(uint32_t crc1, uint32_t crc2, uint64_t len2);
+
+/**
+ * Combines 2 CRC64 NVME checksums.
+ */
+AWS_CHECKSUMS_API uint64_t aws_checksums_crc64nvme_combine(uint64_t crc1, uint64_t crc2, uint64_t len2);
+
 AWS_EXTERN_C_END
 AWS_POP_SANE_WARNING_LEVEL
 

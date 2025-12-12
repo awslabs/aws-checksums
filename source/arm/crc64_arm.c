@@ -205,4 +205,61 @@ uint64_t aws_checksums_crc64nvme_arm_pmull(const uint8_t *input, int length, con
     return ~vgetq_lane_u64(vreinterpretq_u64_p64(result), 1);
 }
 
+static inline uint64_t barrett_reduce_refl(const poly64x2_t kp_poly_mu, poly64x2_t input) {
+
+    // Multiply the lower half of input by mu (mu is already in the lower half of poly_mu)
+    poly64x2_t mul_by_u = pmull_lo(input, kp_poly_mu);
+
+    // Swapping poly_mu to get poly in the lower half
+    poly64x2_t poly = vextq_p64(kp_poly_mu, kp_poly_mu, 1);
+
+    // Swapping mul_by_u to get the lower half into the upper half
+    poly64x2_t mu_swap = vextq_p64(mul_by_u, mul_by_u, 1);
+
+    // Multiply lower half of mul_by_u result by poly
+    poly64x2_t mul_by_p = pmull_lo(mul_by_u, poly);
+
+    // Add the upper halves of everything
+    poly64x2_t result = xor3_p64(input, mu_swap, mul_by_p);
+
+    // Reduction result is the upper half
+    return vgetq_lane_u64(vreinterpretq_u64_p64(result), 1);
+}
+
+static inline poly64x2_t shift_crc_pmull(poly64x2_t shifted_crc, int64_t length) {
+    int nibble_idx = 0;
+    while (length > 0) {
+        uint8_t nibble_len = length & 0xf;
+        if (nibble_len) {
+            // Get the pair of 4 bit nibble shift factors for the least significant 4 bits in the length
+            poly64x2_t shift_factors =
+                load_p64(aws_checksums_crc64nvme_constants.shift_factors[nibble_idx][nibble_len]);
+            // Multiply both halves of the shifted value with the pair of pre-computed constants and fold them together
+            shifted_crc = xor_p64(pmull_lo(shifted_crc, shift_factors), pmull_hi(shifted_crc, shift_factors));
+        }
+        // advance the nibble index and right shift the length for the next 4 bit nibble
+        nibble_idx++;
+        length >>= 4;
+    }
+    // Caller is responsible for modular reduction
+    return shifted_crc;
+}
+
+uint64_t aws_checksums_crc64nvme_combine_arm_pmull(uint64_t crc1, uint64_t crc2, uint64_t len2) {
+    if (AWS_UNLIKELY(len2 == 0)) {
+        return crc1;
+    }
+
+    // Load the bit-reflected CRC into the upper half of the register
+    poly64x2_t shifted_crc = vcombine_p64(vcreate_p64(0), vcreate_p64(crc1));
+
+    // shift the CRC by the given length
+    shifted_crc = shift_crc_pmull(shifted_crc, len2);
+
+    // Barrett modular reduction
+    crc1 = barrett_reduce_refl(load_p64(aws_checksums_crc64nvme_constants.mu_poly), shifted_crc);
+
+    return crc1 ^ crc2;
+}
+
 #endif // INTPTR_MAX == INT64_MAX && defined(AWS_HAVE_ARMv8_1)
