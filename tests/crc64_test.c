@@ -163,3 +163,34 @@ static int s_test_large_buffer_crc64(struct aws_allocator *allocator, void *ctx)
 #endif
 }
 AWS_TEST_CASE(test_large_buffer_crc64, s_test_large_buffer_crc64)
+
+static int s_test_crc64nvme_combine(struct aws_allocator *allocator, void *ctx) {
+    (void)ctx;
+
+    aws_checksums_library_init(allocator);
+
+    uint8_t *a = (uint8_t *)"aaaa";
+    uint8_t *b = (uint8_t *)"bbbb";
+    uint8_t *ab = (uint8_t *)"aaaabbbb";
+
+    uint64_t crc_a = aws_checksums_crc64nvme(a, 4, 0);
+    uint64_t crc_b = aws_checksums_crc64nvme(b, 4, 0);
+    uint64_t crc_ab = aws_checksums_crc64nvme(ab, 8, 0);
+
+    ASSERT_INT_EQUALS(crc_ab, aws_checksums_crc64nvme_combine(crc_a, crc_b, 4));
+
+    uint8_t *c = (uint8_t *)"cccccccccccccccccccc";
+    uint8_t *d = (uint8_t *)"dd";
+    uint8_t *cd = (uint8_t *)"ccccccccccccccccccccdd";
+
+    uint64_t crc_c = aws_checksums_crc64nvme(c, 20, 0);
+    uint64_t crc_d = aws_checksums_crc64nvme(d, 2, 0);
+    uint64_t crc_cd = aws_checksums_crc64nvme(cd, 22, 0);
+
+    ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc64nvme_combine(crc_c, crc_d, 2));
+
+    aws_checksums_library_clean_up();
+
+    return AWS_OP_SUCCESS;
+}
+AWS_TEST_CASE(test_crc64nvme_combine, s_test_crc64nvme_combine)
