@@ -1147,7 +1147,7 @@ uint64_t aws_checksums_crc64nvme_combine_sw(uint64_t crc1, uint64_t crc2, uint64
         return crc1;
     }
 
-    __uint128_t poly = ((__uint128_t)1 << 64) | aws_checksums_crc64nvme_constants.mu_poly[1];
+    uint128_t poly = ((uint128_t)1 << 64) | aws_checksums_crc64nvme_constants.mu_poly[1];
     int idx = 0;
     while (len2) {
         uint8_t nibble = len2 & 0xf;
