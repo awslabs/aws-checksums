@@ -13,7 +13,7 @@ large_buffer_apply_impl(crc32, uint32_t)
     AWS_ALIGNED_TYPEDEF(aws_checksums_crc32_constants_t, checksums_constants, 16);
 
 checksums_constants aws_checksums_crc32_constants = {
-    .mu_poly = {0x104C11DB7, 0x01db710641},
+    .mu_poly = {0x0f7011641, 0x01db710641},
     .shift_factors = {// Position 0
                       {{0x0000000000000000, 0x0000000000000000},
                        {0x0000000077073096, 0x0100000000000000},

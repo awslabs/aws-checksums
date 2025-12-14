@@ -1305,7 +1305,7 @@ static inline uint32_t s_combine_crc32_sw(
         uint8_t nibble = len2 & 0xf;
         if (nibble) {
             uint32_t shift_factor = (uint32_t)(cc->shift_factors[idx][nibble][1] >> 32);
-            crc1 = aws_checksums_multiply_mod_p_reflected(cc->mu_poly[0], shift_factor, crc1);
+            crc1 = aws_checksums_multiply_mod_p_reflected(cc->mu_poly[1], shift_factor, crc1);
         }
         idx++;
         len2 >>= 4;
