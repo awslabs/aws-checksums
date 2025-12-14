@@ -1352,8 +1352,8 @@ static uint32_t pow_mod_p(uint32_t poly, uint64_t n) {
     return result;
 }
 
-uint32_t crc32_combine(uint32_t crc1, uint32_t crc2, int64_t len2) {
-    static const uint32_t POLY = 0x04C11DB7; // Normal form polynomial
+uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
+    static const uint32_t POLY = 0x04C11DB7; 
     
     if (len2 == 0) {
         return crc1;
@@ -1363,20 +1363,8 @@ uint32_t crc32_combine(uint32_t crc1, uint32_t crc2, int64_t len2) {
     return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
 }
 
-uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
-    static const uint32_t POLY = 0xEDB88320; // Standard CRC32 reflected polynomial
-    
-    if (len2 == 0) {
-        return crc1;
-    }
-
-    // Calculate shift by len2 bits
-    uint32_t factor = pow_mod_p(POLY, 2, len2);
-    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
-}
-
 uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
-    static const uint32_t POLY = 0x82F63B78; // Standard CRC32 reflected polynomial
+    static const uint32_t POLY = 0x1EDC6F41; 
     
     if (len2 == 0) {
         return crc1;
