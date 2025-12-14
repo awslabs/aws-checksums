@@ -1370,8 +1370,7 @@ uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t 
         return crc1;
     }
 
-    // Calculate shift by len2 bits
-    uint32_t factor = pow_mod_p(POLY, 2, len2);
+    uint32_t factor = pow_mod_p(POLY, len2);
     return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
 }
 
