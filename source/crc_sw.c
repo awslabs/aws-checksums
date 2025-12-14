@@ -1324,23 +1324,19 @@ uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t 
 #else
 static uint32_t multiply_mod_p_reflected(uint32_t poly, uint32_t a, uint32_t b) {
     uint32_t result = 0;
-    for (int i = 0; i < 32; i++) {
+    while (b) {
         if (b & 1) {
             result ^= a;
         }
         b >>= 1;
-        uint32_t carry = a & 0x80000000;
-        a = (a << 1);
-        if (carry) {
-            a ^= poly;
-        }
+        a = (a >> 1) ^ ((a & 1) ? poly : 0);
     }
     return result;
 }
 
 static uint32_t pow_mod_p(uint32_t poly, uint64_t n) {
     uint32_t result = 1;
-    uint32_t factor = 2; // x^1
+    uint32_t factor = 2;  // x^1 in reflected form
 
     while (n) {
         if (n & 1) {
@@ -1353,7 +1349,7 @@ static uint32_t pow_mod_p(uint32_t poly, uint64_t n) {
 }
 
 uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
-    static const uint32_t POLY = 0x04C11DB7; 
+    static const uint32_t POLY = 0xEDB88320;  // Reflected polynomial
     
     if (len2 == 0) {
         return crc1;
