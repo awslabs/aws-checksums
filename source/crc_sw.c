@@ -1290,6 +1290,7 @@ uint32_t aws_checksums_crc32c_sw(const uint8_t *input, int length, uint32_t prev
     return s_crc32c_no_slice(input, length, previousCrc32c);
 }
 
+#if defined(__SIZEOF_INT128__)
 static inline uint32_t s_combine_crc32_sw(
     const aws_checksums_crc32_constants_t cc[1],
     uint32_t crc1,
@@ -1304,7 +1305,7 @@ static inline uint32_t s_combine_crc32_sw(
         uint8_t nibble = len2 & 0xf;
         if (nibble) {
             uint32_t shift_factor = (uint32_t)(cc->shift_factors[idx][nibble][1] >> 32);
-            crc1 = (uint32_t)aws_checksums_multiply_mod_p_reflected(cc->mu_poly[1], shift_factor, crc1);
+            crc1 = s_multiply_mod_p_reflected(cc->mu_poly[0], shift_factor, crc1);
         }
         idx++;
         len2 >>= 4;
@@ -1320,3 +1321,66 @@ uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t l
 uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
     return s_combine_crc32_sw(&aws_checksums_crc32c_constants, crc1, crc2, len2);
 }
+#else
+static uint32_t multiply_mod_p_reflected(uint32_t poly, uint32_t a, uint32_t b) {
+    uint32_t result = 0;
+    for (int i = 0; i < 32; i++) {
+        if (b & (1u << i)) {
+            result ^= a;
+        }
+        a = (a >> 1) ^ ((a & 1) ? poly : 0);
+    }
+    return result;
+}
+
+static uint32_t pow_mod_p(uint32_t poly, uint32_t a, uint64_t n) {
+    uint32_t result = 1;
+    uint32_t factor = a;
+
+    while (n) {
+        if (n & 1) {
+            result = multiply_mod_p_reflected(poly, result, factor);
+        }
+        factor = multiply_mod_p_reflected(poly, factor, factor);
+        n >>= 1;
+    }
+    return result;
+}
+
+uint32_t crc32_combine(uint32_t crc1, uint32_t crc2, int64_t len2) {
+    static const uint32_t POLY = 0xEDB88320; // Standard CRC32 reflected polynomial
+    
+    if (len2 == 0) {
+        return crc1;
+    }
+
+    // Calculate shift by len2 bits
+    uint32_t factor = pow_mod_p(POLY, 2, len2);
+    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+}
+
+uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
+    static const uint32_t POLY = 0xEDB88320; // Standard CRC32 reflected polynomial
+    
+    if (len2 == 0) {
+        return crc1;
+    }
+
+    // Calculate shift by len2 bits
+    uint32_t factor = pow_mod_p(POLY, 2, len2);
+    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+}
+
+uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
+    static const uint32_t POLY = 0x82F63B78; // Standard CRC32 reflected polynomial
+    
+    if (len2 == 0) {
+        return crc1;
+    }
+
+    // Calculate shift by len2 bits
+    uint32_t factor = pow_mod_p(POLY, 2, len2);
+    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+}
+
+#endif

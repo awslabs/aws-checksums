@@ -125,15 +125,8 @@ static inline bool aws_cpu_has_vpclmulqdq_cached(void) {
     return s_detected_vpclmulqdq;
 }
 
-#if defined(__GNUC__) && defined(__SIZEOF_INT128__)
-    typedef __uint128_t uint128_t;
-#else
-    struct uint128_t {
-        uint64_t high;
-        uint64_t low;
-    };
+#if defined(__SIZEOF_INT128__)
+    __uint128_t aws_checksums_multiply_mod_p_reflected(const __uint128_t poly, __uint128_t a, __uint128_t b);
 #endif
-
-uint128_t aws_checksums_multiply_mod_p_reflected(const uint128_t poly, uint128_t a, uint128_t b);
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */
