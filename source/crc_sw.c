@@ -1338,7 +1338,6 @@ uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t l
 
     static const uint32_t crc32_poly = 0xEDB88320UL;
 
-    /* Apply len2 zero bytes to crc1 */
     for (size_t i = 0; i < len2; i++) {
         crc1 = s_crc32_shift_one_zero(crc32_poly, crc1);
     }
@@ -1352,7 +1351,6 @@ uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t 
 
     static const uint32_t crc32_poly = 0x82F63B78;
 
-    /* Apply len2 zero bytes to crc1 */
     for (size_t i = 0; i < len2; i++) {
         crc1 = s_crc32_shift_one_zero(crc32_poly, crc1);
     }

@@ -1180,7 +1180,6 @@ uint64_t aws_checksums_crc64nvme_combine_sw(uint64_t crc1, uint64_t crc2, uint64
         return crc1;
     }
 
-    /* Apply len2 zero bytes to crc1 */
     for (size_t i = 0; i < len2; i++) {
         crc1 = s_crc64nvme_shift_one_zero(crc64_poly, crc1);
     }
