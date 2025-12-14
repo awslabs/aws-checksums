@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+#include <aws/checksums/crc.h>
 #include <aws/checksums/private/crc32_priv.h>
 #include <aws/checksums/private/crc_util.h>
 #include <stddef.h>
@@ -1322,52 +1323,40 @@ uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t 
     return s_combine_crc32_sw(&aws_checksums_crc32c_constants, crc1, crc2, len2);
 }
 #else
-static uint32_t multiply_mod_p_reflected(uint32_t poly, uint32_t a, uint32_t b) {
-    uint32_t result = 0;
-    while (b) {
-        if (b & 1) {
-            result ^= a;
-        }
-        b >>= 1;
-        a = (a >> 1) ^ ((a & 1) ? poly : 0);
-    }
-    return result;
-}
 
-static uint32_t pow_mod_p(uint32_t poly, uint64_t n) {
-    uint32_t result = 1;
-    uint32_t factor = 2;  // x^1 in reflected form
-
-    while (n) {
-        if (n & 1) {
-            result = multiply_mod_p_reflected(poly, result, factor);
-        }
-        factor = multiply_mod_p_reflected(poly, factor, factor);
-        n >>= 1;
+static uint32_t s_crc32_shift_one_zero(uint32_t poly, uint32_t crc) {
+    for (int i = 0; i < 8; i++) {
+        crc = (crc >> 1) ^ ((crc & 1) ? poly : 0);
     }
-    return result;
+    return crc;
 }
 
 uint32_t aws_checksums_crc32_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
-    static const uint32_t POLY = 0xEDB88320;  // Reflected polynomial
-    
     if (len2 == 0) {
         return crc1;
     }
 
-    uint32_t factor = pow_mod_p(POLY, len2);
-    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+    static const uint32_t crc32_poly = 0xEDB88320UL;
+
+    /* Apply len2 zero bytes to crc1 */
+    for (size_t i = 0; i < len2; i++) {
+        crc1 = s_crc32_shift_one_zero(crc32_poly, crc1);
+    }
+    return crc1 ^ crc2;
 }
 
 uint32_t aws_checksums_crc32c_combine_sw(uint32_t crc1, uint32_t crc2, uint64_t len2) {
-    static const uint32_t POLY = 0x1EDC6F41; 
-    
     if (len2 == 0) {
         return crc1;
     }
 
-    uint32_t factor = pow_mod_p(POLY, len2);
-    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+    static const uint32_t crc32_poly = 0x82F63B78;
+
+    /* Apply len2 zero bytes to crc1 */
+    for (size_t i = 0; i < len2; i++) {
+        crc1 = s_crc32_shift_one_zero(crc32_poly, crc1);
+    }
+    return crc1 ^ crc2;
 }
 
 #endif

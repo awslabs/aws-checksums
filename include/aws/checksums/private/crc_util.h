@@ -126,7 +126,7 @@ static inline bool aws_cpu_has_vpclmulqdq_cached(void) {
 }
 
 #if defined(__SIZEOF_INT128__)
-    __uint128_t aws_checksums_multiply_mod_p_reflected(const __uint128_t poly, __uint128_t a, __uint128_t b);
+__uint128_t aws_checksums_multiply_mod_p_reflected(const __uint128_t poly, __uint128_t a, __uint128_t b);
 #endif
 
 #endif /* AWS_CHECKSUMS_PRIVATE_CRC_UTIL_H */

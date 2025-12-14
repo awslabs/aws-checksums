@@ -1163,44 +1163,28 @@ uint64_t aws_checksums_crc64nvme_combine_sw(uint64_t crc1, uint64_t crc2, uint64
 
     return crc1 ^ crc2;
 }
-#else 
+#else
 
-static uint64_t multiply_mod_p_reflected(uint64_t poly, uint64_t a, uint64_t b) {
-    uint64_t result = 0;
-    for (int i = 0; i < 64; i++) {
-        if (b & (1ULL << i)) {
-            result ^= a;
-        }
-        a = (a >> 1) ^ ((a & 1) ? poly : 0);
+static uint64_t s_crc64nvme_shift_one_zero(uint64_t poly, uint64_t crc) {
+    for (int i = 0; i < 8; i++) {
+        crc = (crc >> 1) ^ ((crc & 1) ? poly : 0);
     }
-    return result;
-}
-
-static uint64_t pow_mod_p(uint64_t poly, uint64_t a, uint64_t n) {
-    uint64_t result = 1;
-    uint64_t factor = a;
-
-    while (n) {
-        if (n & 1) {
-            result = multiply_mod_p_reflected(poly, result, factor);
-        }
-        factor = multiply_mod_p_reflected(poly, factor, factor);
-        n >>= 1;
-    }
-    return result;
+    return crc;
 }
 
 uint64_t aws_checksums_crc64nvme_combine_sw(uint64_t crc1, uint64_t crc2, uint64_t len2) {
 
-    static const uint64_t POLY = 0x9A6C9329AC4BC9B5;
-    
+    static const uint64_t crc64_poly = 0x9A6C9329AC4BC9B5;
+
     if (len2 == 0) {
         return crc1;
     }
 
-    // Calculate shift by len2 bits
-    uint64_t factor = pow_mod_p(POLY, 2, len2);
-    return multiply_mod_p_reflected(POLY, factor, crc1) ^ crc2;
+    /* Apply len2 zero bytes to crc1 */
+    for (size_t i = 0; i < len2; i++) {
+        crc1 = s_crc64nvme_shift_one_zero(crc64_poly, crc1);
+    }
+    return crc1 ^ crc2;
 }
 
 #endif
