@@ -261,6 +261,16 @@ static int s_test_crc32_combine(struct aws_allocator *allocator, void *ctx) {
 
     ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc32_combine(crc_c, crc_d, 2));
 
+    uint8_t *e = (uint8_t *)"";
+    uint8_t *f = (uint8_t *)"ffff";
+    uint8_t *ef = (uint8_t *)"ffff";
+
+    uint64_t crc_e = aws_checksums_crc32(e, 0, 0);
+    uint64_t crc_f = aws_checksums_crc32(f, 4, 0);
+    uint64_t crc_ef = aws_checksums_crc32(ef, 4, 0);
+
+    ASSERT_INT_EQUALS(crc_ef, aws_checksums_crc32_combine(crc_e, crc_f, 4));
+
     aws_checksums_library_clean_up();
 
     return AWS_OP_SUCCESS;
@@ -291,6 +301,16 @@ static int s_test_crc32c_combine(struct aws_allocator *allocator, void *ctx) {
     uint32_t crc_cd = aws_checksums_crc32c(cd, 22, 0);
 
     ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc32c_combine(crc_c, crc_d, 2));
+
+    uint8_t *e = (uint8_t *)"";
+    uint8_t *f = (uint8_t *)"ffff";
+    uint8_t *ef = (uint8_t *)"ffff";
+
+    uint64_t crc_e = aws_checksums_crc32c(e, 0, 0);
+    uint64_t crc_f = aws_checksums_crc32c(f, 4, 0);
+    uint64_t crc_ef = aws_checksums_crc32c(ef, 4, 0);
+
+    ASSERT_INT_EQUALS(crc_ef, aws_checksums_crc32c_combine(crc_e, crc_f, 4));
 
     aws_checksums_library_clean_up();
 

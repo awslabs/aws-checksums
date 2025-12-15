@@ -189,6 +189,16 @@ static int s_test_crc64nvme_combine(struct aws_allocator *allocator, void *ctx) 
 
     ASSERT_INT_EQUALS(crc_cd, aws_checksums_crc64nvme_combine(crc_c, crc_d, 2));
 
+    uint8_t *e = (uint8_t *)"";
+    uint8_t *f = (uint8_t *)"ffff";
+    uint8_t *ef = (uint8_t *)"ffff";
+
+    uint64_t crc_e = aws_checksums_crc64nvme(e, 0, 0);
+    uint64_t crc_f = aws_checksums_crc64nvme(f, 4, 0);
+    uint64_t crc_ef = aws_checksums_crc64nvme(ef, 4, 0);
+
+    ASSERT_INT_EQUALS(crc_ef, aws_checksums_crc64nvme_combine(crc_e, crc_f, 4));
+
     aws_checksums_library_clean_up();
 
     return AWS_OP_SUCCESS;
