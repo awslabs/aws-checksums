@@ -1296,7 +1296,7 @@ static inline uint32_t s_combine_crc32_sw(
     const aws_checksums_crc32_constants_t cc[1],
     uint32_t crc1,
     uint32_t crc2,
-    int64_t len2) {
+    uint64_t len2) {
     if (AWS_UNLIKELY(len2 == 0)) {
         return crc1;
     }
