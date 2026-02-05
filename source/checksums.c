@@ -23,6 +23,7 @@ void aws_checksums_library_init(struct aws_allocator *allocator) {
         aws_checksums_init_detection_cache();
         aws_checksums_crc32_init();
         aws_checksums_crc64_init();
+        aws_checksums_xxhash_init();
     }
 }
 

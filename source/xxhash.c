@@ -3,9 +3,162 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include "external/xxhash.h"
 #include <aws/checksums/xxhash.h>
 #include <aws/common/logging.h>
+
+#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
+#    define XXH_X86DISPATCH
+
+#    define AWS_XXHASH_USE_X86_INTRINSICS
+
+#    if defined(__GNUC__)
+#        include <emmintrin.h> /* SSE2 */
+#        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
+#            include <immintrin.h> /* AVX2, AVX512F */
+#        endif
+#        define AWS_XXHASH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#        define AWS_XXHASH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#        define AWS_XXHASH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#    elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
+#        include <emmintrin.h>                    /* SSE2 */
+#        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
+#            include <avx2intrin.h>
+#            include <avx512fintrin.h>
+#            include <avxintrin.h>
+#            include <immintrin.h> /* AVX2, AVX512F */
+#            include <smmintrin.h>
+#        endif
+#        define AWS_XXHASH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#        define AWS_XXHASH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#        define AWS_XXHASH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#    elif defined(_MSC_VER)
+#        include <intrin.h>
+#        define AWS_XXHASH_TARGET_SSE2
+#        define AWS_XXHASH_TARGET_AVX2
+#        define AWS_XXHASH_TARGET_AVX512
+#    endif
+#endif
+
+#define XXH_INLINE_ALL
+#include "external/xxhash.h"
+
+#if defined(AWS_ARCH_INTEL_X64)
+XXH_NO_INLINE XXH64_hash_t
+    XXH3_64_seed_scalar(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_64b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar, XXH3_initCustomSecret_scalar);
+}
+
+XXH_NO_INLINE XXH128_hash_t
+    XXH3_128_seed_scalar(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_128b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar, XXH3_initCustomSecret_scalar);
+}
+
+XXH_NO_INLINE XXH_errorcode
+    XXH3_update_scalar(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
+    return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar);
+}
+
+#    if defined(AWS_USE_CPU_EXTENSIONS)
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_SSE2 XXH64_hash_t
+    XXH3_64_seed_sse2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_64b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_sse2, XXH3_scrambleAcc_sse2, XXH3_initCustomSecret_sse2);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_SSE2 XXH128_hash_t
+    XXH3_128_seed_sse2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_128b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_sse2, XXH3_scrambleAcc_sse2, XXH3_initCustomSecret_sse2);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_SSE2 XXH_errorcode
+    XXH3_update_avx2(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
+    return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_sse2, XXH3_scrambleAcc_sse2);
+}
+
+#        ifdef AWS_HAVE_AVX2_INTRINSICS
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX2 XXH64_hash_t
+    XXH3_64_seed_avx2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_64b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_avx2, XXH3_scrambleAcc_avx2, XXH3_initCustomSecret_avx2);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX2 XXH128_hash_t
+    XXH3_128_seed_avx2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_128b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_avx2, XXH3_scrambleAcc_avx2, XXH3_initCustomSecret_sse2);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX2 XXH_errorcode
+    XXH3_update_avx2(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
+    return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_avx2, XXH3_scrambleAcc_avx2);
+}
+#        endif
+
+#        ifdef AWS_HAVE_AVX512_INTRINSICS
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX512 XXH64_hash_t
+    XXH3_64_seed_avx512(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_64b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_avx512, XXH3_scrambleAcc_avx512, XXH3_initCustomSecret_avx512);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX512 XXH128_hash_t
+    XXH3_128_seed_512(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    return XXH3_hashLong_128b_withSeed_internal(
+        input, len, seed, XXH3_accumulate_avx512, XXH3_scrambleAcc_avx512, XXH3_initCustomSecret_sse512);
+}
+
+XXH_NO_INLINE AWS_XXHASH_TARGET_AVX512 XXH_errorcode
+    XXH3_update_avx512(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
+    return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_avx512, XXH3_scrambleAcc_avx512);
+}
+#        endif
+#    endif
+
+typedef XXH64_hash_t (*dispatch_x86_XXH3_64_seed_fn)(XXH_NOESCAPE const void *XXH_RESTRICT, size_t, XXH64_hash_t);
+typedef XXH_errorcode (*dispatch_x86_XXH3_update_fn)(XXH_NOESCAPE XXH3_state_t *, XXH_NOESCAPE const void *, size_t);
+typedef XXH128_hash_t (*dispatch_x86_XXH3_128_seed_fn)(XXH_NOESCAPE const void *XXH_RESTRICT, size_t, XXH64_hash_t);
+
+static dispatch_x86_XXH3_64_seed_fn s_x86_XXH3_64_seed_compute = NULL;
+static dispatch_x86_XXH3_128_seed_fn s_x86_XXH3_128_seed_compute = NULL;
+static dispatch_x86_XXH3_update_fn s_x86_XXH3_update = NULL;
+
+#endif
+
+void aws_checksums_xxhash_init(void) {
+#if defined(AWS_ARCH_INTEL_X64)
+#    if defined(AWS_USE_CPU_EXTENSIONS)
+
+    s_x86_XXH3_64_seed_compute = XXH3_64_seed_sse2;
+    s_x86_XXH3_128_seed_compute = XXH3_128_seed_sse2;
+    s_x86_XXH3_update = XXH3_update_sse2;
+
+#        if defined(AWS_HAVE_AVX2_INTRINSICS)
+    if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
+        s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx2;
+        s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx2;
+        s_x86_XXH3_update = XXH3_update_avx2;
+    }
+#        endif
+
+#        if defined(AWS_HAVE_AVX512_INTRINSICS)
+    if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512)) {
+        s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx512;
+        s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx512;
+        s_x86_XXH3_update = XXH3_update_avx512;
+    }
+#        endif
+#    else
+    s_x86_XXH3_64_seed_compute = XXH3_64_seed_scalar;
+    s_x86_XXH3_128_seed_compute = XXH3_128_seed_scalar;
+    s_x86_XXH3_update = XXH3_update_scalar;
+#    endif
+
+#endif
+}
 
 typedef int (*xxhash_update_fn)(void *state, struct aws_byte_cursor data);
 int s_update_XXH64(void *state, struct aws_byte_cursor data) {
@@ -16,16 +169,27 @@ int s_update_XXH64(void *state, struct aws_byte_cursor data) {
 }
 
 int s_update_XXH3_64(void *state, struct aws_byte_cursor data) {
+#if defined(AWS_ARCH_INTEL_X64)
+    AWS_FATAL_ASSERT(s_x86_XXH3_update);
+    if (s_x86_XXH3_update((XXH3_state_t *)state, data.ptr, data.len) == XXH_ERROR) {
+#else
     if (XXH3_64bits_update((XXH3_state_t *)state, data.ptr, data.len) == XXH_ERROR) {
+#endif
         return aws_raise_error(AWS_ERROR_INVALID_STATE);
     }
     return AWS_OP_SUCCESS;
 }
 
 int s_update_XXH3_128(void *state, struct aws_byte_cursor data) {
+#if defined(AWS_ARCH_INTEL_X64)
+    AWS_FATAL_ASSERT(s_x86_XXH3_update);
+    if (s_x86_XXH3_update((XXH3_state_t *)state, data.ptr, data.len) == XXH_ERROR) {
+#else
     if (XXH3_128bits_update((XXH3_state_t *)state, data.ptr, data.len) == XXH_ERROR) {
+#endif
         return aws_raise_error(AWS_ERROR_INVALID_STATE);
     }
+
     return AWS_OP_SUCCESS;
 }
 
@@ -201,7 +365,13 @@ int aws_xxhash64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_
 }
 
 int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
+#if defined(AWS_ARCH_INTEL_X64)
+    AWS_FATAL_ASSERT(s_x86_XXH3_64_seed_compute);
+    XXH64_hash_t hash = s_x86_XXH3_64_seed_compute(data.ptr, data.len, seed);
+#else
     XXH64_hash_t hash = XXH3_64bits_withSeed(data.ptr, data.len, seed);
+#endif
+
     if (!aws_byte_buf_write_be64(out, hash)) {
         return aws_raise_error(AWS_ERROR_INVALID_BUFFER_SIZE);
     }
@@ -209,7 +379,12 @@ int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aw
 }
 
 int aws_xxhash3_128_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
+#if defined(AWS_ARCH_INTEL_X64)
+    AWS_FATAL_ASSERT(s_x86_XXH3_128_seed_compute);
+    XXH128_hash_t hash = s_x86_XXH3_128_seed_compute(data.ptr, data.len, seed);
+#else
     XXH128_hash_t hash = XXH3_128bits_withSeed(data.ptr, data.len, seed);
+#endif
     if (out->capacity - out->len < 16) {
         return aws_raise_error(AWS_ERROR_INVALID_BUFFER_SIZE);
     }
