@@ -9,9 +9,13 @@
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
-
-#    define AWS_XXHASH_USE_X86_INTRINSICS
-
+#    if defined(AWS_HAVE_AVX2_INTRINSICS)
+#       define XXH_DISPATCH_AVX2 1
+#    endif
+#    if defined(AWS_HAVE_AVX512_INTRINSICS)
+#       define XXH_DISPATCH_AVX512 1
+#    endif
+# 
 #    if defined(__GNUC__)
 #        include <emmintrin.h> /* SSE2 */
 #        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
@@ -76,7 +80,7 @@ XXH_NO_INLINE AWS_XXHASH_TARGET_SSE2 XXH128_hash_t
 }
 
 XXH_NO_INLINE AWS_XXHASH_TARGET_SSE2 XXH_errorcode
-    XXH3_update_avx2(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
+    XXH3_update_sse2(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
     return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_sse2, XXH3_scrambleAcc_sse2);
 }
 
