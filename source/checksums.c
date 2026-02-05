@@ -5,6 +5,7 @@
 
 #include <aws/checksums/checksums.h>
 #include <aws/checksums/private/crc_util.h>
+#include <aws/checksums/private/xxhash_priv.h>
 
 bool s_detection_performed = false;
 bool s_detected_sse42 = false;
