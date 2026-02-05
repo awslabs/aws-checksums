@@ -5,6 +5,7 @@
 
 #include <aws/checksums/xxhash.h>
 #include <aws/common/logging.h>
+#include <aws/common/cpuid.h>
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
