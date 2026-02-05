@@ -19,4 +19,8 @@ add_test_case(test_crc64nvme_combine)
 add_test_case(test_crc32_combine)
 add_test_case(test_crc32c_combine)
 
+add_test_case(test_xxhash64)
+add_test_case(test_xxhash3_64)
+add_test_case(test_xxhash3_128)
+
 generate_test_driver(${PROJECT_NAME}-tests)

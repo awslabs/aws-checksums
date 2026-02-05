@@ -31,6 +31,10 @@ file(GLOB AWS_CHECKSUMS_SRC
     "source/*.c"
 )
 
+file (GLOB AWS_CHECKSUMS_EXTERNAL_SRC
+    "source/external/xxhash.c"
+)
+
 if(MSVC)
      source_group("Header Files\\aws\\checksums" FILES ${AWS_CHECKSUMS_HEADERS})
      source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
@@ -44,6 +48,7 @@ file(GLOB CHECKSUMS_COMBINED_HEADERS
 file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_SRC}
     ${AWS_CHECKSUMS_PLATFORM_SOURCE}
+    ${AWS_CHECKSUMS_EXTERNAL_SRC}
 )
 
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
