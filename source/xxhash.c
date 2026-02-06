@@ -11,7 +11,7 @@
 #    define XXH_X86DISPATCH
 
 #if defined(AWS_USE_CPU_EXTENSIONS)
- #     define XXH_DISPATCH_SCALAR 0 /* disable */
+#     define XXH_DISPATCH_SCALAR 0 /* disable */
  
  /* Note: not all compiler support function instrinsic annotations well, so fallback to scalar in that case. */
 #    if defined(AWS_HAVE_AVX2_INTRINSICS) && \
@@ -89,7 +89,7 @@ XXH_NO_INLINE XXH_errorcode
 }
 #endif
 
-#    if not XXH_DISPATCH_SCALAR
+#    if !XXH_DISPATCH_SCALAR
 
 XXH_NO_INLINE XXH_TARGET_SSE2 XXH64_hash_t
     XXH3_64_seed_sse2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
