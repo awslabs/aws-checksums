@@ -9,6 +9,7 @@
 /*
  * Below dispatch is heavily influenced by x86 dispatch sample in the reference impl.
  * Do not change names of any defined macros as they impact what gets compiled in the impl.
+ * i.e. defines like XXH_DISPATCH_AVX2 are not only used in this file, but affect how xxhash compiles dispatch.
  */
 #if defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
@@ -274,12 +275,12 @@ struct aws_xxhash *aws_xxhash64_new(struct aws_allocator *allocator, uint64_t se
     XXH64_state_t *const state = XXH64_createState();
 
     if (state == NULL) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         return NULL;
     }
 
     if (XXH64_reset(state, seed) == XXH_ERROR) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         goto on_error;
     }
 
@@ -289,11 +290,12 @@ struct aws_xxhash *aws_xxhash64_new(struct aws_allocator *allocator, uint64_t se
     aws_mem_acquire_many(allocator, 2, &hash, sizeof(struct aws_xxhash), &impl, sizeof(struct aws_xxhash_impl));
     hash->allocator = allocator;
     hash->type = XXHASH64;
+
+    impl->state = state;
+    impl->update_fn = s_update_XXH64;
+    impl->finalize_fn = s_finalize_XXH64;
+    impl->state_free_fn = s_state_free_XXH64;
     hash->impl = impl;
-    hash->impl->state = state;
-    hash->impl->update_fn = s_update_XXH64;
-    hash->impl->finalize_fn = s_finalize_XXH64;
-    hash->impl->state_free_fn = s_state_free_XXH64;
 
     return hash;
 
@@ -306,12 +308,12 @@ struct aws_xxhash *aws_xxhash3_64_new(struct aws_allocator *allocator, uint64_t 
     XXH3_state_t *state = XXH3_createState();
 
     if (state == NULL) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         return NULL;
     }
 
     if (XXH3_64bits_reset_withSeed(state, seed) == XXH_ERROR) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         goto on_error;
     }
 
@@ -321,11 +323,12 @@ struct aws_xxhash *aws_xxhash3_64_new(struct aws_allocator *allocator, uint64_t 
     aws_mem_acquire_many(allocator, 2, &hash, sizeof(struct aws_xxhash), &impl, sizeof(struct aws_xxhash_impl));
     hash->allocator = allocator;
     hash->type = XXHASH3_64;
+
+    impl->state = state;
+    impl->update_fn = s_update_XXH3_64;
+    impl->finalize_fn = s_finalize_XXH3_64;
+    impl->state_free_fn = s_state_free_XXH3;
     hash->impl = impl;
-    hash->impl->state = state;
-    hash->impl->update_fn = s_update_XXH3_64;
-    hash->impl->finalize_fn = s_finalize_XXH3_64;
-    hash->impl->state_free_fn = s_state_free_XXH3;
 
     return hash;
 
@@ -338,12 +341,12 @@ struct aws_xxhash *aws_xxhash3_128_new(struct aws_allocator *allocator, uint64_t
     XXH3_state_t *state = XXH3_createState();
 
     if (state == NULL) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         return NULL;
     }
 
     if (XXH3_128bits_reset_withSeed(state, seed) == XXH_ERROR) {
-        aws_raise_error(AWS_ERROR_UNKNOWN);
+        aws_raise_error(AWS_ERROR_INVALID_STATE);
         goto on_error;
     }
 
@@ -353,11 +356,12 @@ struct aws_xxhash *aws_xxhash3_128_new(struct aws_allocator *allocator, uint64_t
     aws_mem_acquire_many(allocator, 2, &hash, sizeof(struct aws_xxhash), &impl, sizeof(struct aws_xxhash_impl));
     hash->allocator = allocator;
     hash->type = XXHASH3_128;
+
+    impl->state = state;
+    impl->update_fn = s_update_XXH3_128;
+    impl->finalize_fn = s_finalize_XXH3_128;
+    impl->state_free_fn = s_state_free_XXH3; /* Same free as 64bit variant */
     hash->impl = impl;
-    hash->impl->state = state;
-    hash->impl->update_fn = s_update_XXH3_128;
-    hash->impl->finalize_fn = s_finalize_XXH3_128;
-    hash->impl->state_free_fn = s_state_free_XXH3; /* Same free as 64bit variant */
 
     return hash;
 
