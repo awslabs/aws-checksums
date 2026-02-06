@@ -9,18 +9,37 @@
 
 #if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
-
+#
+#  if defined AWS_USE_CPU_EXTENSIONS
+#    define XXH_DISPATCH_SCALAR 1
+#  elif defined(__SSE2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) /* SSE2 on by default */ \
+     || defined(__x86_64__) || defined(_M_X64) /* x86_64 */ \
+     || defined(__ANDROID__) || defined(__APPLE__) /* Android or macOS */
+#     define XXH_DISPATCH_SCALAR 0 /* disable */
+#  endif
+#
 #    define XXH_DISPATCH_SSE2 1
-#    if defined(AWS_HAVE_AVX2_INTRINSICS)
+#    if defined(AWS_HAVE_AVX2_INTRINSICS) &&
+#       ((defined(__GNUC__) && (__GNUC__ > 4)) /* GCC 5.0+ */ \
+#           || (defined(_MSC_VER) && _MSC_VER >= 1900) /* VS 2015+ */ \
+#           || (defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 180030501)) /* VS 2013 Update 2 */ 
 #       define XXH_DISPATCH_AVX2 1
+#    else
+#       define XXH_DISPATCH_AVX2 0
 #    endif
-#    if defined(AWS_HAVE_AVX512_INTRINSICS)
+#
+#    if defined(AWS_HAVE_AVX512_INTRINSICS) && 
+#        (defined(__GNUC__) \
+#        && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9))) /* GCC 4.9+ */ \
+#        || (defined(_MSC_VER) && _MSC_VER >= 1910) /* VS 2017+ */ \
 #       define XXH_DISPATCH_AVX512 1
+#    else
+#      define XXH_DISPATCH_AVX512 0
 #    endif
 # 
 #    if defined(__GNUC__)
 #        include <emmintrin.h> /* SSE2 */
-#        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
+#        if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
 #            include <immintrin.h> /* AVX2, AVX512F */
 #        endif
 #        define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
@@ -28,7 +47,7 @@
 #        define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
 #    elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
 #        include <emmintrin.h>                    /* SSE2 */
-#        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
+#        if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
 #            include <avx2intrin.h>
 #            include <avx512fintrin.h>
 #            include <avxintrin.h>
@@ -50,6 +69,7 @@
 #include "external/xxhash.h"
 
 #if defined(AWS_ARCH_INTEL_X64)
+#if XXH_DISPATCH_SCALAR 
 XXH_NO_INLINE XXH64_hash_t
     XXH3_64_seed_scalar(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
     AWS_LOGF_DEBUG(0, "XXH3_64_seed_scalar");
@@ -67,6 +87,7 @@ XXH_NO_INLINE XXH_errorcode
     XXH3_update_scalar(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
     return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar);
 }
+#endif
 
 #    if defined(AWS_USE_CPU_EXTENSIONS)
 
@@ -87,7 +108,7 @@ XXH_NO_INLINE XXH_TARGET_SSE2 XXH_errorcode
     return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_sse2, XXH3_scrambleAcc_sse2);
 }
 
-#        ifdef AWS_HAVE_AVX2_INTRINSICS
+#        if XXH_DISPATCH_AVX2
 XXH_NO_INLINE XXH_TARGET_AVX2 XXH64_hash_t
     XXH3_64_seed_avx2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
     return XXH3_hashLong_64b_withSeed_internal(
@@ -106,7 +127,7 @@ XXH_NO_INLINE XXH_TARGET_AVX2 XXH_errorcode
 }
 #        endif
 
-#        ifdef AWS_HAVE_AVX512_INTRINSICS
+#        ifdef XXH_DISPATCH_AVX512
 XXH_NO_INLINE XXH_TARGET_AVX512 XXH64_hash_t
     XXH3_64_seed_avx512(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
     return XXH3_hashLong_64b_withSeed_internal(
@@ -140,14 +161,17 @@ void aws_checksums_xxhash_init(void) {
 #if defined(AWS_ARCH_INTEL_X64)
 #    if defined(AWS_USE_CPU_EXTENSIONS)
 
-    (void)XXH3_64_seed_scalar;
-    (void)XXH3_128_seed_scalar;
-    (void)XXH3_update_scalar;
+#if XXH_DISPATCH_SCALAR
+    s_x86_XXH3_64_seed_compute = XXH3_64_seed_scalar;
+    s_x86_XXH3_128_seed_compute = XXH3_128_seed_scalar;
+    s_x86_XXH3_update = XXH3_update_scalar;
+#else
     s_x86_XXH3_64_seed_compute = XXH3_64_seed_sse2;
     s_x86_XXH3_128_seed_compute = XXH3_128_seed_sse2;
     s_x86_XXH3_update = XXH3_update_sse2;
+#endif
 
-#        if defined(AWS_HAVE_AVX2_INTRINSICS)
+#        if XXH_DISPATCH_AVX2
     if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
         s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx2;
         s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx2;
@@ -155,7 +179,7 @@ void aws_checksums_xxhash_init(void) {
     }
 #        endif
 
-#        if defined(AWS_HAVE_AVX512_INTRINSICS)
+#        if XXH_DISPATCH_512
     if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512)) {
         s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx512;
         s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx512;
