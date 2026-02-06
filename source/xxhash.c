@@ -113,7 +113,7 @@ XXH_NO_INLINE XXH_TARGET_AVX512 XXH64_hash_t
 XXH_NO_INLINE XXH_TARGET_AVX512 XXH128_hash_t
     XXH3_128_seed_512(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
     return XXH3_hashLong_128b_withSeed_internal(
-        input, len, seed, XXH3_accumulate_avx512, XXH3_scrambleAcc_avx512, XXH3_initCustomSecret_sse512);
+        input, len, seed, XXH3_accumulate_avx512, XXH3_scrambleAcc_avx512, XXH3_initCustomSecret_avx512);
 }
 
 XXH_NO_INLINE XXH_TARGET_AVX512 XXH_errorcode
