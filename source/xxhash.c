@@ -178,7 +178,7 @@ void aws_checksums_xxhash_init(void) {
     }
 #        endif
 
-#        if XXH_DISPATCH_512
+#        if XXH_DISPATCH_AVX512
     if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512)) {
         s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx512;
         s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx512;
