@@ -137,6 +137,9 @@ void aws_checksums_xxhash_init(void) {
 #if defined(AWS_ARCH_INTEL_X64)
 #    if defined(AWS_USE_CPU_EXTENSIONS)
 
+    (void)XXH3_64_seed_scalar;
+    (void)XXH3_128_seed_scalar;
+    (void)XXH3_update_scalar;
     s_x86_XXH3_64_seed_compute = XXH3_64_seed_sse2;
     s_x86_XXH3_128_seed_compute = XXH3_128_seed_sse2;
     s_x86_XXH3_update = XXH3_update_sse2;
