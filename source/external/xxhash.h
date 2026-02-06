@@ -241,6 +241,12 @@
  * xxHash prototypes and implementation
  */
 
+ /*************************
+  * Note: this version has been modified to pass custom allocator for all mem allocations.
+  * Remainder of the code is unchanged.
+  * Affected section will have a similar disclaimer.
+  */
+
 #if defined(__cplusplus) && !defined(XXH_NO_EXTERNC_GUARD)
 extern "C" {
 #endif
@@ -2388,12 +2394,31 @@ static void XXH_free(void *p) {
  */
 #        include <stdlib.h>
 
+
+ /*************************
+  * Note: this version has been modified to pass custom allocator for all mem allocations.
+  * Remainder of the code is unchanged.
+  * Affected section will have a similar disclaimer.
+  */
+
+#include <aws/common/allocator.h>
+
+static struct aws_allocator *s_xxh_allocator = NULL;
+
+XXH_PUBLIC_API void XXH_set_allocator(struct aws_allocator *allocator) {
+    s_xxh_allocator = allocator;
+}
+
 /*!
  * @internal
  * @brief Modify this function to use a different routine than malloc().
  */
 static XXH_MALLOCF void *XXH_malloc(size_t s) {
-    return malloc(s);
+    if (AWS_UNLIKELY(s_xxh_allocator)) {
+        return malloc(s);
+    } else {
+        return aws_mem_calloc(s_xxh_allocator, 1, s);
+    }   
 }
 
 /*!
@@ -2401,7 +2426,11 @@ static XXH_MALLOCF void *XXH_malloc(size_t s) {
  * @brief Modify this function to use a different routine than free().
  */
 static void XXH_free(void *p) {
-    free(p);
+    if (AWS_UNLIKELY(s_xxh_allocator)) {
+        free(p);
+    } else {
+        aws_mem_release(s_xxh_allocator, p);
+    }   
 }
 
 #    endif /* XXH_NO_STDLIB */

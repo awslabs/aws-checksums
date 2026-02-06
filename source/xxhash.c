@@ -4,75 +4,76 @@
  */
 
 #include <aws/checksums/xxhash.h>
-#include <aws/common/logging.h>
 #include <aws/common/cpuid.h>
 
+/*
+* Below dispatch is heavily influenced by x86 dispatch sample in the reference impl.
+* Do not change names of any defined macros as they impact what gets compiled in the impl.
+*/
 #if defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
 
-#if defined(AWS_USE_CPU_EXTENSIONS)
-#     define XXH_DISPATCH_SCALAR 0 /* disable */
- 
- /* Note: not all compiler support function instrinsic annotations well, so fallback to scalar in that case. */
-#    if defined(AWS_HAVE_AVX2_INTRINSICS) && \
-       ((defined(__GNUC__) && (__GNUC__ > 4)) /* GCC 5.0+ */ \
-           || (defined(_MSC_VER) && _MSC_VER >= 1900) /* VS 2015+ */ \
-           || (defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 180030501)) /* VS 2013 Update 2 */ 
-#       define XXH_DISPATCH_AVX2 1
-#    else
-#       define XXH_DISPATCH_AVX2 0
-#    endif
+#    if defined(AWS_USE_CPU_EXTENSIONS)
+#        define XXH_DISPATCH_SCALAR 0 /* disable */
 
-#    if defined(AWS_HAVE_AVX512_INTRINSICS) && \
-        (defined(__GNUC__) \
-        && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)) /* GCC 4.9+ */ \
-        || (defined(_MSC_VER) && _MSC_VER >= 1910)) /* VS 2017+ */
-#       define XXH_DISPATCH_AVX512 1
+/* Note: on old compilers support for function level intrinsics is spotty, so use scalar impl on those. */
+#        if defined(AWS_HAVE_AVX2_INTRINSICS) &&                                                                       \
+            ((defined(__GNUC__) && (__GNUC__ > 4))                      /* GCC 5.0+ */                                 \
+             || (defined(_MSC_VER) && _MSC_VER >= 1900)                 /* VS 2015+ */                                 \
+             || (defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 180030501)) /* VS 2013 Update 2 */
+#            define XXH_DISPATCH_AVX2 1
+#        else
+#            define XXH_DISPATCH_AVX2 0
+#        endif
+
+#        if defined(AWS_HAVE_AVX512_INTRINSICS) &&                                                                     \
+            (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)) /* GCC 4.9+ */              \
+             || (defined(_MSC_VER) && _MSC_VER >= 1910))                                   /* VS 2017+ */
+#            define XXH_DISPATCH_AVX512 1
+#        else
+#            define XXH_DISPATCH_AVX512 0
+#        endif
+
+#        if defined(__GNUC__)
+#            include <emmintrin.h> /* SSE2 */
+#            if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
+#                include <immintrin.h> /* AVX2, AVX512F */
+#            endif
+#            define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#            define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#            define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#        elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
+#            include <emmintrin.h>                    /* SSE2 */
+#            if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
+#                include <avx2intrin.h>
+#                include <avx512fintrin.h>
+#                include <avxintrin.h>
+#                include <immintrin.h> /* AVX2, AVX512F */
+#                include <smmintrin.h>
+#            endif
+#            define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#            define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#            define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#        elif defined(_MSC_VER)
+#            include <intrin.h>
+#            define XXH_TARGET_SSE2
+#            define XXH_TARGET_AVX2
+#            define XXH_TARGET_AVX512
+#        endif
 #    else
-#      define XXH_DISPATCH_AVX512 0
+#        define XXH_DISPATCH_SCALAR 1
+#        define XXH_DISPATCH_AVX2 0
+#        define XXH_DISPATCH_AVX512 0
 #    endif
- 
-#    if defined(__GNUC__)
-#        include <emmintrin.h> /* SSE2 */
-#        if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
-#            include <immintrin.h> /* AVX2, AVX512F */
-#        endif
-#        define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
-#        define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
-#        define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
-#    elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
-#        include <emmintrin.h>                    /* SSE2 */
-#        if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
-#            include <avx2intrin.h>
-#            include <avx512fintrin.h>
-#            include <avxintrin.h>
-#            include <immintrin.h> /* AVX2, AVX512F */
-#            include <smmintrin.h>
-#        endif
-#        define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
-#        define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
-#        define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
-#    elif defined(_MSC_VER)
-#        include <intrin.h>
-#        define XXH_TARGET_SSE2
-#        define XXH_TARGET_AVX2
-#        define XXH_TARGET_AVX512
-#    endif
-# else
-#   define XXH_DISPATCH_SCALAR 1
-#   define XXH_DISPATCH_AVX2 0
-#   define XXH_DISPATCH_AVX512 0
-#endif  
 #endif
 
 #define XXH_INLINE_ALL
 #include "external/xxhash.h"
 
 #if defined(AWS_ARCH_INTEL_X64)
-#if XXH_DISPATCH_SCALAR 
+#    if XXH_DISPATCH_SCALAR
 XXH_NO_INLINE XXH64_hash_t
     XXH3_64_seed_scalar(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
-    AWS_LOGF_DEBUG(0, "XXH3_64_seed_scalar");
     return XXH3_hashLong_64b_withSeed_internal(
         input, len, seed, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar, XXH3_initCustomSecret_scalar);
 }
@@ -87,7 +88,7 @@ XXH_NO_INLINE XXH_errorcode
     XXH3_update_scalar(XXH_NOESCAPE XXH3_state_t *state, XXH_NOESCAPE const void *input, size_t len) {
     return XXH3_update(state, (const xxh_u8 *)input, len, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar);
 }
-#endif
+#    endif
 
 #    if !XXH_DISPATCH_SCALAR
 
@@ -157,35 +158,38 @@ static dispatch_x86_XXH3_update_fn s_x86_XXH3_update = NULL;
 
 #endif
 
-void aws_checksums_xxhash_init(void) {
+void aws_checksums_xxhash_init(struct aws_allocator *allocator) {
+
+    XXH_set_allocator(allocator);
+
 #if defined(AWS_ARCH_INTEL_X64)
 
-#if XXH_DISPATCH_SCALAR
+#    if XXH_DISPATCH_SCALAR
     s_x86_XXH3_64_seed_compute = XXH3_64_seed_scalar;
     s_x86_XXH3_128_seed_compute = XXH3_128_seed_scalar;
     s_x86_XXH3_update = XXH3_update_scalar;
-#else
+#    else
     s_x86_XXH3_64_seed_compute = XXH3_64_seed_sse2;
     s_x86_XXH3_128_seed_compute = XXH3_128_seed_sse2;
     s_x86_XXH3_update = XXH3_update_sse2;
-#endif
+#    endif
 
-#        if XXH_DISPATCH_AVX2
+#    if XXH_DISPATCH_AVX2
     if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX2)) {
         s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx2;
         s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx2;
         s_x86_XXH3_update = XXH3_update_avx2;
     }
-#        endif
+#    endif
 
-#        if XXH_DISPATCH_AVX512
+#    if XXH_DISPATCH_AVX512
     if (aws_cpu_has_feature(AWS_CPU_FEATURE_AVX512)) {
         s_x86_XXH3_64_seed_compute = XXH3_64_seed_avx512;
         s_x86_XXH3_128_seed_compute = XXH3_128_seed_avx512;
         s_x86_XXH3_update = XXH3_update_avx512;
     }
-#        endif
 #    endif
+#endif
 }
 
 typedef int (*xxhash_update_fn)(void *state, struct aws_byte_cursor data);
@@ -393,11 +397,14 @@ int aws_xxhash64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_
 }
 
 #if defined(AWS_ARCH_INTEL_X64)
-static XXH64_hash_t
-s_x86_XXH3_64_seed_selection(const void* XXH_RESTRICT input, size_t len,
-                                     XXH64_hash_t seed64, const xxh_u8* XXH_RESTRICT secret, size_t secretLen)
-{
-    (void)secret; 
+/* Note: wrapper to tweak interface that internal call expects. */
+static XXH64_hash_t s_x86_XXH3_64_seed_wrapper(
+    const void *XXH_RESTRICT input,
+    size_t len,
+    XXH64_hash_t seed64,
+    const xxh_u8 *XXH_RESTRICT secret,
+    size_t secretLen) {
+    (void)secret;
     (void)secretLen;
     AWS_FATAL_ASSERT(s_x86_XXH3_64_seed_compute);
     return s_x86_XXH3_64_seed_compute(input, len, seed64);
@@ -406,7 +413,8 @@ s_x86_XXH3_64_seed_selection(const void* XXH_RESTRICT input, size_t len,
 
 int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
 #if defined(AWS_ARCH_INTEL_X64)
-    XXH64_hash_t hash = XXH3_64bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_selection);
+    XXH64_hash_t hash = XXH3_64bits_internal(
+        data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_wrapper);
 #else
     XXH64_hash_t hash = XXH3_64bits_withSeed(data.ptr, data.len, seed);
 #endif
@@ -418,10 +426,14 @@ int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aw
 }
 
 #if defined(AWS_ARCH_INTEL_X64)
-static XXH128_hash_t s_x86_XXH3_128_seed_selection(const void* input, size_t len,
-                                      XXH64_hash_t seed64, const void* secret, size_t secretLen)
-{
-    (void)secret; 
+/* Note: wrapper to tweak interface that internal call expects. */
+static XXH128_hash_t s_x86_XXH3_128_seed_wrapper(
+    const void *input,
+    size_t len,
+    XXH64_hash_t seed64,
+    const void *secret,
+    size_t secretLen) {
+    (void)secret;
     (void)secretLen;
     AWS_FATAL_ASSERT(s_x86_XXH3_128_seed_compute);
     return s_x86_XXH3_128_seed_compute(input, len, seed64);
@@ -430,7 +442,8 @@ static XXH128_hash_t s_x86_XXH3_128_seed_selection(const void* input, size_t len
 
 int aws_xxhash3_128_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
 #if defined(AWS_ARCH_INTEL_X64)
-    XXH128_hash_t hash = XXH3_128bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_128_seed_selection);
+    XXH128_hash_t hash = XXH3_128bits_internal(
+        data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_128_seed_wrapper);
 #else
     XXH128_hash_t hash = XXH3_128bits_withSeed(data.ptr, data.len, seed);
 #endif

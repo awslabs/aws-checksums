@@ -11,7 +11,7 @@
 
 AWS_EXTERN_C_BEGIN
 
-void aws_checksums_xxhash_init(void);
+void aws_checksums_xxhash_init(struct aws_allocator *allocator);
 
 AWS_EXTERN_C_END
 
