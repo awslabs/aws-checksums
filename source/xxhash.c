@@ -376,7 +376,7 @@ int aws_xxhash64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_
 }
 
 #if defined(AWS_ARCH_INTEL_X64)
-static XXH128_hash_t s_x86_XXH3_64_seed_selection(const void* input, size_t len,
+static XXH64_hash_t s_x86_XXH3_64_seed_selection(const void* input, size_t len,
                                       XXH64_hash_t seed64, const void* secret, size_t secretLen)
 {
     (void)secret; 
