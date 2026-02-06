@@ -375,10 +375,20 @@ int aws_xxhash64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_
     return AWS_OP_SUCCESS;
 }
 
+#if defined(AWS_ARCH_INTEL_X64)
+static XXH128_hash_t s_x86_XXH3_64_seed_selection(const void* input, size_t len,
+                                      XXH64_hash_t seed64, const void* secret, size_t secretLen)
+{
+    (void)secret; 
+    (void)secretLen;
+    AWS_FATAL_ASSERT(s_x86_XXH3_64_seed_compute);
+    return s_x86_XXH3_64_seed_compute(input, len, seed64);
+}
+#endif
+
 int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
 #if defined(AWS_ARCH_INTEL_X64)
-    AWS_FATAL_ASSERT(s_x86_XXH3_64_seed_compute);
-    XXH64_hash_t hash = XXH3_64bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_compute);
+    XXH64_hash_t hash = XXH3_64bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_selection);
 #else
     XXH64_hash_t hash = XXH3_64bits_withSeed(data.ptr, data.len, seed);
 #endif
@@ -389,10 +399,20 @@ int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aw
     return AWS_OP_SUCCESS;
 }
 
+#if defined(AWS_ARCH_INTEL_X64)
+static XXH128_hash_t s_x86_XXH3_128_seed_selection(const void* input, size_t len,
+                                      XXH64_hash_t seed64, const void* secret, size_t secretLen)
+{
+    (void)secret; 
+    (void)secretLen;
+    AWS_FATAL_ASSERT(s_x86_XXH3_128_seed_compute);
+    return s_x86_XXH3_128_seed_compute(input, len, seed64);
+}
+#endif
+
 int aws_xxhash3_128_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
 #if defined(AWS_ARCH_INTEL_X64)
-    AWS_FATAL_ASSERT(s_x86_XXH3_128_seed_compute);
-    XXH128_hash_t hash = XXH3_128bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_128_seed_compute);
+    XXH128_hash_t hash = XXH3_128bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_128_seed_selection);
 #else
     XXH128_hash_t hash = XXH3_128bits_withSeed(data.ptr, data.len, seed);
 #endif
