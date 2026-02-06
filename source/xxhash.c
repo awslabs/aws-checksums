@@ -7,9 +7,9 @@
 #include <aws/common/cpuid.h>
 
 /*
-* Below dispatch is heavily influenced by x86 dispatch sample in the reference impl.
-* Do not change names of any defined macros as they impact what gets compiled in the impl.
-*/
+ * Below dispatch is heavily influenced by x86 dispatch sample in the reference impl.
+ * Do not change names of any defined macros as they impact what gets compiled in the impl.
+ */
 #if defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
 
@@ -413,8 +413,8 @@ static XXH64_hash_t s_x86_XXH3_64_seed_wrapper(
 
 int aws_xxhash3_64_compute(uint64_t seed, struct aws_byte_cursor data, struct aws_byte_buf *out) {
 #if defined(AWS_ARCH_INTEL_X64)
-    XXH64_hash_t hash = XXH3_64bits_internal(
-        data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_wrapper);
+    XXH64_hash_t hash =
+        XXH3_64bits_internal(data.ptr, data.len, seed, XXH3_kSecret, sizeof(XXH3_kSecret), s_x86_XXH3_64_seed_wrapper);
 #else
     XXH64_hash_t hash = XXH3_64bits_withSeed(data.ptr, data.len, seed);
 #endif
