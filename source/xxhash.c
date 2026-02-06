@@ -17,27 +17,27 @@
      || defined(__ANDROID__) || defined(__APPLE__) /* Android or macOS */
 #     define XXH_DISPATCH_SCALAR 0 /* disable */
 #  endif
-#
+
 #    define XXH_DISPATCH_SSE2 1
-# /* Note: not all compiler support function instrinsic annotations well, so fallback to scalar in that case. */
+ /* Note: not all compiler support function instrinsic annotations well, so fallback to scalar in that case. */
 #    if defined(AWS_HAVE_AVX2_INTRINSICS) && \
-#       ((defined(__GNUC__) && (__GNUC__ > 4)) /* GCC 5.0+ */ \
-#           || (defined(_MSC_VER) && _MSC_VER >= 1900) /* VS 2015+ */ \
-#           || (defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 180030501)) /* VS 2013 Update 2 */ 
+       ((defined(__GNUC__) && (__GNUC__ > 4)) /* GCC 5.0+ */ \
+           || (defined(_MSC_VER) && _MSC_VER >= 1900) /* VS 2015+ */ \
+           || (defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 180030501)) /* VS 2013 Update 2 */ 
 #       define XXH_DISPATCH_AVX2 1
 #    else
 #       define XXH_DISPATCH_AVX2 0
 #    endif
-#
+
 #    if defined(AWS_HAVE_AVX512_INTRINSICS) && \
-#        (defined(__GNUC__) \
-#        && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)) /* GCC 4.9+ */ \
-#        || (defined(_MSC_VER) && _MSC_VER >= 1910)) /* VS 2017+ */
+        (defined(__GNUC__) \
+        && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)) /* GCC 4.9+ */ \
+        || (defined(_MSC_VER) && _MSC_VER >= 1910)) /* VS 2017+ */
 #       define XXH_DISPATCH_AVX512 1
 #    else
 #      define XXH_DISPATCH_AVX512 0
 #    endif
-# 
+ 
 #    if defined(__GNUC__)
 #        include <emmintrin.h> /* SSE2 */
 #        if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
