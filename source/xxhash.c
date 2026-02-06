@@ -50,6 +50,7 @@
 #if defined(AWS_ARCH_INTEL_X64)
 XXH_NO_INLINE XXH64_hash_t
     XXH3_64_seed_scalar(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
+    AWS_LOGF_DEBUG(0, "XXH3_64_seed_scalar");
     return XXH3_hashLong_64b_withSeed_internal(
         input, len, seed, XXH3_accumulate_scalar, XXH3_scrambleAcc_scalar, XXH3_initCustomSecret_scalar);
 }
