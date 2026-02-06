@@ -21,9 +21,9 @@
 #        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
 #            include <immintrin.h> /* AVX2, AVX512F */
 #        endif
-#        define AWS_XXHASH_TARGET_SSE2 __attribute__((__target__("sse2")))
-#        define AWS_XXHASH_TARGET_AVX2 __attribute__((__target__("avx2")))
-#        define AWS_XXHASH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#        define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#        define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#        define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
 #    elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
 #        include <emmintrin.h>                    /* SSE2 */
 #        if defined(AWS_HAVE_AVX2_INTRINSICS) || defined(AWS_HAVE_AVX512_INTRINSICS)
@@ -33,14 +33,14 @@
 #            include <immintrin.h> /* AVX2, AVX512F */
 #            include <smmintrin.h>
 #        endif
-#        define AWS_XXHASH_TARGET_SSE2 __attribute__((__target__("sse2")))
-#        define AWS_XXHASH_TARGET_AVX2 __attribute__((__target__("avx2")))
-#        define AWS_XXHASH_TARGET_AVX512 __attribute__((__target__("avx512f")))
+#        define XXH_TARGET_SSE2 __attribute__((__target__("sse2")))
+#        define XXH_TARGET_AVX2 __attribute__((__target__("avx2")))
+#        define XXH_TARGET_AVX512 __attribute__((__target__("avx512f")))
 #    elif defined(_MSC_VER)
 #        include <intrin.h>
-#        define AWS_XXHASH_TARGET_SSE2
-#        define AWS_XXHASH_TARGET_AVX2
-#        define AWS_XXHASH_TARGET_AVX512
+#        define XXH_TARGET_SSE2
+#        define XXH_TARGET_AVX2
+#        define XXH_TARGET_AVX512
 #    endif
 #endif
 
