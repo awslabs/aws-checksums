@@ -128,7 +128,7 @@ XXH_NO_INLINE XXH_TARGET_AVX2 XXH_errorcode
 }
 #        endif
 
-#        ifdef XXH_DISPATCH_AVX512
+#        if XXH_DISPATCH_AVX512
 XXH_NO_INLINE XXH_TARGET_AVX512 XXH64_hash_t
     XXH3_64_seed_avx512(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
     return XXH3_hashLong_64b_withSeed_internal(
