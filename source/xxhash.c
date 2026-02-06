@@ -7,18 +7,12 @@
 #include <aws/common/logging.h>
 #include <aws/common/cpuid.h>
 
-#if defined(AWS_USE_CPU_EXTENSIONS) && defined(AWS_ARCH_INTEL_X64)
+#if defined(AWS_ARCH_INTEL_X64)
 #    define XXH_X86DISPATCH
-#
-#  if defined AWS_USE_CPU_EXTENSIONS
-#    define XXH_DISPATCH_SCALAR 1
-#  elif defined(__SSE2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) /* SSE2 on by default */ \
-     || defined(__x86_64__) || defined(_M_X64) /* x86_64 */ \
-     || defined(__ANDROID__) || defined(__APPLE__) /* Android or macOS */
-#     define XXH_DISPATCH_SCALAR 0 /* disable */
-#  endif
 
-#    define XXH_DISPATCH_SSE2 1
+#if defined(AWS_USE_CPU_EXTENSIONS)
+ #     define XXH_DISPATCH_SCALAR 0 /* disable */
+ 
  /* Note: not all compiler support function instrinsic annotations well, so fallback to scalar in that case. */
 #    if defined(AWS_HAVE_AVX2_INTRINSICS) && \
        ((defined(__GNUC__) && (__GNUC__ > 4)) /* GCC 5.0+ */ \
@@ -64,6 +58,11 @@
 #        define XXH_TARGET_AVX2
 #        define XXH_TARGET_AVX512
 #    endif
+# else
+#   define XXH_DISPATCH_SCALAR 1
+#   define XXH_DISPATCH_AVX2 0
+#   define XXH_DISPATCH_AVX512 0
+#endif  
 #endif
 
 #define XXH_INLINE_ALL
@@ -90,7 +89,7 @@ XXH_NO_INLINE XXH_errorcode
 }
 #endif
 
-#    if defined(AWS_USE_CPU_EXTENSIONS)
+#    if not XXH_DISPATCH_SCALAR
 
 XXH_NO_INLINE XXH_TARGET_SSE2 XXH64_hash_t
     XXH3_64_seed_sse2(XXH_NOESCAPE const void *XXH_RESTRICT input, size_t len, XXH64_hash_t seed) {
@@ -160,7 +159,6 @@ static dispatch_x86_XXH3_update_fn s_x86_XXH3_update = NULL;
 
 void aws_checksums_xxhash_init(void) {
 #if defined(AWS_ARCH_INTEL_X64)
-#    if defined(AWS_USE_CPU_EXTENSIONS)
 
 #if XXH_DISPATCH_SCALAR
     s_x86_XXH3_64_seed_compute = XXH3_64_seed_scalar;
@@ -187,13 +185,7 @@ void aws_checksums_xxhash_init(void) {
         s_x86_XXH3_update = XXH3_update_avx512;
     }
 #        endif
-#    else
-    s_x86_XXH3_64_seed_compute = XXH3_64_seed_scalar;
-    s_x86_XXH3_128_seed_compute = XXH3_128_seed_scalar;
-    s_x86_XXH3_update = XXH3_update_scalar;
 #    endif
-
-#endif
 }
 
 typedef int (*xxhash_update_fn)(void *state, struct aws_byte_cursor data);
