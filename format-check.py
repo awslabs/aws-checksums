@@ -10,7 +10,7 @@ CLANG_FORMAT_VERSION = '18.1.6'
 
 INCLUDE_REGEX = re.compile(
     r'^(include|source|tests|verification)/.*\.(c|h|inl)$')
-EXCLUDE_REGEX = re.compile(r'^$')
+EXCLUDE_REGEX = re.compile(r'^source/external/.*\.(c|h|inl)$')
 
 arg_parser = argparse.ArgumentParser(description="Check with clang-format")
 arg_parser.add_argument('-i', '--inplace-edit', action='store_true',
