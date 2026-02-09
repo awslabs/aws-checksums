@@ -2401,6 +2401,8 @@ static void XXH_free(void *p) {
   * Affected section will have a similar disclaimer.
   */
 
+
+/************** CRT modifications start */
 #include <aws/common/allocator.h>
 
 static struct aws_allocator *s_xxh_allocator = NULL;
@@ -2432,6 +2434,8 @@ static void XXH_free(void *p) {
         aws_mem_release(s_xxh_allocator, p);
     }   
 }
+
+/************** CRT modifications end */
 
 #    endif /* XXH_NO_STDLIB */
 
