@@ -51,6 +51,13 @@ file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_EXTERNAL_SRC}
 )
 
+if (AWS_ARCH_ARM32)
+    set_source_files_properties(
+        source/xxhash.c
+        PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas"
+    )
+endif()
+
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
 
 aws_set_common_properties(${PROJECT_NAME})

@@ -69,15 +69,7 @@
 #endif
 
 #define XXH_INLINE_ALL
-
-#if defined(AWS_ARCH_ARM32) && defined(__GNUC__) && __GNUC__ < 8
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#    include "external/xxhash.h"
-#    pragma GCC diagnostic pop
-#else
-#    include "external/xxhash.h"
-#endif
+#include "external/xxhash.h"
 
 #if defined(AWS_ARCH_INTEL_X64)
 #    if XXH_DISPATCH_SCALAR
