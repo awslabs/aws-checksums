@@ -115,9 +115,12 @@ if (USE_CPU_EXTENSIONS)
 endif()
 
 if (AWS_ARCH_ARM32)
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wno-unknown-pragmas
+    # XXHash impl uses some unrolling pragmas that were not supported until gcc 8.0+ on arm
+    # disable warning for that. it will be slower but will continue working. 
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "8.0")
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-pragmas
     )
+    endif ()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
