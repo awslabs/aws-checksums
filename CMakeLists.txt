@@ -31,10 +31,6 @@ file(GLOB AWS_CHECKSUMS_SRC
     "source/*.c"
 )
 
-file (GLOB AWS_CHECKSUMS_EXTERNAL_SRC
-    "source/external/xxhash.c"
-)
-
 if(MSVC)
      source_group("Header Files\\aws\\checksums" FILES ${AWS_CHECKSUMS_HEADERS})
      source_group("Source Files" FILES ${AWS_CHECKSUMS_SRC})
@@ -48,7 +44,6 @@ file(GLOB CHECKSUMS_COMBINED_HEADERS
 file(GLOB CHECKSUMS_COMBINED_SRC
     ${AWS_CHECKSUMS_SRC}
     ${AWS_CHECKSUMS_PLATFORM_SOURCE}
-    ${AWS_CHECKSUMS_EXTERNAL_SRC}
 )
 
 add_library(${PROJECT_NAME} ${CHECKSUMS_COMBINED_HEADERS} ${CHECKSUMS_COMBINED_SRC})
@@ -117,6 +112,15 @@ if (USE_CPU_EXTENSIONS)
             source_group("Source Files\\arm" FILES ${AWS_ARCH_SRC})
         endif()
     endif()
+endif()
+
+if (AWS_ARCH_ARM32)
+    # XXHash impl uses some unrolling pragmas that were not supported until gcc 8.0+ on arm
+    # disable warning for that. it will be slower but will continue working. 
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "8.0")
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-pragmas
+    )
+    endif ()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
