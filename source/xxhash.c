@@ -46,9 +46,6 @@
 #        elif defined(__clang__) && defined(_MSC_VER) /* clang-cl.exe */
 #            include <emmintrin.h>                    /* SSE2 */
 #            if XXH_DISPATCH_AVX2 || XXH_DISPATCH_AVX512
-#                include <avx2intrin.h>
-#                include <avx512fintrin.h>
-#                include <avxintrin.h>
 #                include <immintrin.h> /* AVX2, AVX512F */
 #                include <smmintrin.h>
 #            endif
