@@ -1,5 +1,5 @@
-#ifndef AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H
-#define AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H
+#ifndef AWS_CHECKSUMS_PRIVATE_CRC32_PRIV_H
+#define AWS_CHECKSUMS_PRIVATE_CRC32_PRIV_H
 /**
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
@@ -59,4 +59,4 @@ extern aws_checksums_crc32_constants_t aws_checksums_crc32c_constants;
 
 AWS_EXTERN_C_END
 
-#endif /* AWS_CHECKSUMS_PRIVATE_CRC_PRIV_H */
+#endif /* AWS_CHECKSUMS_PRIVATE_CRC32_PRIV_H */

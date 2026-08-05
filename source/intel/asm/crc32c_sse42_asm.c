@@ -101,12 +101,12 @@ static inline uint32_t s_crc32c_sse42_clmul_256(const uint8_t *input, uint32_t c
         "crc32q  248(%[in]), %%r10    # crc2 \n"
 
         "crc32q   80(%[in]), %%rcx    # crc0 \n"
-        "crc32q  168(%[in]), %%r11    # crc2 \n"
+        "crc32q  168(%[in]), %%r11    # crc1 \n"
 
         FOLD_K1K2($0x1b3d8f29, $0x39d3b296) /* Magic Constants used to fold crc stripes into ecx */
 
         /* output registers
-         [crc] is an input and and output so it is marked read/write (i.e. "+c")*/
+         [crc] is an input and output so it is marked read/write (i.e. "+c")*/
         : [ crc ] "+c"(crc)
         /* input registers */
         : [ in ] "d"(input)
@@ -187,7 +187,7 @@ static inline uint32_t s_crc32c_sse42_clmul_1024(const uint8_t *input, uint32_t 
         FOLD_K1K2($0xe417f38a, $0x8f158014) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
-                            [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                            [crc] is an input and output so it is marked read/write (i.e. "+c")
                             we clobber the register for [input] (via add instruction) so we must also
                             tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber */
         : [ crc ] "+c"(crc), [ in ] "+d"(input)
@@ -260,7 +260,7 @@ static inline uint32_t s_crc32c_sse42_clmul_3072(const uint8_t *input, uint32_t 
             $0x170076fa) /* Magic Constants used to fold crc stripes into ecx
 
                             output registers
-                            [crc] is an input and and output so it is marked read/write (i.e. "+c")
+                            [crc] is an input and output so it is marked read/write (i.e. "+c")
                             we clobber the register for [input] (via add instruction) so we must also
                             tag it read/write (i.e. "+d") in the list of outputs to tell gcc about the clobber*/
         : [ crc ] "+c"(crc), [ in ] "+d"(input)
