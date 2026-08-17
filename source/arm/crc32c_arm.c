@@ -4,9 +4,9 @@
  */
 
 /* No instrics defined for 32-bit MSVC */
-#if (defined(_M_ARM64) || defined(__aarch64__) || defined(__arm__))
+#if (defined(_M_ARM64) || defined(__aarch64__) || defined(__arm__) || defined(_M_ARM64EC) || defined(_ARM64EC_))
 #    include <aws/checksums/private/crc32_priv.h>
-#    ifdef _M_ARM64
+#    if (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_ARM64EC_))
 #        include <arm64_neon.h>
 #        define PREFETCH(p) __prefetch(p)
 #    else
