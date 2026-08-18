@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-/* No instrics defined for 32-bit MSVC */
+/* No intrinsics defined for 32-bit MSVC */
 #if (defined(_M_ARM64) || defined(__aarch64__) || defined(__arm__))
 #    include <aws/checksums/private/crc32_priv.h>
 #    ifdef _M_ARM64
