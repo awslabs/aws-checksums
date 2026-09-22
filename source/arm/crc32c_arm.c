@@ -6,7 +6,9 @@
 /* No intrinsics defined for 32-bit MSVC */
 #if (defined(_M_ARM64) || defined(__aarch64__) || defined(__arm__))
 #    include <aws/checksums/private/crc32_priv.h>
-#    ifdef _M_ARM64
+/* clang-cl defines _M_ARM64 but provides the ARM intrinsics through clang's
+ * <arm_acle.h>, not MSVC's <arm64_neon.h>, and has no __prefetch. */
+#    if defined(_M_ARM64) && !defined(__clang__)
 #        include <arm64_neon.h>
 #        define PREFETCH(p) __prefetch(p)
 #    else
