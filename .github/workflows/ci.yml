@@ -186,6 +186,21 @@ jobs:
         python -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
         python builder.pyz build -p ${{ env.PACKAGE_NAME }} --cmake-extra=-DUSE_CPU_EXTENSIONS=OFF
 
+  windows-arm64:
+    # Windows on ARM must be built with clang-cl, which reports as MSVC to CMake but
+    # takes clang's code paths. Without this job nothing exercises that combination,
+    # and the ARM checksum sources only fail to compile downstream.
+    runs-on: windows-11-arm
+    steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ env.CRT_CI_ROLE }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+    - name: Build ${{ env.PACKAGE_NAME }} + consumers
+      run: |
+        python -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
+        python builder.pyz build -p ${{ env.PACKAGE_NAME }} --cmake-extra=-AARM64 --cmake-extra=-TClangCL
+
   windows-app-verifier:
     runs-on: windows-2025 # latest
     steps:
