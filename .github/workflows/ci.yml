@@ -234,12 +234,12 @@ jobs:
         ./builder build -p ${{ env.PACKAGE_NAME }}
 
   osx-m1:
-  
+
     runs-on: ${{ matrix.runner }} # arm build
     strategy:
       fail-fast: false
       matrix:
-        runner: [macos-15-xlarge, macos-latest-xlarge]
+        runner: [macos-15-xlarge, macos-26-xlarge]
         arch: [ macos-armv8 ]
     steps:
     - uses: aws-actions/configure-aws-credentials@v4
