@@ -217,7 +217,11 @@ jobs:
         python .\aws-checksums\build\deps\aws-c-common\scripts\appverifier_ctest.py --build_directory .\aws-checksums\build\aws-checksums
 
   macos:
-    runs-on: macos-14 # latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-latest]
     steps:
     - uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -230,10 +234,12 @@ jobs:
         ./builder build -p ${{ env.PACKAGE_NAME }}
 
   osx-m1:
-  
-    runs-on: macos-14-xlarge # latest arm build
+
+    runs-on: ${{ matrix.runner }} # arm build
     strategy:
+      fail-fast: false
       matrix:
+        runner: [macos-15-xlarge, macos-26-xlarge]
         arch: [ macos-armv8 ]
     steps:
     - uses: aws-actions/configure-aws-credentials@v4
@@ -247,7 +253,11 @@ jobs:
         ./builder build -p ${{ env.PACKAGE_NAME }} --target=${{matrix.arch}}
 
   macos-x64:
-    runs-on: macos-14-large # latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15-large, macos-latest-large]
     steps:
     - uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -260,7 +270,11 @@ jobs:
         ./builder build -p ${{ env.PACKAGE_NAME }}
 
   macos-no-cpu-extensions:
-    runs-on: macos-14 # latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-latest]
     steps:
     - uses: aws-actions/configure-aws-credentials@v4
       with:
