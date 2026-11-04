@@ -1,3 +1,8 @@
+include(CMakeFindDependencyMacro)
+if(NOT @IN_SOURCE_BUILD@)
+    find_dependency(aws-c-common)
+endif()
+
 macro(aws_load_targets type)
     include(${CMAKE_CURRENT_LIST_DIR}/${type}/@PROJECT_NAME@-targets.cmake)
 endmacro()
